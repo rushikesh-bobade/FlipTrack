@@ -82,54 +82,47 @@ export async function action({ request }: Route.ActionArgs) {
         brand,
         size,
         purchasePrice,
-        // other fields could be updated here
       }
     });
-  } else if (intent === "delete") {
-    const itemId = formData.get("itemId") as string;
-    await prisma.inventoryItem.delete({
-      where: { id: itemId, userId: user.id } // Ensures the user owns the item
+  } else if (intent === "bulk-delete") {
+    const ids = formData.getAll("id");
+    await prisma.inventoryItem.deleteMany({
+      where: { id: { in: ids }, userId: user.id }
     });
+  } else if (intent === "bulk-mark-sold") {
+    const ids = formData.getAll("id");
+    await prisma.inventoryItem.updateMany({
+      where: { id: { in: ids }, userId: user.id },
+      data: { status: "SOLD" }
+    });
+  } else if (intent === "export-csv") {
+    const ids = formData.getAll("id");
+    const items = await prisma.inventoryItem.findMany({
+      where: { id: { in: ids }, userId: user.id },
+      include: {
+        priceHistory: {
+          orderBy: { fetchedAt: "desc" },
+          take: 1
+        }
+      }
+    });
+
+    const csvContent = items.map(item => {
+      return [
+        item.sku,
+        item.name,
+        item.brand,
+        item.size,
+        item.purchasePrice,
+        item.marketValue,
+      ].join(",");
+    }).join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "inventory.csv";
+    a.click();
   }
-
-  return { ok: true, intent };
-}
-
-export default function InventoryManagementPage() {
-  const { items } = useLoaderData<typeof loader>();
-  const actionData = useActionData<typeof action>();
-  const [showAddItem, setShowAddItem] = useState(false);
-  const [showImport, setShowImport] = useState(false);
-  const [selected, setSelected] = useState<string[]>([]);
-  const [editingItem, setEditingItem] = useState<any>(null);
-
-  useEffect(() => {
-    if (actionData?.ok) {
-      if (actionData.intent === "create") {
-        toast.success("Item added successfully");
-        setShowAddItem(false);
-      } else if (actionData.intent === "update") {
-        toast.success("Item updated");
-        setEditingItem(null);
-      } else if (actionData.intent === "delete") {
-        toast.success("Item deleted");
-      }
-    }
-  }, [actionData]);
-
-  return (
-    <div className={styles.page}>
-      <InventoryHeader
-        onAddItem={() => setShowAddItem(true)}
-        onImport={() => setShowImport(true)}
-      />
-      {selected.length > 0 && (
-        <BulkActionsBar count={selected.length} onClear={() => setSelected([])} />
-      )}
-      <InventoryTable selected={selected} onSelectChange={setSelected} items={items} onEdit={setEditingItem} />
-      {showAddItem && <AddItemModal onClose={() => setShowAddItem(false)} />}
-      {editingItem && <AddItemModal item={editingItem} onClose={() => setEditingItem(null)} />}
-      {showImport && <ImportExcelModal onClose={() => setShowImport(false)} />}
-    </div>
-  );
 }
