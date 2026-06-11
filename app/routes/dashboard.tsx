@@ -10,6 +10,7 @@ import { TopBrandsChart } from "~/blocks/dashboard/top-brands-chart";
 import { SalesByMarketplacePie } from "~/blocks/dashboard/sales-by-marketplace-pie";
 import { TopSellingItemsTable } from "~/blocks/dashboard/top-selling-items-table";
 import { RecentSales } from "~/blocks/dashboard/recent-sales";
+import { ExpenseCategoriesChart } from "~/blocks/dashboard/expense-categories-chart";
 
 import { AIInsightsPanel } from "~/blocks/dashboard/ai-insights-panel";
 
@@ -58,11 +59,26 @@ export async function loader({ request }: Route.LoaderArgs) {
     amount: Number(e.amount)
   }));
 
-  return { inventoryStats: serializedStats, salesData: serializedSales, expensesData: serializedExpenses };
+  // Group expenses by type
+  const groupedExpenses = serializedExpenses.reduce((acc, expense) => {
+    const type = expense.type;
+    if (!acc[type]) {
+      acc[type] = 0;
+    }
+    acc[type] += expense.amount;
+    return acc;
+  }, {} as { [key: string]: number });
+
+  return { 
+    inventoryStats: serializedStats, 
+    salesData: serializedSales, 
+    expensesData: serializedExpenses,
+    groupedExpenses
+  };
 }
 
 export default function DashboardPage() {
-  const { inventoryStats, salesData, expensesData } = useLoaderData<typeof loader>();
+  const { inventoryStats, salesData, expensesData, groupedExpenses } = useLoaderData<typeof loader>();
   return (
     <div className={styles.page}>
       <DashboardHeader />
@@ -72,6 +88,9 @@ export default function DashboardPage() {
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "var(--space-6)", marginBottom: "var(--space-6)" }}>
         <TopBrandsChart sales={salesData} />
         <SalesByMarketplacePie sales={salesData} />
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "var(--space-6)", marginBottom: "var(--space-6)" }}>
+        <ExpenseCategoriesChart groupedExpenses={groupedExpenses} />
       </div>
       <TopSellingItemsTable sales={salesData} />
       <RecentSales sales={salesData} />
