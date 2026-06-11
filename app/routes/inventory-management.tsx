@@ -82,54 +82,95 @@ export async function action({ request }: Route.ActionArgs) {
         brand,
         size,
         purchasePrice,
-        // other fields could be updated here
       }
-    });
-  } else if (intent === "delete") {
-    const itemId = formData.get("itemId") as string;
-    await prisma.inventoryItem.delete({
-      where: { id: itemId, userId: user.id } // Ensures the user owns the item
     });
   }
-
-  return { ok: true, intent };
 }
 
-export default function InventoryManagementPage() {
-  const { items } = useLoaderData<typeof loader>();
-  const actionData = useActionData<typeof action>();
-  const [showAddItem, setShowAddItem] = useState(false);
-  const [showImport, setShowImport] = useState(false);
-  const [selected, setSelected] = useState<string[]>([]);
-  const [editingItem, setEditingItem] = useState<any>(null);
+export default function InventoryManagement() {
+  const { items } = useLoaderData();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterStatus, setFilterStatus] = useState<string[]>([]);
+  const [filterCondition, setFilterCondition] = useState<string[]>([]);
 
-  useEffect(() => {
-    if (actionData?.ok) {
-      if (actionData.intent === "create") {
-        toast.success("Item added successfully");
-        setShowAddItem(false);
-      } else if (actionData.intent === "update") {
-        toast.success("Item updated");
-        setEditingItem(null);
-      } else if (actionData.intent === "delete") {
-        toast.success("Item deleted");
-      }
+  const filteredItems = items.filter(item => {
+    const nameMatch = item.name.toLowerCase().includes(searchQuery.toLowerCase());
+    const skuMatch = item.sku.toLowerCase().includes(searchQuery.toLowerCase());
+    const brandMatch = item.brand.toLowerCase().includes(searchQuery.toLowerCase());
+    const statusMatch = filterStatus.length === 0 || filterStatus.includes(item.status);
+    const conditionMatch = filterCondition.length === 0 || filterCondition.includes(item.condition);
+
+    return (nameMatch || skuMatch || brandMatch) && statusMatch && conditionMatch;
+  });
+
+  const handleSearch = (query: string) => {
+    setSearchQuery(query);
+  };
+
+  const handleFilterStatus = (status: string) => {
+    if (filterStatus.includes(status)) {
+      setFilterStatus(filterStatus.filter(s => s !== status));
+    } else {
+      setFilterStatus([...filterStatus, status]);
     }
-  }, [actionData]);
+  };
+
+  const handleFilterCondition = (condition: string) => {
+    if (filterCondition.includes(condition)) {
+      setFilterCondition(filterCondition.filter(c => c !== condition));
+    } else {
+      setFilterCondition([...filterCondition, condition]);
+    }
+  };
 
   return (
-    <div className={styles.page}>
-      <InventoryHeader
-        onAddItem={() => setShowAddItem(true)}
-        onImport={() => setShowImport(true)}
-      />
-      {selected.length > 0 && (
-        <BulkActionsBar count={selected.length} onClear={() => setSelected([])} />
-      )}
-      <InventoryTable selected={selected} onSelectChange={setSelected} items={items} onEdit={setEditingItem} />
-      {showAddItem && <AddItemModal onClose={() => setShowAddItem(false)} />}
-      {editingItem && <AddItemModal item={editingItem} onClose={() => setEditingItem(null)} />}
-      {showImport && <ImportExcelModal onClose={() => setShowImport(false)} />}
+    <div className={styles.container}>
+      <InventoryHeader onAddItem={() => console.log("Add item")} onImport={() => console.log("Import")} onSearch={handleSearch} />
+      <div className={styles.filter}>
+        <button className={styles.filterButton} onClick={() => console.log("Filter")}>
+          Filter
+        </button>
+        <div className={styles.filterOptions}>
+          <div className={styles.filterGroup}>
+            <h5>Status</h5>
+            <ul>
+              <li>
+                <input type="checkbox" id="in-stock" checked={filterStatus.includes("IN_STOCK")} onChange={() => handleFilterStatus("IN_STOCK")} />
+                <label htmlFor="in-stock">In Stock</label>
+              </li>
+              <li>
+                <input type="checkbox" id="listed" checked={filterStatus.includes("LISTED")} onChange={() => handleFilterStatus("LISTED")} />
+                <label htmlFor="listed">Listed</label>
+              </li>
+              <li>
+                <input type="checkbox" id="sold" checked={filterStatus.includes("SOLD")} onChange={() => handleFilterStatus("SOLD")} />
+                <label htmlFor="sold">Sold</label>
+              </li>
+            </ul>
+          </div>
+          <div className={styles.filterGroup}>
+            <h5>Condition</h5>
+            <ul>
+              <li>
+                <input type="checkbox" id="deadstock" checked={filterCondition.includes("DEADSTOCK")} onChange={() => handleFilterCondition("DEADSTOCK")} />
+                <label htmlFor="deadstock">Deadstock</label>
+              </li>
+              <li>
+                <input type="checkbox" id="new-with-box" checked={filterCondition.includes("NEW_WITH_BOX")} onChange={() => handleFilterCondition("NEW_WITH_BOX")} />
+                <label htmlFor="new-with-box">New with Box</label>
+              </li>
+              <li>
+                <input type="checkbox" id="used" checked={filterCondition.includes("USED")} onChange={() => handleFilterCondition("USED")} />
+                <label htmlFor="used">Used</label>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <InventoryTable items={filteredItems} />
+      <BulkActionsBar />
+      <AddItemModal />
+      <ImportExcelModal />
     </div>
   );
 }
