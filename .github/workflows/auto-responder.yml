@@ -66,7 +66,7 @@ jobs:
             }
 
             // 6. Post the response
-            const replyBody = `Hi @${commenter}! 👋\n\n${botSignature} to this repository! Please wait until a maintainer officially assigns you to this issue before opening a Pull Request. \n\nWe review requests regularly and will assign it as soon as possible if it's available. Happy coding! 🚀`;
+            const replyBody = `Hi @${commenter}! 👋\n\n${botSignature} to this repository! Please wait until a maintainer officially assigns you to this issue before opening a Pull Request. \n\nWhile you wait, please consider starring ⭐ this repository to show your support! We review requests regularly and will assign it as soon as possible if it's available. Happy coding! 🚀`;
 
             await github.rest.issues.createComment({
               owner: context.repo.owner,
