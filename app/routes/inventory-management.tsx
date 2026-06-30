@@ -114,6 +114,8 @@ export default function InventoryManagementPage() {
   const [selected, setSelected] = useState<string[]>([]);
   const [editingItem, setEditingItem] = useState<any>(null);
   const [searchQuery, setSearchQuery] = useState("");
+const [statusFilter, setStatusFilter] = useState("ALL");
+const [conditionFilter, setConditionFilter] = useState("ALL");
 
   useEffect(() => {
     if (actionData?.ok) {
@@ -136,23 +138,36 @@ export default function InventoryManagementPage() {
   }, [actionData]);
 
   const filteredItems = items.filter((item) => {
-    if (!searchQuery) return true;
-    const lowerQuery = searchQuery.toLowerCase();
-    return (
-      (item.name?.toLowerCase() || "").includes(lowerQuery) ||
-      (item.sku?.toLowerCase() || "").includes(lowerQuery) ||
-      (item.brand?.toLowerCase() || "").includes(lowerQuery)
-    );
-  });
+  const lowerQuery = searchQuery.toLowerCase();
+
+  const matchesSearch =
+    !searchQuery ||
+    (item.name?.toLowerCase() || "").includes(lowerQuery) ||
+    (item.sku?.toLowerCase() || "").includes(lowerQuery) ||
+    (item.brand?.toLowerCase() || "").includes(lowerQuery);
+
+  const matchesStatus =
+    statusFilter === "ALL" || item.status === statusFilter;
+
+  const matchesCondition =
+    conditionFilter === "ALL" || item.condition === conditionFilter;
+
+  return matchesSearch && matchesStatus && matchesCondition;
+});
 
   return (
     <div className={styles.page}>
+      
       <InventoryHeader
-        onAddItem={() => setShowAddItem(true)}
-        onImport={() => setShowImport(true)}
-        searchQuery={searchQuery}
-        onSearch={setSearchQuery}
-      />
+  onAddItem={() => setShowAddItem(true)}
+  onImport={() => setShowImport(true)}
+  searchQuery={searchQuery}
+  onSearch={setSearchQuery}
+  statusFilter={statusFilter}
+  conditionFilter={conditionFilter}
+  onStatusChange={setStatusFilter}
+  onConditionChange={setConditionFilter}
+/>
       {selected.length > 0 && (
         <BulkActionsBar count={selected.length} onClear={() => setSelected([])} selectedIds={selected} items={items} />
       )}
