@@ -15,7 +15,8 @@ const prisma = new PrismaClient();
 
 // Helper function to validate sort parameters
 function getSortParams(searchParams: URLSearchParams): { field: SortField; direction: SortDirection } {
-  const validFields: SortField[] = ['item', 'marketplace', 'salePrice', 'saleDate', 'margin', 'profit'];
+  // Only allow sortable database columns (removed 'margin' and 'profit')
+  const validFields: SortField[] = ['item', 'marketplace', 'salePrice', 'saleDate'];
   const validDirections: SortDirection[] = ['asc', 'desc'];
   
   const field = searchParams.get('sort') as SortField;
@@ -31,7 +32,16 @@ export async function loader({ request }: Route.LoaderArgs) {
   const { supabase } = getSupabaseServerClient(request);
   const { data: { user } } = await supabase.auth.getUser();
 
-  if (!user) return { sales: [], inventory: [], totalCount: 0, sortField: 'saleDate', sortDirection: 'desc', currentPage: 1, pageSize: 10 };
+  if (!user) return { 
+    sales: [], 
+    inventory: [], 
+    totalCount: 0, 
+    sortField: 'saleDate', 
+    sortDirection: 'desc', 
+    currentPage: 1, 
+    pageSize: 10,
+    summary: { totalSalesCount: 0, totalRevenue: 0, totalProfit: 0 }
+  };
 
   // Get URL search params
   const url = new URL(request.url);
@@ -45,7 +55,6 @@ export async function loader({ request }: Route.LoaderArgs) {
 
   // Build orderBy object based on sort field
   let orderBy: any = {};
-  let needsPostSorting = false;
   
   switch (field) {
     case 'item':
@@ -60,18 +69,13 @@ export async function loader({ request }: Route.LoaderArgs) {
     case 'saleDate':
       orderBy = { saleDate: direction };
       break;
-    case 'margin':
-    case 'profit':
-      // For calculated fields, we need to sort after fetching
-      needsPostSorting = true;
-      orderBy = { saleDate: 'desc' }; // Fallback for initial fetch
-      break;
     default:
       orderBy = { saleDate: 'desc' };
   }
 
-  // Fetch sales with pagination and sorting
-  const [sales, totalCount, inventory] = await Promise.all([
+  // Fetch all data in parallel
+  const [sales, totalCount, inventory, allSales] = await Promise.all([
+    // Paginated sales with sorting
     prisma.sale.findMany({
       where: { userId: user.id },
       include: { inventoryItem: true },
@@ -79,45 +83,45 @@ export async function loader({ request }: Route.LoaderArgs) {
       skip: skip,
       take: pageSize,
     }),
+    // Total count for pagination
     prisma.sale.count({
       where: { userId: user.id },
     }),
+    // Inventory items for the modal
     prisma.inventoryItem.findMany({
       where: { userId: user.id, status: "IN_STOCK" },
       orderBy: { createdAt: "desc" },
     }),
+    // All sales for summary calculations (lifetime totals)
+    prisma.sale.findMany({
+      where: { userId: user.id },
+      include: { inventoryItem: true },
+    }),
   ]);
 
-  // For margin and profit sorting, we need to sort after fetching
-  let sortedSales = sales;
-  if (needsPostSorting) {
-    sortedSales = [...sales].sort((a, b) => {
-      const aCost = Number(a.inventoryItem?.purchasePrice || 0);
-      const bCost = Number(b.inventoryItem?.purchasePrice || 0);
-      const aPrice = Number(a.salePrice);
-      const bPrice = Number(b.salePrice);
-      
-      let aValue, bValue;
-      if (field === 'margin') {
-        aValue = aPrice > 0 ? ((aPrice - aCost) / aPrice) * 100 : 0;
-        bValue = bPrice > 0 ? ((bPrice - bCost) / bPrice) * 100 : 0;
-      } else { // profit
-        aValue = aPrice - aCost;
-        bValue = bPrice - bCost;
-      }
-      
-      return direction === 'asc' ? aValue - bValue : bValue - aValue;
-    });
-  }
+  // Calculate summary metrics from all sales (not just current page)
+  const totalSalesCount = allSales.length;
+  const totalRevenue = allSales.reduce((acc, s) => acc + Number(s.salePrice), 0);
+  const totalProfit = allSales.reduce((acc, s) => {
+    const cost = Number(s.inventoryItem?.purchasePrice || 0);
+    return acc + (Number(s.salePrice) - cost);
+  }, 0);
+
+  const summary = {
+    totalSalesCount,
+    totalRevenue,
+    totalProfit
+  };
 
   return { 
-    sales: sortedSales, 
+    sales, 
     inventory, 
     totalCount,
     sortField: field,
     sortDirection: direction,
     currentPage: page,
-    pageSize
+    pageSize,
+    summary
   };
 }
 
@@ -158,7 +162,7 @@ export async function action({ request }: Route.ActionArgs) {
 }
 
 export default function SalesLogPage() {
-  const { sales, inventory, totalCount, sortField, sortDirection, currentPage, pageSize } = useLoaderData<typeof loader>();
+  const { sales, inventory, totalCount, sortField, sortDirection, currentPage, pageSize, summary } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   const [searchParams, setSearchParams] = useSearchParams();
   const [showLogSale, setShowLogSale] = useState(false);
@@ -200,7 +204,7 @@ export default function SalesLogPage() {
   return (
     <div className={styles.page}>
       <SalesHeader onLogSale={() => setShowLogSale(true)} />
-      <SalesSummaryCards sales={sales} />
+      <SalesSummaryCards summary={summary} />
       <SalesTable 
         sales={sales} 
         sortField={sortField}

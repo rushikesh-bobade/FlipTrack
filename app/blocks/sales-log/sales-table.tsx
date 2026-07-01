@@ -1,7 +1,8 @@
 import { Pagination } from "~/blocks/__global/pagination";
 import styles from "./sales-table.module.css";
 
-export type SortField = 'item' | 'marketplace' | 'salePrice' | 'saleDate' | 'margin' | 'profit';
+// Removed 'margin' and 'profit' from SortField type
+export type SortField = 'item' | 'marketplace' | 'salePrice' | 'saleDate';
 export type SortDirection = 'asc' | 'desc';
 
 interface Props { 
@@ -81,8 +82,9 @@ export function SalesTable({
               {renderSortableHeader('marketplace', 'Marketplace')}
               {renderSortableHeader('salePrice', 'Sale Price')}
               {renderSortableHeader('saleDate', 'Date')}
-              {renderSortableHeader('margin', 'Margin')}
-              {renderSortableHeader('profit', 'Profit')}
+              {/* Margin and Profit columns are NOT sortable */}
+              <th className={styles.thNonSortable}>Margin</th>
+              <th className={styles.thNonSortable}>Profit</th>
             </tr>
           </thead>
           <tbody>
