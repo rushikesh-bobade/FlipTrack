@@ -101,6 +101,60 @@ export async function action({ request }: Route.ActionArgs) {
       where: { id: { in: ids }, userId: user.id },
       data: { status: "SOLD" }
     });
+  } else if (intent === "import") {
+    const raw = formData.get("items") as string;
+    if (!raw) return { ok: false, intent, error: "No items data received." };
+
+    const items: Record<string, unknown>[] = JSON.parse(raw);
+    let imported = 0;
+    const errors: { row: number; message: string }[] = [];
+
+    for (let i = 0; i < items.length; i++) {
+      const row = items[i];
+      const sku = String(row.sku ?? "").trim();
+      const name = String(row.name ?? "").trim();
+      const brand = String(row.brand ?? "").trim();
+      const size = String(row.size ?? "").trim();
+      const purchasePrice = parseFloat(String(row.purchasePrice ?? ""));
+
+      if (!sku || !name || !brand || !size || isNaN(purchasePrice)) {
+        errors.push({ row: i + 1, message: "Missing required fields (sku, name, brand, size, purchasePrice)" });
+        continue;
+      }
+
+      try {
+        await prisma.inventoryItem.create({
+          data: {
+            userId: user.id,
+            sku,
+            name,
+            brand,
+            size,
+            purchasePrice,
+            purchaseDate: row.purchaseDate
+              ? new Date(String(row.purchaseDate))
+              : new Date(),
+            condition: (String(row.condition ?? "DEADSTOCK").toUpperCase().replace(/ /g, "_") as any) || "DEADSTOCK",
+            status: (String(row.status ?? "IN_STOCK").toUpperCase().replace(/ /g, "_") as any) || "IN_STOCK",
+            colorway: String(row.colorway ?? "") || undefined,
+            marketplace: (String(row.marketplace ?? "").toUpperCase().replace(/ /g, "_") as any) || undefined,
+            askingPrice: row.askingPrice ? parseFloat(String(row.askingPrice)) : undefined,
+            notes: String(row.notes ?? "") || undefined,
+            currency: (String(row.currency ?? "USD").toUpperCase() as any) || undefined,
+            tags: row.tags ? String(row.tags).split(",").map((t) => t.trim()).filter(Boolean) : [],
+          },
+        });
+        imported++;
+      } catch (err: any) {
+        if (err?.code === "P2002") {
+          errors.push({ row: i + 1, message: `Duplicate SKU + size combination: ${sku} / ${size}` });
+        } else {
+          errors.push({ row: i + 1, message: err?.message || "Unknown error" });
+        }
+      }
+    }
+
+    return { ok: true, intent, imported, total: items.length, errors };
   }
 
   return { ok: true, intent };
@@ -128,9 +182,19 @@ export default function InventoryManagementPage() {
       } else if (actionData.intent === "bulk-delete") {
         toast.success("Items deleted successfully");
         setSelected([]);
-      } else if (actionData.intent === "bulk-mark-sold") {
+      }       else if (actionData.intent === "bulk-mark-sold") {
         toast.success("Items marked as sold");
         setSelected([]);
+      } else if (actionData.intent === "import") {
+        const d = actionData as any;
+        if (d.imported > 0) {
+          toast.success(`${d.imported} of ${d.total} items imported successfully`);
+        }
+        if (d.errors?.length > 0) {
+          toast.error(`${d.errors.length} rows failed — check console for details`);
+          console.warn("Import errors:", d.errors);
+        }
+        setShowImport(false);
       }
     }
   }, [actionData]);
