@@ -1,11 +1,32 @@
-import { mockSales } from "~/data/mock-data";
 import styles from "./report-preview.module.css";
 
-interface Props { className?: string; }
+interface SaleItem {
+  id: string;
+  item: string;
+  salePrice: number;
+  marketplace: string;
+  date: string;
+  profit: number;
+  margin: number;
+}
 
-export function ReportPreview({ className }: Props) {
-  const totalProceeds = mockSales.reduce((s, sale) => s + sale.salePrice, 0);
-  const totalGains = mockSales.reduce((s, sale) => s + sale.profit, 0);
+interface ExpenseItem {
+  id: string;
+  amount: number;
+  description: string | null;
+  type: string;
+  date: string;
+}
+
+interface Props {
+  className?: string;
+  sales: SaleItem[];
+  expenses: ExpenseItem[];
+}
+
+export function ReportPreview({ className, sales }: Props) {
+  const totalProceeds = sales.reduce((s, sale) => s + sale.salePrice, 0);
+  const totalGains = sales.reduce((s, sale) => s + sale.profit, 0);
 
   return (
     <div className={[styles.card, className].filter(Boolean).join(" ")}>
@@ -29,7 +50,7 @@ export function ReportPreview({ className }: Props) {
             </tr>
           </thead>
           <tbody>
-            {mockSales.map(s => (
+            {sales.map(s => (
               <tr key={s.id} className={styles.tr}>
                 <td className={styles.td}>{s.date}</td>
                 <td className={styles.td}>{s.item}</td>
