@@ -50,6 +50,16 @@ export async function action({ request }: Route.ActionArgs) {
       where: { id: authUser.id },
       data: { currency, theme }
     });
+  } else if (intent === "update-notifications") {
+    const emailNotifications = formData.get("emailNotifications") === "on";
+    const smsNotifications = formData.get("smsNotifications") === "on";
+    const pushNotifications = formData.get("pushNotifications") === "on";
+    const weeklySummary = formData.get("weeklySummary") === "on";
+    const priceAlertTriggered = formData.get("priceAlertTriggered") === "on";
+    await prisma.user.update({
+      where: { id: authUser.id },
+      data: { emailNotifications, smsNotifications, pushNotifications, weeklySummary, priceAlertTriggered }
+    });
   } else if (intent === "create-team") {
     const teamName = formData.get("teamName") as string;
     await prisma.$transaction(async (tx) => {

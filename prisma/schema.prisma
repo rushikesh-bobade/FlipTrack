@@ -88,6 +88,11 @@ model User {
   theme             Theme          @default(LIGHT)
   phone             String?
   pushEndpoint      String?        // Web push subscription JSON
+  emailNotifications  Boolean       @default(true)
+  smsNotifications    Boolean       @default(false)
+  pushNotifications   Boolean       @default(false)
+  weeklySummary       Boolean       @default(true)
+  priceAlertTriggered Boolean       @default(true)
   teamId            String?
   role              String         @default("owner") // owner | member (team)
   createdAt         DateTime       @default(now())

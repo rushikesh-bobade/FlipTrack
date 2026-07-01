@@ -1,19 +1,22 @@
 import styles from "./sales-summary-cards.module.css";
 
-interface Props { className?: string; sales?: any[]; }
+interface Props { 
+  className?: string; 
+  sales?: any[]; 
+  summary?: {
+    totalSalesCount: number;
+    totalRevenue: number;
+    totalProfit: number;
+  };
+}
 
-export function SalesSummaryCards({ className, sales = [] }: Props) {
-  const totalSales = sales.length;
+export function SalesSummaryCards({ className, sales = [], summary }: Props) {
+  const totalSales = summary ? summary.totalSalesCount : sales.length;
   
-  let totalRevenue = 0;
-  let totalProfit = 0;
-  
-  sales.forEach(s => {
-    const salePrice = Number(s.salePrice);
-    const cost = Number(s.inventoryItem.purchasePrice);
-    totalRevenue += salePrice;
-    totalProfit += (salePrice - cost);
-  });
+  const totalRevenue = summary ? summary.totalRevenue : sales.reduce((acc, s) => acc + Number(s.salePrice), 0);
+  const totalProfit = summary 
+    ? summary.totalProfit 
+    : sales.reduce((acc, s) => acc + (Number(s.salePrice) - Number(s.inventoryItem.purchasePrice)), 0);
   
   const avgProfit = totalSales > 0 ? (totalProfit / totalSales) : 0;
 

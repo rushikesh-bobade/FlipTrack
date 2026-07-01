@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useLoaderData, useActionData } from "react-router";
+import { useLoaderData, useActionData, useSearchParams } from "react-router";
 import type { Route } from "./+types/inventory-management";
 import { toast } from "sonner";
 import { getSupabaseServerClient } from "~/utils/supabase.server";
@@ -10,6 +10,7 @@ import { InventoryTable } from "~/blocks/inventory-management/inventory-table";
 import { BulkActionsBar } from "~/blocks/inventory-management/bulk-actions-bar";
 import { AddItemModal } from "~/blocks/inventory-management/add-item-modal";
 import { ImportExcelModal } from "~/blocks/inventory-management/import-excel-modal";
+import { Pagination } from "~/blocks/__global/pagination";
 
 const prisma = new PrismaClient();
 
@@ -17,25 +18,48 @@ export async function loader({ request }: Route.LoaderArgs) {
   const { supabase } = getSupabaseServerClient(request);
   const { data: { user } } = await supabase.auth.getUser();
 
-  if (!user) return { items: [] };
+  if (!user) return { items: [], totalPages: 0 };
 
-  const items = await prisma.inventoryItem.findMany({
-    where: { userId: user.id },
-    orderBy: { createdAt: "desc" },
-    include: {
-      priceHistory: {
-        orderBy: { fetchedAt: "desc" },
-        take: 1
-      }
-    }
-  });
+  const url = new URL(request.url);
+  const page = Math.max(1, Number(url.searchParams.get("page")) || 1);
+  const pageSize = Number(url.searchParams.get("pageSize")) || 10;
+  const q = url.searchParams.get("q") || "";
 
-  const formattedItems = items.map(item => ({
+  const whereClause = {
+    userId: user.id,
+    ...(q
+      ? {
+          OR: [
+            { name: { contains: q, mode: "insensitive" as const } },
+            { sku: { contains: q, mode: "insensitive" as const } },
+            { brand: { contains: q, mode: "insensitive" as const } },
+          ],
+        }
+      : {}),
+  };
+
+  const [totalItems, items] = await Promise.all([
+    prisma.inventoryItem.count({ where: whereClause }),
+    prisma.inventoryItem.findMany({
+      where: whereClause,
+      orderBy: { createdAt: "desc" },
+      skip: (page - 1) * pageSize,
+      take: pageSize,
+      include: {
+        priceHistory: {
+          orderBy: { fetchedAt: "desc" },
+          take: 1,
+        },
+      },
+    }),
+  ]);
+
+  const formattedItems = items.map((item) => ({
     ...item,
     marketValue: item.priceHistory[0]?.askPrice ? Number(item.priceHistory[0].askPrice) : null,
   }));
 
-  return { items: formattedItems };
+  return { items: formattedItems, totalPages: Math.ceil(totalItems / pageSize) };
 }
 
 export async function action({ request }: Route.ActionArgs) {
@@ -161,13 +185,26 @@ export async function action({ request }: Route.ActionArgs) {
 }
 
 export default function InventoryManagementPage() {
-  const { items } = useLoaderData<typeof loader>();
+  const { items, totalPages } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   const [showAddItem, setShowAddItem] = useState(false);
   const [showImport, setShowImport] = useState(false);
   const [selected, setSelected] = useState<string[]>([]);
   const [editingItem, setEditingItem] = useState<any>(null);
-  const [searchQuery, setSearchQuery] = useState("");
+
+  const [searchParams, setSearchParams] = useSearchParams();
+  const searchQuery = searchParams.get("q") || "";
+
+  const setSearchQuery = (query: string) => {
+    const nextParams = new URLSearchParams(searchParams);
+    if (query) {
+      nextParams.set("q", query);
+    } else {
+      nextParams.delete("q");
+    }
+    nextParams.set("page", "1"); // Reset to page 1
+    setSearchParams(nextParams, { replace: true });
+  };
 
   useEffect(() => {
     if (actionData?.ok) {
@@ -199,16 +236,6 @@ export default function InventoryManagementPage() {
     }
   }, [actionData]);
 
-  const filteredItems = items.filter((item) => {
-    if (!searchQuery) return true;
-    const lowerQuery = searchQuery.toLowerCase();
-    return (
-      (item.name?.toLowerCase() || "").includes(lowerQuery) ||
-      (item.sku?.toLowerCase() || "").includes(lowerQuery) ||
-      (item.brand?.toLowerCase() || "").includes(lowerQuery)
-    );
-  });
-
   return (
     <div className={styles.page}>
       <InventoryHeader
@@ -220,7 +247,8 @@ export default function InventoryManagementPage() {
       {selected.length > 0 && (
         <BulkActionsBar count={selected.length} onClear={() => setSelected([])} selectedIds={selected} items={items} />
       )}
-      <InventoryTable selected={selected} onSelectChange={setSelected} items={filteredItems} onEdit={setEditingItem} />
+      <InventoryTable selected={selected} onSelectChange={setSelected} items={items} onEdit={setEditingItem} />
+      <Pagination totalPages={totalPages} />
       {showAddItem && <AddItemModal onClose={() => setShowAddItem(false)} />}
       {editingItem && <AddItemModal item={editingItem} onClose={() => setEditingItem(null)} />}
       {showImport && <ImportExcelModal onClose={() => setShowImport(false)} />}
