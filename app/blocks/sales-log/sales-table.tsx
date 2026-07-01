@@ -1,100 +1,54 @@
-import { useState, useMemo } from "react";
+import { Pagination } from "~/blocks/__global/pagination";
 import styles from "./sales-table.module.css";
+
+export type SortField = 'item' | 'marketplace' | 'salePrice' | 'saleDate' | 'margin' | 'profit';
+export type SortDirection = 'asc' | 'desc';
 
 interface Props { 
   className?: string; 
-  sales?: any[]; 
+  sales?: any[];
+  sortField: SortField;
+  sortDirection: SortDirection;
+  onSort: (field: SortField) => void;
+  currentPage: number;
+  totalCount: number;
+  pageSize: number;
+  onPageChange: (page: number) => void;
 }
 
-type SortField = 'item' | 'marketplace' | 'salePrice' | 'saleDate' | 'margin' | 'profit';
-type SortDirection = 'asc' | 'desc';
-
-export function SalesTable({ className, sales = [] }: Props) {
-  const [sortField, setSortField] = useState<SortField>('saleDate');
-  const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
-
-  const handleSort = (field: SortField) => {
-    if (sortField === field) {
-      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
-    } else {
-      setSortField(field);
-      setSortDirection('desc');
-    }
-  };
-
+export function SalesTable({ 
+  className, 
+  sales = [],
+  sortField,
+  sortDirection,
+  onSort,
+  currentPage,
+  totalCount,
+  pageSize,
+  onPageChange
+}: Props) {
+  
   const getSortIndicator = (field: SortField) => {
     if (sortField !== field) return '↕';
     return sortDirection === 'asc' ? '↑' : '↓';
   };
 
-  const sortedSales = useMemo(() => {
-    if (!sales || sales.length === 0) return sales;
-
-    return [...sales].sort((a, b) => {
-      let aValue: any;
-      let bValue: any;
-
-      switch (sortField) {
-        case 'item':
-          aValue = a.inventoryItem?.name || '';
-          bValue = b.inventoryItem?.name || '';
-          break;
-        case 'marketplace':
-          aValue = a.marketplace || '';
-          bValue = b.marketplace || '';
-          break;
-        case 'salePrice':
-          aValue = Number(a.salePrice);
-          bValue = Number(b.salePrice);
-          break;
-        case 'saleDate':
-          aValue = new Date(a.saleDate).getTime();
-          bValue = new Date(b.saleDate).getTime();
-          break;
-        case 'margin':
-          const aCost = Number(a.inventoryItem?.purchasePrice || 0);
-          const bCost = Number(b.inventoryItem?.purchasePrice || 0);
-          const aPrice = Number(a.salePrice);
-          const bPrice = Number(b.salePrice);
-          aValue = aPrice > 0 ? ((aPrice - aCost) / aPrice) * 100 : 0;
-          bValue = bPrice > 0 ? ((bPrice - bCost) / bPrice) * 100 : 0;
-          break;
-        case 'profit':
-          const aProfit = Number(a.salePrice) - Number(a.inventoryItem?.purchasePrice || 0);
-          const bProfit = Number(b.salePrice) - Number(b.inventoryItem?.purchasePrice || 0);
-          aValue = aProfit;
-          bValue = bProfit;
-          break;
-        default:
-          aValue = a[sortField];
-          bValue = b[sortField];
-      }
-
-      if (typeof aValue === 'string' && typeof bValue === 'string') {
-        aValue = aValue.toLowerCase();
-        bValue = bValue.toLowerCase();
-      }
-
-      if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
-      if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
-      return 0;
-    });
-  }, [sales, sortField, sortDirection]);
+  const isActive = (field: SortField) => sortField === field;
 
   const renderSortableHeader = (field: SortField, label: string) => (
     <th 
       className={styles.th}
-      onClick={() => handleSort(field)}
+      onClick={() => onSort(field)}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
-          handleSort(field);
+          onSort(field);
         }
       }}
       role="button"
       tabIndex={0}
-      aria-sort={sortField === field ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
-      aria-label={`Sort by ${label} ${sortField === field ? `(${sortDirection === 'asc' ? 'ascending' : 'descending'})` : ''}`}
+      aria-sort={isActive(field) ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
+      aria-label={`Sort by ${label} ${isActive(field) ? `(${sortDirection === 'asc' ? 'ascending' : 'descending'})` : ''}`}
     >
       <span className={styles.headerContent}>
         {label}
@@ -115,6 +69,8 @@ export function SalesTable({ className, sales = [] }: Props) {
     );
   }
 
+  const totalPages = Math.ceil(totalCount / pageSize);
+
   return (
     <div className={[styles.wrap, className].filter(Boolean).join(" ")}>
       <div className={styles.tableWrap}>
@@ -130,7 +86,7 @@ export function SalesTable({ className, sales = [] }: Props) {
             </tr>
           </thead>
           <tbody>
-            {sortedSales.map(s => {
+            {sales.map(s => {
               const salePrice = Number(s.salePrice);
               const cost = Number(s.inventoryItem?.purchasePrice || 0);
               const profit = salePrice - cost;
@@ -155,6 +111,13 @@ export function SalesTable({ className, sales = [] }: Props) {
           </tbody>
         </table>
       </div>
+      {totalPages > 1 && (
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={onPageChange}
+        />
+      )}
     </div>
   );
 }
