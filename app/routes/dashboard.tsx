@@ -1,7 +1,7 @@
 import { useLoaderData } from "react-router";
 import type { Route } from "./+types/dashboard";
 import { getSupabaseServerClient } from "~/utils/supabase.server";
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, Prisma } from "@prisma/client";
 import styles from "./dashboard.module.css";
 import { DashboardHeader } from "~/blocks/dashboard/dashboard-header";
 import { StatsCardsRow } from "~/blocks/dashboard/stats-cards-row";
@@ -57,21 +57,29 @@ export async function loader({ request }: Route.LoaderArgs) {
     }
   }
 
-  const saleWhereClause: any = { userId: user.id };
-  const expenseWhereClause: any = { userId: user.id };
+  const saleWhereClause: Prisma.SaleWhereInput = {
+    userId: user.id,
+    ...(startDate || endDate
+      ? {
+          saleDate: {
+            ...(startDate ? { gte: startDate } : {}),
+            ...(endDate ? { lte: endDate } : {}),
+          },
+        }
+      : {}),
+  };
 
-  if (startDate || endDate) {
-    saleWhereClause.saleDate = {};
-    expenseWhereClause.date = {};
-    if (startDate) {
-      saleWhereClause.saleDate.gte = startDate;
-      expenseWhereClause.date.gte = startDate;
-    }
-    if (endDate) {
-      saleWhereClause.saleDate.lte = endDate;
-      expenseWhereClause.date.lte = endDate;
-    }
-  }
+  const expenseWhereClause: Prisma.ExpenseWhereInput = {
+    userId: user.id,
+    ...(startDate || endDate
+      ? {
+          date: {
+            ...(startDate ? { gte: startDate } : {}),
+            ...(endDate ? { lte: endDate } : {}),
+          },
+        }
+      : {}),
+  };
 
   const [inventoryStats, salesData, expensesData] = await Promise.all([
     prisma.inventoryItem.aggregate({
