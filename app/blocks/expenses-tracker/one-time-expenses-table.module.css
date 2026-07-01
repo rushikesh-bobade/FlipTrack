@@ -5,3 +5,10 @@
 .tr:last-child .td { border-bottom: none; }
 .catBadge { display: inline-flex; padding: 2px 8px; border-radius: var(--radius-full); font-size: 11px; font-weight: 600; background: var(--color-bg-elevated); color: var(--color-text-muted); }
 .amount { font-family: var(--family-mono); font-weight: 700; color: var(--color-text); }
+
+/* Sortable header button — inherits the .th typography, adds a click target. */
+.sortButton { display: inline-flex; align-items: center; gap: 4px; padding: 0; border: none; background: none; cursor: pointer; font: inherit; color: inherit; text-transform: inherit; letter-spacing: inherit; }
+.sortButton:hover { color: var(--color-text-muted); }
+.sortButton:focus-visible { outline: 2px solid var(--color-accent, var(--color-text)); outline-offset: 2px; border-radius: var(--radius-sm); }
+.sortIcon { color: var(--color-text); }
+.sortIconInactive { color: var(--color-text-subtle); opacity: 0.5; }
