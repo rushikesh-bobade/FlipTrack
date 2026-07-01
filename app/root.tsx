@@ -1,3 +1,4 @@
+﻿import { useEffect } from "react";
 import { Links, Meta, Outlet, Scripts, ScrollRestoration } from "react-router";
 import type { Route } from "./+types/root";
 import { ErrorBoundary as ErrorBoundaryRoot } from "~/components/error-boundary/error-boundary";
@@ -14,6 +15,8 @@ import { Toaster } from "sonner";
 
 export const links: Route.LinksFunction = () => [
   { rel: "icon", href: favicon, type: "image/svg+xml" },
+  { rel: "manifest", href: "/manifest.json" },
+  { rel: "apple-touch-icon", href: "/icons/icon-192.png" },
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
   { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
   {
@@ -23,11 +26,20 @@ export const links: Route.LinksFunction = () => [
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {
+  useEffect(() => {
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("/sw.js").catch((err) => {
+        console.error("Service worker registration failed:", err);
+      });
+    }
+  }, []);
+
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="theme-color" content="#1f2937" />
         <Meta />
         <Links />
         <script
