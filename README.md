@@ -103,26 +103,32 @@ Ensure you have the following installed and configured on your machine:
    ```
 
 3. **Configure Environment Variables**
-   Create a `.env` file in the root directory based on `.env.example` (if provided), and populate it:
-   ```env
-   # Supabase Configuration
-   NEXT_PUBLIC_SUPABASE_URL="your_supabase_project_url"
-   NEXT_PUBLIC_SUPABASE_ANON_KEY="your_supabase_anon_key"
-   DATABASE_URL="your_supabase_transaction_pooler_url"
-   DIRECT_URL="your_supabase_session_url"
-   
-   # Groq AI
-   GROQ_API_KEY="your_groq_api_key"
-   ```
+   Create a `.env` file in the root directory by copying `.env.example`.
 
 ### Database Setup
 
-Sync your Prisma schema with your Supabase Postgres instance and generate the Prisma Client:
+You can set up your database using either a free cloud project or a local PostgreSQL instance.
 
-```bash
-npx prisma db push
-npx prisma generate
-```
+**Option A: Cloud Database (Easiest)**
+1. Create a free project on [Supabase](https://supabase.com).
+2. Copy your Project URL, Anon Key, and Database Connection Strings into your `.env` file.
+3. Push the Prisma schema to your cloud database:
+   ```bash
+   npx prisma db push
+   npx prisma generate
+   ```
+
+**Option B: Local PostgreSQL (No Cloud Account Required)**
+1. Ensure you have PostgreSQL running locally (e.g., via Docker or Postgres.app).
+2. Update the `DATABASE_URL` and `DIRECT_URL` in your `.env` to point to your local instance (e.g., `postgresql://postgres:password@localhost:5432/fliptrack`).
+3. You can leave `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` blank or mock them if you are only testing UI/Prisma logic.
+4. Push the schema to your local database:
+   ```bash
+   npx prisma db push
+   npx prisma generate
+   ```
+
+### Start Development Server
 
 Start the Vite development server:
 ```bash
