@@ -1,4 +1,4 @@
-﻿const CACHE_NAME = 'fliptrack-static-v1';
+const CACHE_NAME = 'fliptrack-static-v1';
 const STATIC_ASSETS = [
   '/manifest.json',
   '/icons/icon-192.png',
@@ -24,17 +24,26 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
 
-  event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      if (cachedResponse) return cachedResponse;
+  const url = new URL(event.request.url);
 
-      return fetch(event.request).then((networkResponse) => {
-        if (networkResponse.status === 200 && event.request.url.startsWith(self.location.origin)) {
-          const responseClone = networkResponse.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, responseClone));
-        }
-        return networkResponse;
-      });
-    })
-  );
+  // Only apply cache-first strategy to static assets
+  const isStaticAsset = url.pathname.startsWith('/build/') || 
+                        url.pathname.startsWith('/assets/') || 
+                        url.pathname.match(/\.(png|jpg|jpeg|svg|css|js|json|ico)$/i);
+
+  if (isStaticAsset) {
+    event.respondWith(
+      caches.match(event.request).then((cachedResponse) => {
+        if (cachedResponse) return cachedResponse;
+
+        return fetch(event.request).then((networkResponse) => {
+          if (networkResponse.status === 200 && event.request.url.startsWith(self.location.origin)) {
+            const responseClone = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, responseClone));
+          }
+          return networkResponse;
+        });
+      })
+    );
+  }
 });
