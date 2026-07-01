@@ -10,14 +10,29 @@ import { SalesSummaryCards } from "~/blocks/sales-log/sales-summary-cards";
 import { SalesTable } from "~/blocks/sales-log/sales-table";
 import { LogSaleModal } from "~/blocks/sales-log/log-sale-modal";
 import { Pagination } from "~/blocks/__global/pagination";
+import { CACHE_PRIVATE_NO_STORE } from "~/utils/cache-headers";
+
+export function headers(_: Route.HeadersArgs) {
+  return {
+    "Cache-Control": CACHE_PRIVATE_NO_STORE,
+  };
+}
 
 const prisma = new PrismaClient();
 
 export async function loader({ request }: Route.LoaderArgs) {
   const { supabase } = getSupabaseServerClient(request);
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  if (!user) return { sales: [], inventory: [], totalPages: 0, summary: { totalSalesCount: 0, totalRevenue: 0, totalProfit: 0 } };
+  if (!user)
+    return {
+      sales: [],
+      inventory: [],
+      totalPages: 0,
+      summary: { totalSalesCount: 0, totalRevenue: 0, totalProfit: 0 },
+    };
 
   const url = new URL(request.url);
   const page = Math.max(1, Number(url.searchParams.get("page")) || 1);
@@ -41,19 +56,19 @@ export async function loader({ request }: Route.LoaderArgs) {
       select: {
         salePrice: true,
         inventoryItem: {
-          select: { purchasePrice: true }
-        }
-      }
-    })
+          select: { purchasePrice: true },
+        },
+      },
+    }),
   ]);
 
   let totalRevenue = 0;
   let totalProfit = 0;
-  allSalesMetrics.forEach(s => {
+  allSalesMetrics.forEach((s) => {
     const salePrice = Number(s.salePrice);
     const cost = Number(s.inventoryItem.purchasePrice);
     totalRevenue += salePrice;
-    totalProfit += (salePrice - cost);
+    totalProfit += salePrice - cost;
   });
 
   return {
@@ -63,14 +78,16 @@ export async function loader({ request }: Route.LoaderArgs) {
     summary: {
       totalSalesCount: totalSales,
       totalRevenue,
-      totalProfit
-    }
+      totalProfit,
+    },
   };
 }
 
 export async function action({ request }: Route.ActionArgs) {
   const { supabase } = getSupabaseServerClient(request);
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) return new Response("Unauthorized", { status: 401 });
 
   const formData = await request.formData();
@@ -92,12 +109,12 @@ export async function action({ request }: Route.ActionArgs) {
           saleDate,
           marketplace,
           trackingNumber,
-        }
+        },
       }),
       prisma.inventoryItem.update({
         where: { id: inventoryItemId },
-        data: { status: "SOLD" }
-      })
+        data: { status: "SOLD" },
+      }),
     ]);
   }
 
@@ -117,7 +134,7 @@ export default function SalesLogPage() {
       }
     }
   }, [actionData]);
-  
+
   return (
     <div className={styles.page}>
       <SalesHeader onLogSale={() => setShowLogSale(true)} />

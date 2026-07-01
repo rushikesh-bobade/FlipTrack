@@ -11,12 +11,21 @@ import { BulkActionsBar } from "~/blocks/inventory-management/bulk-actions-bar";
 import { AddItemModal } from "~/blocks/inventory-management/add-item-modal";
 import { ImportExcelModal } from "~/blocks/inventory-management/import-excel-modal";
 import { Pagination } from "~/blocks/__global/pagination";
+import { CACHE_PRIVATE_NO_STORE } from "~/utils/cache-headers";
+
+export function headers(_: Route.HeadersArgs) {
+  return {
+    "Cache-Control": CACHE_PRIVATE_NO_STORE,
+  };
+}
 
 const prisma = new PrismaClient();
 
 export async function loader({ request }: Route.LoaderArgs) {
   const { supabase } = getSupabaseServerClient(request);
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   if (!user) return { items: [], totalPages: 0 };
 
@@ -64,7 +73,9 @@ export async function loader({ request }: Route.LoaderArgs) {
 
 export async function action({ request }: Route.ActionArgs) {
   const { supabase } = getSupabaseServerClient(request);
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) return new Response("Unauthorized", { status: 401 });
 
   const formData = await request.formData();
@@ -88,7 +99,7 @@ export async function action({ request }: Route.ActionArgs) {
         purchaseDate: new Date(),
         condition: "DEADSTOCK",
         status: "IN_STOCK",
-      }
+      },
     });
   } else if (intent === "update") {
     const itemId = formData.get("itemId") as string;
@@ -97,7 +108,7 @@ export async function action({ request }: Route.ActionArgs) {
     const brand = formData.get("brand") as string;
     const size = formData.get("size") as string;
     const purchasePrice = Number(formData.get("purchasePrice"));
-    
+
     await prisma.inventoryItem.update({
       where: { id: itemId, userId: user.id },
       data: {
@@ -107,23 +118,23 @@ export async function action({ request }: Route.ActionArgs) {
         size,
         purchasePrice,
         // other fields could be updated here
-      }
+      },
     });
   } else if (intent === "delete") {
     const itemId = formData.get("itemId") as string;
     await prisma.inventoryItem.delete({
-      where: { id: itemId, userId: user.id } // Ensures the user owns the item
+      where: { id: itemId, userId: user.id }, // Ensures the user owns the item
     });
   } else if (intent === "bulk-delete") {
     const ids = formData.getAll("ids") as string[];
     await prisma.inventoryItem.deleteMany({
-      where: { id: { in: ids }, userId: user.id }
+      where: { id: { in: ids }, userId: user.id },
     });
   } else if (intent === "bulk-mark-sold") {
     const ids = formData.getAll("ids") as string[];
     await prisma.inventoryItem.updateMany({
       where: { id: { in: ids }, userId: user.id },
-      data: { status: "SOLD" }
+      data: { status: "SOLD" },
     });
   }
 

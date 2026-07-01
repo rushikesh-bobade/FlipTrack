@@ -11,12 +11,21 @@ import { OneTimeExpensesTable } from "~/blocks/expenses-tracker/one-time-expense
 import { ExpensesSummary } from "~/blocks/expenses-tracker/expenses-summary";
 import { AddExpenseModal } from "~/blocks/expenses-tracker/add-expense-modal";
 import { Pagination } from "~/blocks/__global/pagination";
+import { CACHE_PRIVATE_NO_STORE } from "~/utils/cache-headers";
+
+export function headers(_: Route.HeadersArgs) {
+  return {
+    "Cache-Control": CACHE_PRIVATE_NO_STORE,
+  };
+}
 
 const prisma = new PrismaClient();
 
 export async function loader({ request }: Route.LoaderArgs) {
   const { supabase } = getSupabaseServerClient(request);
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   if (!user) return { expenses: [], recurring: [], totalPages: 0, oneTimeTotal: 0 };
 
@@ -38,43 +47,43 @@ export async function loader({ request }: Route.LoaderArgs) {
     }),
     prisma.expense.aggregate({
       where: { userId: user.id },
-      _sum: { amount: true }
-    })
+      _sum: { amount: true },
+    }),
   ]);
 
   return {
     expenses,
     recurring,
     totalPages: Math.ceil(totalExpenses / pageSize),
-    oneTimeTotal: Number(sumResult._sum.amount || 0)
+    oneTimeTotal: Number(sumResult._sum.amount || 0),
   };
 }
 
 export async function action({ request }: Route.ActionArgs) {
   const { supabase } = getSupabaseServerClient(request);
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) return new Response("Unauthorized", { status: 401 });
 
   const formData = await request.formData();
   const intent = formData.get("intent");
 
   if (intent === "toggle") {
-  const id = formData.get("id") as string;
-  const isActive = formData.get("isActive") === "true";
+    const id = formData.get("id") as string;
+    const isActive = formData.get("isActive") === "true";
 
-  await prisma.recurringExpense.updateMany({
-    where: {
-      id,
-      userId:user.id
-    },
-    data: {
-      isActive,
-    },
-  });
-  return {ok: true,intent};
-
-  
-}
+    await prisma.recurringExpense.updateMany({
+      where: {
+        id,
+        userId: user.id,
+      },
+      data: {
+        isActive,
+      },
+    });
+    return { ok: true, intent };
+  }
   if (intent === "create") {
     const isRecurring = formData.get("isRecurring") === "on";
     const type = formData.get("type") as any;
@@ -91,8 +100,8 @@ export async function action({ request }: Route.ActionArgs) {
           amount,
           description,
           dayOfMonth,
-          isActive: true
-        }
+          isActive: true,
+        },
       });
     } else {
       await prisma.expense.create({
@@ -102,7 +111,7 @@ export async function action({ request }: Route.ActionArgs) {
           amount,
           description,
           date,
-        }
+        },
       });
     }
   }
@@ -123,7 +132,7 @@ export default function ExpensesTrackerPage() {
       }
     }
   }, [actionData]);
-  
+
   return (
     <div className={styles.page}>
       <ExpensesHeader onAddExpense={() => setShowAddExpense(true)} />
