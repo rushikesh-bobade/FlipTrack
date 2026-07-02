@@ -46,11 +46,20 @@ export function LogSaleModal({ className, onClose, inventory = [] }: Props) {
             <div className={styles.field}>
               <label className={styles.label}>Marketplace *</label>
               <select name="marketplace" className={styles.input} required>
+                <option value="EBAY">eBay</option>
+                <option value="AMAZON">Amazon</option>
+                <option value="MERCARI">Mercari</option>
+                <option value="POSHMARK">Poshmark</option>
+                <option value="FACEBOOK">Facebook Marketplace</option>
+                <option value="DEPOP">Depop</option>
+                <option value="GRAILED">Grailed</option>
+                <option value="OFFERUP">OfferUp</option>
+                <option value="SHOPIFY">Shopify</option>
                 <option value="STOCKX">StockX</option>
                 <option value="GOAT">GOAT</option>
-                <option value="EBAY">eBay</option>
                 <option value="FLIGHTCLUB">Flight Club</option>
                 <option value="STADIUMGOODS">Stadium Goods</option>
+                <option value="IN_PERSON">In Person</option>
                 <option value="OTHER">Other</option>
               </select>
             </div>

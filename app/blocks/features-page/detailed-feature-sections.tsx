@@ -11,7 +11,7 @@ const sections = [
   },
   {
     title: "Live Prices Across All Marketplaces",
-    desc: "Stop switching between tabs. FlipTrack pulls live ask prices from StockX, GOAT, eBay, Flight Club, and Stadium Goods every 15 minutes and shows them in one table.",
+    desc: "Stop switching between tabs. FlipTrack pulls live ask prices from eBay, Amazon, Mercari, StockX, Poshmark and more every 15 minutes and shows them in one table.",
     bullets: ["Prices auto-refresh every 15 minutes", "Color-coded profit/loss vs your purchase price", "\"Best to Sell\" badge highlights highest price", "Price history charts per item"],
     reverse: true,
   },

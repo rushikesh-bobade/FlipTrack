@@ -14,17 +14,27 @@ export function CreateAlertForm({ className, onClose }: Props) {
           <button type="button" className={styles.closeBtn} onClick={onClose}><IconX size={18} /></button>
         </div>
         <div className={styles.body}>
-          <div className={styles.field}><label className={styles.label}>Product / SKU *</label><input name="sku" required className={styles.input} placeholder="e.g. DD1391-100" /></div>
-          <div className={styles.field}><label className={styles.label}>Product Name *</label><input name="productName" required className={styles.input} placeholder="e.g. Nike Dunk Low Retro" /></div>
+          <div className={styles.field}><label className={styles.label}>Product / SKU *</label><input name="sku" required className={styles.input} placeholder="e.g. model number or UPC" /></div>
+          <div className={styles.field}><label className={styles.label}>Product Name *</label><input name="productName" required className={styles.input} placeholder="e.g. Sony PlayStation 5" /></div>
           <div className={styles.row}>
-            <div className={styles.field}><label className={styles.label}>Size *</label><input name="size" required className={styles.input} placeholder="e.g. 10" /></div>
+            <div className={styles.field}><label className={styles.label}>Size / Variant</label><input name="size" className={styles.input} placeholder="e.g. 10, 256GB, or N/A" /></div>
             <div className={styles.field}><label className={styles.label}>Marketplace</label>
               <select name="marketplace" required className={styles.input}>
+                <option value="EBAY">eBay</option>
+                <option value="AMAZON">Amazon</option>
+                <option value="MERCARI">Mercari</option>
+                <option value="POSHMARK">Poshmark</option>
+                <option value="FACEBOOK">Facebook Marketplace</option>
+                <option value="DEPOP">Depop</option>
+                <option value="GRAILED">Grailed</option>
+                <option value="OFFERUP">OfferUp</option>
+                <option value="SHOPIFY">Shopify</option>
                 <option value="STOCKX">StockX</option>
                 <option value="GOAT">GOAT</option>
-                <option value="EBAY">eBay</option>
                 <option value="FLIGHTCLUB">Flight Club</option>
                 <option value="STADIUMGOODS">Stadium Goods</option>
+                <option value="IN_PERSON">In Person</option>
+                <option value="OTHER">Other</option>
               </select>
             </div>
           </div>
