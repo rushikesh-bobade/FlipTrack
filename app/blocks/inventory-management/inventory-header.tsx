@@ -48,22 +48,9 @@ export function InventoryHeader({
   </button>
 
   {showFilters && (
-    <div
-      style={{
-        position: "absolute",
-        top: "45px",
-        right: 0,
-        background: "#1e1e1e",
-        border: "1px solid #444",
-        borderRadius: "8px",
-        padding: "12px",
-        display: "flex",
-        flexDirection: "column",
-        gap: "10px",
-        minWidth: "200px",
-        zIndex: 100,
-      }}
-    >
+   <div className={styles.filterDropdown}>
+      
+    
       <label>
         Status
         <select
