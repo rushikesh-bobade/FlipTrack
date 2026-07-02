@@ -100,6 +100,16 @@ export async function action({ request }: Route.ActionArgs) {
     const marketplace = formData.get("marketplace") as any;
     const trackingNumber = formData.get("trackingNumber") as string;
 
+    // Verify the item belongs to the current user before logging a sale against it,
+    // otherwise a tampered request could mark another user's inventory as sold.
+    const ownedItem = await prisma.inventoryItem.findFirst({
+      where: { id: inventoryItemId, userId: user.id },
+      select: { id: true },
+    });
+    if (!ownedItem) {
+      return new Response("Not Found", { status: 404 });
+    }
+
     await prisma.$transaction([
       prisma.sale.create({
         data: {
@@ -112,7 +122,7 @@ export async function action({ request }: Route.ActionArgs) {
         },
       }),
       prisma.inventoryItem.update({
-        where: { id: inventoryItemId },
+        where: { id: inventoryItemId, userId: user.id },
         data: { status: "SOLD" },
       }),
     ]);
