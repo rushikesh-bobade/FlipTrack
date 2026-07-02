@@ -117,6 +117,8 @@ export async function action({ request }: Route.ActionArgs) {
       where: { id, userId: user.id },
       data: { type, amount, description, date },
     });
+
+    return { ok: true, intent: "update" };
   }
 
   if (intent === "delete") {
@@ -124,9 +126,9 @@ export async function action({ request }: Route.ActionArgs) {
     await prisma.expense.delete({
       where: { id, userId: user.id },
     });
+    
+    return { ok: true, intent: "delete" };
   }
-
-  return { ok: true, intent };
 }
 
 export default function ExpensesTrackerPage() {
