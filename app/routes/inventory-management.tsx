@@ -24,19 +24,34 @@ export async function loader({ request }: Route.LoaderArgs) {
   const page = Math.max(1, Number(url.searchParams.get("page")) || 1);
   const pageSize = Number(url.searchParams.get("pageSize")) || 10;
   const q = url.searchParams.get("q") || "";
+const status = url.searchParams.get("status") || "ALL";
+const condition = url.searchParams.get("condition") || "ALL";
 
   const whereClause = {
-    userId: user.id,
-    ...(q
-      ? {
-          OR: [
-            { name: { contains: q, mode: "insensitive" as const } },
-            { sku: { contains: q, mode: "insensitive" as const } },
-            { brand: { contains: q, mode: "insensitive" as const } },
-          ],
-        }
-      : {}),
-  };
+  userId: user.id,
+
+  ...(q
+    ? {
+        OR: [
+          { name: { contains: q, mode: "insensitive" as const } },
+          { sku: { contains: q, mode: "insensitive" as const } },
+          { brand: { contains: q, mode: "insensitive" as const } },
+        ],
+      }
+    : {}),
+
+  ...(status !== "ALL"
+    ? {
+        status,
+      }
+    : {}),
+
+  ...(condition !== "ALL"
+    ? {
+        condition,
+      }
+    : {}),
+};
 
   const [totalItems, items] = await Promise.all([
     prisma.inventoryItem.count({ where: whereClause }),
@@ -137,20 +152,51 @@ export default function InventoryManagementPage() {
   const [showImport, setShowImport] = useState(false);
   const [selected, setSelected] = useState<string[]>([]);
   const [editingItem, setEditingItem] = useState<any>(null);
+  
 
-  const [searchParams, setSearchParams] = useSearchParams();
-  const searchQuery = searchParams.get("q") || "";
+const [searchParams, setSearchParams] = useSearchParams();
 
-  const setSearchQuery = (query: string) => {
-    const nextParams = new URLSearchParams(searchParams);
-    if (query) {
-      nextParams.set("q", query);
-    } else {
-      nextParams.delete("q");
-    }
-    nextParams.set("page", "1"); // Reset to page 1
-    setSearchParams(nextParams, { replace: true });
-  };
+const searchQuery = searchParams.get("q") || "";
+const statusFilter = searchParams.get("status") || "ALL";
+const conditionFilter = searchParams.get("condition") || "ALL";
+const setStatusFilter = (status: string) => {
+  const nextParams = new URLSearchParams(searchParams);
+
+  if (status === "ALL") {
+    nextParams.delete("status");
+  } else {
+    nextParams.set("status", status);
+  }
+
+  nextParams.set("page", "1");
+  setSearchParams(nextParams, { replace: true });
+};
+
+const setConditionFilter = (condition: string) => {
+  const nextParams = new URLSearchParams(searchParams);
+
+  if (condition === "ALL") {
+    nextParams.delete("condition");
+  } else {
+    nextParams.set("condition", condition);
+  }
+
+  nextParams.set("page", "1");
+  setSearchParams(nextParams, { replace: true });
+};
+
+const setSearchQuery = (query: string) => {
+  const nextParams = new URLSearchParams(searchParams);
+
+  if (query) {
+    nextParams.set("q", query);
+  } else {
+    nextParams.delete("q");
+  }
+
+  nextParams.set("page", "1");
+  setSearchParams(nextParams, { replace: true });
+};
 
   useEffect(() => {
     if (actionData?.ok) {
@@ -172,18 +218,37 @@ export default function InventoryManagementPage() {
     }
   }, [actionData]);
 
+const filteredItems = items.filter((item) => {
+  const matchesStatus =
+    statusFilter === "ALL" || item.status === statusFilter;
+
+  const matchesCondition =
+    conditionFilter === "ALL" || item.condition === conditionFilter;
+
+  return matchesStatus && matchesCondition;
+});
   return (
     <div className={styles.page}>
+      
       <InventoryHeader
-        onAddItem={() => setShowAddItem(true)}
-        onImport={() => setShowImport(true)}
-        searchQuery={searchQuery}
-        onSearch={setSearchQuery}
-      />
+  onAddItem={() => setShowAddItem(true)}
+  onImport={() => setShowImport(true)}
+  searchQuery={searchQuery}
+  onSearch={setSearchQuery}
+  statusFilter={statusFilter}
+  conditionFilter={conditionFilter}
+  onStatusChange={setStatusFilter}
+  onConditionChange={setConditionFilter}
+/>
       {selected.length > 0 && (
         <BulkActionsBar count={selected.length} onClear={() => setSelected([])} selectedIds={selected} items={items} />
       )}
-      <InventoryTable selected={selected} onSelectChange={setSelected} items={items} onEdit={setEditingItem} />
+      <InventoryTable
+  selected={selected}
+  onSelectChange={setSelected}
+  items={filteredItems}
+  onEdit={setEditingItem}
+/>
       <Pagination totalPages={totalPages} />
       {showAddItem && <AddItemModal onClose={() => setShowAddItem(false)} />}
       {editingItem && <AddItemModal item={editingItem} onClose={() => setEditingItem(null)} />}
