@@ -195,7 +195,7 @@ export default function InventoryManagementPage() {
       {selected.length > 0 && (
         <BulkActionsBar count={selected.length} onClear={() => setSelected([])} selectedIds={selected} items={items} />
       )}
-      <InventoryTable selected={selected} onSelectChange={setSelected} items={items} onEdit={setEditingItem}  onDuplicate={(item) => { setEditingItem({...item, sku: "", }); }}/>
+      <InventoryTable selected={selected} onSelectChange={setSelected} items={items} onEdit={setEditingItem}  onDuplicate={(item) => { setEditingItem({...item, id: undefined, sku: "", }); }}/>
       <Pagination totalPages={totalPages} />
       {showAddItem && <AddItemModal onClose={() => setShowAddItem(false)} />}
       {editingItem && <AddItemModal item={editingItem} onClose={() => setEditingItem(null)} />}
