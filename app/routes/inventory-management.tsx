@@ -218,15 +218,7 @@ const setSearchQuery = (query: string) => {
     }
   }, [actionData]);
 
-const filteredItems = items.filter((item) => {
-  const matchesStatus =
-    statusFilter === "ALL" || item.status === statusFilter;
 
-  const matchesCondition =
-    conditionFilter === "ALL" || item.condition === conditionFilter;
-
-  return matchesStatus && matchesCondition;
-});
   return (
     <div className={styles.page}>
       
@@ -246,7 +238,7 @@ const filteredItems = items.filter((item) => {
       <InventoryTable
   selected={selected}
   onSelectChange={setSelected}
-  items={filteredItems}
+  items={items}
   onEdit={setEditingItem}
 />
       <Pagination totalPages={totalPages} />
