@@ -1,6 +1,6 @@
 import styles from "./alert-history.module.css";
 
-interface Props { className?: string; }
+interface Props { className?: string; alerts?: any[]; }
 
 const history = [
   { desc: "Yeezy 350 Zebra (GOAT) dropped below $200 — alert triggered at $195", time: "May 10, 2024 2:14 PM" },

@@ -48,7 +48,17 @@ export async function action({ request }: Route.ActionArgs) {
     const theme = formData.get("theme") as string;
     await prisma.user.update({
       where: { id: authUser.id },
-      data: { currency, theme }
+      data: { currency: currency as any, theme: theme as any }
+    });
+  } else if (intent === "update-notifications") {
+    const emailNotifications = formData.get("emailNotifications") === "on";
+    const smsNotifications = formData.get("smsNotifications") === "on";
+    const pushNotifications = formData.get("pushNotifications") === "on";
+    const weeklySummary = formData.get("weeklySummary") === "on";
+    const priceAlertTriggered = formData.get("priceAlertTriggered") === "on";
+    await prisma.user.update({
+      where: { id: authUser.id },
+      data: { emailNotifications, smsNotifications, pushNotifications, weeklySummary, priceAlertTriggered }
     });
   } else if (intent === "create-team") {
     const teamName = formData.get("teamName") as string;

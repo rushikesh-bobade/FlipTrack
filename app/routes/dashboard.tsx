@@ -1,7 +1,7 @@
 import { useLoaderData } from "react-router";
 import type { Route } from "./+types/dashboard";
 import { getSupabaseServerClient } from "~/utils/supabase.server";
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, Prisma } from "@prisma/client";
 import styles from "./dashboard.module.css";
 import { DashboardHeader } from "~/blocks/dashboard/dashboard-header";
 import { StatsCardsRow } from "~/blocks/dashboard/stats-cards-row";
@@ -24,6 +24,63 @@ export async function loader({ request }: Route.LoaderArgs) {
     return { inventoryStats: null, salesData: [], expensesData: [] };
   }
 
+  const url = new URL(request.url);
+  const range = url.searchParams.get("range") || "month";
+  const from = url.searchParams.get("from");
+  const to = url.searchParams.get("to");
+
+  let startDate: Date | undefined;
+  let endDate: Date | undefined;
+  const now = new Date();
+
+  if (range === "month") {
+    startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+  } else if (range === "3months") {
+    startDate = new Date();
+    startDate.setDate(now.getDate() - 90);
+  } else if (range === "year") {
+    startDate = new Date();
+    startDate.setDate(now.getDate() - 365);
+  } else if (range === "custom") {
+    if (from) {
+      const parsedFrom = new Date(from);
+      if (!isNaN(parsedFrom.getTime())) {
+        startDate = parsedFrom;
+      }
+    }
+    if (to) {
+      const parsedTo = new Date(to);
+      if (!isNaN(parsedTo.getTime())) {
+        endDate = parsedTo;
+        endDate.setHours(23, 59, 59, 999);
+      }
+    }
+  }
+
+  const saleWhereClause: Prisma.SaleWhereInput = {
+    userId: user.id,
+    ...(startDate || endDate
+      ? {
+          saleDate: {
+            ...(startDate ? { gte: startDate } : {}),
+            ...(endDate ? { lte: endDate } : {}),
+          },
+        }
+      : {}),
+  };
+
+  const expenseWhereClause: Prisma.ExpenseWhereInput = {
+    userId: user.id,
+    ...(startDate || endDate
+      ? {
+          date: {
+            ...(startDate ? { gte: startDate } : {}),
+            ...(endDate ? { lte: endDate } : {}),
+          },
+        }
+      : {}),
+  };
+
   const [inventoryStats, salesData, expensesData] = await Promise.all([
     prisma.inventoryItem.aggregate({
       where: { userId: user.id, status: 'IN_STOCK' },
@@ -31,12 +88,12 @@ export async function loader({ request }: Route.LoaderArgs) {
       _count: true,
     }),
     prisma.sale.findMany({
-      where: { userId: user.id },
+      where: saleWhereClause,
       include: { expenses: true, inventoryItem: true },
       orderBy: { saleDate: 'desc' },
     }),
     prisma.expense.findMany({
-      where: { userId: user.id },
+      where: expenseWhereClause,
     }),
   ]);
 

@@ -102,15 +102,34 @@
   color: var(--color-primary);
   font-size: 14px;
   font-weight: 600;
-  text-decoration: none;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  text-decoration-thickness: 1.5px;
   display: inline-flex;
   align-items: center;
   gap: var(--space-1);
-  transition: gap var(--transition-fast);
+  background: transparent;
+  border: none;
+  padding: 0;
+  width: fit-content;
+  cursor: pointer;
+  transition:
+    color var(--transition-fast),
+    text-decoration-color var(--transition-fast),
+    gap var(--transition-fast);
 }
 
-.learnMore:hover { gap: var(--space-2); }
+.learnMore:hover {
+  color: var(--color-primary-dark, var(--color-primary));
+  gap: var(--space-2);
+  text-decoration-color: currentColor;
+}
 
+.learnMore:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 4px;
+  border-radius: var(--radius-sm);
+}
 .featureMockup {
   background: var(--color-bg-card);
   border: 1px solid var(--color-border);

@@ -1,12 +1,20 @@
-import { mockAiInsights } from "~/data/mock-data";
 import styles from "./item-analysis-cards.module.css";
+import type { AiInsightItem } from "~/routes/ai-insights";
 
-interface Props { className?: string; onSelectItem?: (id: string) => void; }
+interface Props { 
+  className?: string; 
+  onSelectItem?: (id: string) => void; 
+  data: AiInsightItem[]; 
+}
 
-export function ItemAnalysisCards({ className, onSelectItem }: Props) {
+export function ItemAnalysisCards({ className, onSelectItem, data }: Props) {
+  if (!data || data.length === 0) {
+    return <div className={styles.emptyState}>No AI market insights available right now.</div>;
+  }
+
   return (
     <div className={[styles.grid, className].filter(Boolean).join(" ")}>
-      {mockAiInsights.map(item => (
+      {data.map(item => (
         <div key={item.id} className={styles.card} onClick={() => onSelectItem?.(item.id)}>
           <div className={styles.cardHeader}>
             <div>
