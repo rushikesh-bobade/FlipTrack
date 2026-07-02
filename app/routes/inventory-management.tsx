@@ -7,6 +7,7 @@ import { PrismaClient } from "@prisma/client";
 import styles from "./inventory-management.module.css";
 import { InventoryHeader } from "~/blocks/inventory-management/inventory-header";
 import { InventoryTable } from "~/blocks/inventory-management/inventory-table";
+import { InventoryTableSkeleton } from "~/blocks/inventory-management/inventory-table-skeleton";
 import { BulkActionsBar } from "~/blocks/inventory-management/bulk-actions-bar";
 import { AddItemModal } from "~/blocks/inventory-management/add-item-modal";
 import { ImportExcelModal } from "~/blocks/inventory-management/import-excel-modal";
@@ -87,15 +88,10 @@ export async function action({ request }: Route.ActionArgs) {
     const brand = formData.get("brand") as string;
     const size = formData.get("size") as string;
     const purchasePrice = Number(formData.get("purchasePrice"));
-
     await prisma.inventoryItem.create({
       data: {
         userId: user.id,
-        sku,
-        name,
-        brand,
-        size,
-        purchasePrice,
+        sku, name, brand, size, purchasePrice,
         purchaseDate: new Date(),
         condition: "DEADSTOCK",
         status: "IN_STOCK",

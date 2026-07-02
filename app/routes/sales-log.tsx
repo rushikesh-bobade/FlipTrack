@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { useLoaderData, useActionData } from "react-router";
+import { Suspense, useState, useEffect } from "react";
+import { useLoaderData, useActionData, Await } from "react-router";
 import type { Route } from "./+types/sales-log";
 import { toast } from "sonner";
 import { getSupabaseServerClient } from "~/utils/supabase.server";
@@ -8,6 +8,7 @@ import styles from "./sales-log.module.css";
 import { SalesHeader } from "~/blocks/sales-log/sales-header";
 import { SalesSummaryCards } from "~/blocks/sales-log/sales-summary-cards";
 import { SalesTable } from "~/blocks/sales-log/sales-table";
+import { SalesTableSkeleton } from "~/blocks/sales-log/sales-log-skeleton";
 import { LogSaleModal } from "~/blocks/sales-log/log-sale-modal";
 import { Pagination } from "~/blocks/__global/pagination";
 import { CACHE_PRIVATE_NO_STORE } from "~/utils/cache-headers";

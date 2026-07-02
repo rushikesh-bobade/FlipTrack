@@ -1,4 +1,5 @@
-import { useLoaderData } from "react-router";
+import { Suspense } from "react";
+import { useLoaderData, Await } from "react-router";
 import type { Route } from "./+types/dashboard";
 import { getSupabaseServerClient } from "~/utils/supabase.server";
 import { PrismaClient, Prisma } from "@prisma/client";
@@ -11,7 +12,6 @@ import { SalesByMarketplacePie } from "~/blocks/dashboard/sales-by-marketplace-p
 import { TopSellingItemsTable } from "~/blocks/dashboard/top-selling-items-table";
 import { RecentSales } from "~/blocks/dashboard/recent-sales";
 import { ExpenseCategoriesChart } from "~/blocks/dashboard/expense-categories-chart";
-
 import { AIInsightsPanel } from "~/blocks/dashboard/ai-insights-panel";
 import { CACHE_PRIVATE_NO_STORE } from "~/utils/cache-headers";
 
@@ -30,7 +30,7 @@ export async function loader({ request }: Route.LoaderArgs) {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return { inventoryStats: null, salesData: [], expensesData: [] };
+    return { dashboardData: Promise.resolve({ inventoryStats: null, salesData: [], expensesData: [] }) };
   }
 
   const url = new URL(request.url);
@@ -129,7 +129,8 @@ export async function loader({ request }: Route.LoaderArgs) {
 }
 
 export default function DashboardPage() {
-  const { inventoryStats, salesData, expensesData } = useLoaderData<typeof loader>();
+  const { dashboardData } = useLoaderData<typeof loader>();
+
   return (
     <div className={styles.page}>
       <DashboardHeader />
