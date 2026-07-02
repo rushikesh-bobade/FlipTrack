@@ -156,27 +156,30 @@
 
 .hamburger {
   display: none;
-  flex-direction: column;
-  gap: 5px;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
   padding: var(--space-2);
   background: none;
   border: none;
+  color: var(--color-text);
 }
 
-.hamburger span {
-  display: block;
-  width: 22px;
-  height: 2px;
-  background: var(--color-text);
-  border-radius: 2px;
-  transition: transform var(--transition-base);
+.mobileControls {
+  display: none;
+}
+
+.mobileThemeToggle {
+  display: none;
 }
 
 .mobileMenu {
   display: none;
-  position: fixed;
-  inset: var(--nav-height) 0 0 0;
+  position: absolute;
+  top: var(--nav-height);
+  left: 0;
+  right: 0;
+  height: calc(100vh - var(--nav-height));
   background: var(--color-bg);
   z-index: 99;
   flex-direction: column;
@@ -228,7 +231,12 @@
   .actions {
     display: none;
   }
-  .hamburger {
+  .mobileControls {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+  }
+  .hamburger, .mobileThemeToggle {
     display: flex;
   }
   .appNavLinks {
