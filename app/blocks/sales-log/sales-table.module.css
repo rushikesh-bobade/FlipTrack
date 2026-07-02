@@ -8,3 +8,22 @@
 .profitBadge { display: inline-flex; padding: 3px 8px; border-radius: var(--radius-full); font-size: 12px; font-weight: 700; font-family: var(--family-mono); }
 .positive { background: var(--color-success-bg); color: var(--color-success); }
 .negative { background: var(--color-danger-bg); color: var(--color-danger); }
+.editBtn,
+.deleteBtn {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.editBtn {
+  color: #16a34a;
+  margin-right: 10px;
+}
+
+.deleteBtn {
+  color: #2563eb;
+}

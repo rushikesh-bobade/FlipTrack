@@ -1,4 +1,5 @@
 import styles from "./sales-table.module.css";
+import { IconEdit, IconTrash } from "@tabler/icons-react";
 
 interface Props {
   className?: string;
@@ -49,22 +50,22 @@ export function SalesTable({
                       {profit >= 0 ? "+" : ""}${profit.toFixed(2)}
                     </span>
                   </td>
-                <td className={styles.td}>
-             <button
-          type="button"
-            onClick={() => onEdit?.(s)}
-             style={{ marginRight: "8px" }}
-         >
-            Edit
-             </button>
 
-               <button
-              type="button"
-               onClick={() => onDelete?.(s)}
-                >
-               Delete
-              </button>
-                 </td>
+            <button
+        className={styles.editBtn}
+       onClick={() => onEdit?.(s)}
+>
+  <IconEdit size={16} />
+  Edit
+</button>
+
+<button
+  className={styles.deleteBtn}
+  onClick={() => onDelete?.(s)}
+>
+  <IconTrash size={16} />
+  Delete
+</button>
                 </tr>
               );
             })}
