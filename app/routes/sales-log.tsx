@@ -30,19 +30,7 @@ export async function loader({ request }: Route.LoaderArgs) {
       orderBy: { createdAt: "desc" },
     }),
   ]);
-  console.log("Logged in user:");
-console.log(user.id, user.email);
 
-const allSales = await prisma.sale.findMany({
-  select: {
-    id: true,
-    userId: true,
-  },
-});
-
-console.log("All sales:", allSales);
-
-console.log("Filtered sales:", sales);
   const serializedSales = sales.map((sale) => ({
   ...sale,
   salePrice: Number(sale.salePrice.toString()),
@@ -90,6 +78,28 @@ export async function action({ request }: Route.ActionArgs) {
       })
     ]);
   }
+    if (intent === "edit") {
+  const saleId = formData.get("saleId") as string;
+  const salePrice = Number(formData.get("salePrice"));
+  const saleDate = new Date(formData.get("saleDate") as string);
+  const marketplace = formData.get("marketplace") as any;
+  const trackingNumber = formData.get("trackingNumber") as string;
+
+  await prisma.sale.update({
+    where: {
+      id: saleId,
+    },
+    data: {
+      salePrice,
+      saleDate,
+      marketplace,
+      trackingNumber,
+    },
+  });
+
+  return { ok: true, intent: "edit" };
+}
+
     if (intent === "delete") {
     const saleId = formData.get("saleId") as string;
 
@@ -126,14 +136,24 @@ export default function SalesLogPage() {
   const [showDelete, setShowDelete] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
 
-  useEffect(() => {
-    if (actionData?.ok) {
-      if (actionData.intent === "create") {
-        toast.success("Sale logged successfully");
-        setShowLogSale(false);
-      }
-    }
-  }, [actionData]);
+    useEffect(() => {
+  if (!actionData?.ok) return;
+
+  if (actionData.intent === "create") {
+    toast.success("Sale logged successfully");
+    setShowLogSale(false);
+  }
+
+  if (actionData.intent === "edit") {
+    toast.success("Sale updated successfully");
+    setShowEdit(false);
+  }
+
+  if (actionData.intent === "delete") {
+    toast.success("Sale deleted successfully");
+    setShowDelete(false);
+  }
+}, [actionData]);
   
   return (
     <div className={styles.page}>
@@ -145,12 +165,10 @@ export default function SalesLogPage() {
   onEdit={(sale) => {
     setSelectedSale(sale);
     setShowEdit(true);
-    console.log("EDIT CLICKED:", sale);
   }}
   onDelete={(sale) => {
     setSelectedSale(sale);
     setShowDelete(true);
-    console.log("DELETE CLICKED:", sale);
   }}
 />
 {showLogSale && (
@@ -159,14 +177,19 @@ export default function SalesLogPage() {
     onClose={() => setShowLogSale(false)}
   />
 )}
-
+{showEdit && (
+  <LogSaleModal
+    sale={selectedSale}
+    inventory={inventory}
+    onClose={() => setShowEdit(false)}
+  />
+)}
 {showDelete && selectedSale && (
   <DeleteSaleModal
     saleId={selectedSale.id}
     onClose={() => setShowDelete(false)}
   />
 )}
-      {showLogSale && <LogSaleModal inventory={inventory} onClose={() => setShowLogSale(false)} />}
     </div>
   );
 }
