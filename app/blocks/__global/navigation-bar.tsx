@@ -68,7 +68,7 @@ export function NavigationBar({ className, appMode }: Props) {
             </div>
             <div className={styles.spacer} />
             <div className={styles.actions}>
-              <Link to="/app/settings" className={styles.btnGhost}>
+              <Link to="/settings" className={styles.btnGhost}>
                 <IconSettings size={18} />
               </Link>
             </div>

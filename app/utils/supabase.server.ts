@@ -9,11 +9,14 @@ export function getSupabaseServerClient(request: Request) {
   const supabase = createServerClient(supabaseUrl, supabaseKey, {
     cookies: {
       getAll() {
-        return parseCookieHeader(request.headers.get("Cookie") ?? "");
+        return parseCookieHeader(request.headers.get("Cookie") ?? "").map((cookie) => ({
+          name: cookie.name,
+          value: cookie.value ?? ""
+        }));
       },
-      setAll(cookiesToSet) {
+      setAll(cookiesToSet: Array<{ name: string; value: string; options?: Record<string, unknown> }>) {
         cookiesToSet.forEach(({ name, value, options }) =>
-          headers.append("Set-Cookie", serializeCookieHeader(name, value, options))
+          headers.append("Set-Cookie", serializeCookieHeader(name, value, options ?? {}))
         );
       },
     },
