@@ -110,7 +110,7 @@ export function NavigationBar({ className, appMode }: Props) {
         )}
 
         <div className={styles.mobileControls}>
-          <button 
+          <button type="button" aria-label="Toggle theme"
             onClick={() => {
               const current = document.documentElement.getAttribute('data-theme') || 'dark';
               const next = current === 'dark' ? 'light' : 'dark';
