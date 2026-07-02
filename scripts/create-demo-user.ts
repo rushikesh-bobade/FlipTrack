@@ -9,10 +9,10 @@ const prisma = new PrismaClient();
 
 async function main() {
   console.log("Creating demo user...");
-  
+
   // Try to sign up the demo user
-  const email = "demo@fliptrack.app";
-  const password = "password123";
+  const email = process.env.DEMO_USER_EMAIL ?? "demo@fliptrack.app";
+  const password = process.env.DEMO_USER_PASSWORD ?? "password123";
   const name = "Demo User";
 
   const { data, error } = await supabase.auth.signUp({
@@ -20,7 +20,7 @@ async function main() {
     password,
     options: {
       data: { name },
-    }
+    },
   });
 
   if (error) {
@@ -52,24 +52,16 @@ async function main() {
         id: user.id,
         email: user.email!,
         name,
-        plan: "PRO"
-      }
+        plan: "PRO",
+      },
     });
     console.log("Demo user synced to public.User table.");
-    
+
     // Create some fake inventory
-    const count = await prisma.inventoryItem.count({ where: { userId: user.id } });
-    if (count === 0) {
-      await prisma.inventoryItem.createMany({
-        data: [
-          { userId: user.id, sku: "DD1391-100", name: "Nike Dunk Low Retro White Black Panda", brand: "Nike", size: "10", purchasePrice: 110, purchaseDate: new Date(), condition: "DEADSTOCK", status: "IN_STOCK" },
-          { userId: user.id, sku: "DZ5485-612", name: "Air Jordan 1 Retro High OG Chicago Lost and Found", brand: "Jordan", size: "9.5", purchasePrice: 180, purchaseDate: new Date(), condition: "DEADSTOCK", status: "LISTED" },
-          { userId: user.id, sku: "GW1229", name: "Yeezy Boost 350 V2 Beluga Reflective", brand: "Yeezy", size: "11", purchasePrice: 220, purchaseDate: new Date(), condition: "DEADSTOCK", status: "SOLD" },
-        ]
-      });
-      console.log("Created demo inventory.");
-    }
+    console.log("Skipping inventory creation — handled by seed script.");
   }
 }
 
-main().catch(console.error).finally(() => process.exit(0));
+main()
+  .catch(console.error)
+  .finally(() => process.exit(0));

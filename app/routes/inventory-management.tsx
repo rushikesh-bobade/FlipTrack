@@ -56,6 +56,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 
   const formattedItems = items.map((item) => ({
     ...item,
+    purchasePrice: Number(item.purchasePrice),
     marketValue: item.priceHistory[0]?.askPrice ? Number(item.priceHistory[0].askPrice) : null,
   }));
 
@@ -97,7 +98,7 @@ export async function action({ request }: Route.ActionArgs) {
     const brand = formData.get("brand") as string;
     const size = formData.get("size") as string;
     const purchasePrice = Number(formData.get("purchasePrice"));
-    
+
     await prisma.inventoryItem.update({
       where: { id: itemId, userId: user.id },
       data: {
@@ -106,13 +107,12 @@ export async function action({ request }: Route.ActionArgs) {
         brand,
         size,
         purchasePrice,
-        // other fields could be updated here
       }
     });
   } else if (intent === "delete") {
     const itemId = formData.get("itemId") as string;
     await prisma.inventoryItem.delete({
-      where: { id: itemId, userId: user.id } // Ensures the user owns the item
+      where: { id: itemId, userId: user.id }
     });
   } else if (intent === "bulk-delete") {
     const ids = formData.getAll("ids") as string[];
@@ -148,7 +148,7 @@ export default function InventoryManagementPage() {
     } else {
       nextParams.delete("q");
     }
-    nextParams.set("page", "1"); // Reset to page 1
+    nextParams.set("page", "1");
     setSearchParams(nextParams, { replace: true });
   };
 
