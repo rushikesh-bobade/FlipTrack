@@ -1,20 +1,38 @@
+import type { InventoryItem } from "@prisma/client";
 import styles from "./item-header.module.css";
 
-interface Props { className?: string; }
+interface Props {
+  className?: string;
+  item: Pick<InventoryItem, "sku" | "name" | "brand" | "size" | "condition" | "imageUrl">;
+}
 
-export function ItemHeader({ className }: Props) {
+export function ItemHeader({ className, item }: Props) {
+  const displayCondition = item.condition
+    .replace(/_/g, " ")
+    .toLowerCase()
+    .replace(/\b\w/g, (l) => l.toUpperCase());
   return (
     <div className={[styles.header, className].filter(Boolean).join(" ")}>
-      <div className={styles.image}>Product Image</div>
+      <div className={styles.image}>
+        {item.imageUrl ? (
+          <img
+            src={item.imageUrl}
+            alt={item.name}
+            style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "inherit" }}
+          />
+        ) : (
+          "Product Image"
+        )}
+      </div>
       <div className={styles.info}>
-        <div className={styles.sku}>DD1391-100</div>
-        <h1 className={styles.name}>Air Jordan 1 Retro High OG Chicago</h1>
+        <div className={styles.sku}>{item.sku}</div>
+        <h1 className={styles.name}>{item.name}</h1>
         <div className={styles.meta}>
-          <span>Nike</span>
+          <span>{item.brand}</span>
           <span>·</span>
-          <span>Size 10</span>
+          <span>Size {item.size}</span>
           <span>·</span>
-          <span>Deadstock</span>
+          <span>{displayCondition}</span>
         </div>
       </div>
       <div className={styles.actions}>
