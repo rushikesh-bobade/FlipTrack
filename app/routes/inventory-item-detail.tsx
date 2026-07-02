@@ -3,6 +3,12 @@ import type { Route } from "./+types/inventory-item-detail";
 import { getSupabaseServerClient } from "~/utils/supabase.server";
 import { PrismaClient } from "@prisma/client";
 import styles from "./inventory-item-detail.module.css";
+import { ItemHeader } from "~/blocks/inventory-item-detail/item-header";
+import { ItemInfoCard } from "~/blocks/inventory-item-detail/item-info-card";
+import { PriceHistoryChart } from "~/blocks/inventory-item-detail/price-history-chart";
+import { MarketplaceComparison } from "~/blocks/inventory-item-detail/marketplace-comparison";
+import { SalesHistory } from "~/blocks/inventory-item-detail/sales-history";
+import { RelatedItems } from "~/blocks/inventory-item-detail/related-items";
 
 const prisma = new PrismaClient();
 
@@ -21,7 +27,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
     throw new Response("Not Found", { status: 404 });
   }
 
-  const item = await prisma.inventoryItem.findUnique({
+  const item = await prisma.inventoryItem.findFirst({
     where: {
       id,
       userId: user.id,
@@ -58,12 +64,6 @@ export async function loader({ request, params }: Route.LoaderArgs) {
     },
   };
 }
-import { ItemHeader } from "~/blocks/inventory-item-detail/item-header";
-import { ItemInfoCard } from "~/blocks/inventory-item-detail/item-info-card";
-import { PriceHistoryChart } from "~/blocks/inventory-item-detail/price-history-chart";
-import { MarketplaceComparison } from "~/blocks/inventory-item-detail/marketplace-comparison";
-import { SalesHistory } from "~/blocks/inventory-item-detail/sales-history";
-import { RelatedItems } from "~/blocks/inventory-item-detail/related-items";
 
 export default function InventoryItemDetailPage() {
   const { item } = useLoaderData<typeof loader>();
