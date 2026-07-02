@@ -24,19 +24,34 @@ export async function loader({ request }: Route.LoaderArgs) {
   const page = Math.max(1, Number(url.searchParams.get("page")) || 1);
   const pageSize = Number(url.searchParams.get("pageSize")) || 10;
   const q = url.searchParams.get("q") || "";
+const status = url.searchParams.get("status") || "ALL";
+const condition = url.searchParams.get("condition") || "ALL";
 
   const whereClause = {
-    userId: user.id,
-    ...(q
-      ? {
-          OR: [
-            { name: { contains: q, mode: "insensitive" as const } },
-            { sku: { contains: q, mode: "insensitive" as const } },
-            { brand: { contains: q, mode: "insensitive" as const } },
-          ],
-        }
-      : {}),
-  };
+  userId: user.id,
+
+  ...(q
+    ? {
+        OR: [
+          { name: { contains: q, mode: "insensitive" as const } },
+          { sku: { contains: q, mode: "insensitive" as const } },
+          { brand: { contains: q, mode: "insensitive" as const } },
+        ],
+      }
+    : {}),
+
+  ...(status !== "ALL"
+    ? {
+        status,
+      }
+    : {}),
+
+  ...(condition !== "ALL"
+    ? {
+        condition,
+      }
+    : {}),
+};
 
   const [totalItems, items] = await Promise.all([
     prisma.inventoryItem.count({ where: whereClause }),
@@ -137,11 +152,38 @@ export default function InventoryManagementPage() {
   const [showImport, setShowImport] = useState(false);
   const [selected, setSelected] = useState<string[]>([]);
   const [editingItem, setEditingItem] = useState<any>(null);
-  const [statusFilter, setStatusFilter] = useState("ALL");
-const [conditionFilter, setConditionFilter] = useState("ALL");
+  
 
 const [searchParams, setSearchParams] = useSearchParams();
+
 const searchQuery = searchParams.get("q") || "";
+const statusFilter = searchParams.get("status") || "ALL";
+const conditionFilter = searchParams.get("condition") || "ALL";
+const setStatusFilter = (status: string) => {
+  const nextParams = new URLSearchParams(searchParams);
+
+  if (status === "ALL") {
+    nextParams.delete("status");
+  } else {
+    nextParams.set("status", status);
+  }
+
+  nextParams.set("page", "1");
+  setSearchParams(nextParams, { replace: true });
+};
+
+const setConditionFilter = (condition: string) => {
+  const nextParams = new URLSearchParams(searchParams);
+
+  if (condition === "ALL") {
+    nextParams.delete("condition");
+  } else {
+    nextParams.set("condition", condition);
+  }
+
+  nextParams.set("page", "1");
+  setSearchParams(nextParams, { replace: true });
+};
 
 const setSearchQuery = (query: string) => {
   const nextParams = new URLSearchParams(searchParams);
