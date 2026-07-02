@@ -5,3 +5,34 @@
 .tr:last-child .td { border-bottom: none; }
 .catBadge { display: inline-flex; padding: 2px 8px; border-radius: var(--radius-full); font-size: 11px; font-weight: 600; background: var(--color-bg-elevated); color: var(--color-text-muted); }
 .amount { font-family: var(--family-mono); font-weight: 700; color: var(--color-text); }
+.actions {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+.iconBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.iconBtn:hover {
+  background: var(--color-bg-hover);
+  color: var(--color-text);
+  border-color: var(--color-border-strong);
+}
+
+.iconBtnDanger:hover {
+  background: var(--color-danger-bg);
+  color: var(--color-danger);
+  border-color: var(--color-danger);
+}

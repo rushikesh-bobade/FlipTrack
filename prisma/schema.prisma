@@ -24,9 +24,16 @@ enum ItemStatus {
 }
 
 enum ItemCondition {
-  DEADSTOCK
-  NEW_WITH_BOX
-  USED
+  NEW
+  LIKE_NEW
+  USED_EXCELLENT
+  USED_GOOD
+  USED_FAIR
+  REFURBISHED
+  DAMAGED
+  DEADSTOCK       // legacy alias for NEW
+  NEW_WITH_BOX    // legacy alias for NEW
+  USED            // legacy alias for USED_GOOD
 }
 
 enum Currency {
@@ -44,16 +51,28 @@ enum Marketplace {
   EBAY
   FLIGHTCLUB
   STADIUMGOODS
+  AMAZON
+  MERCARI
+  POSHMARK
+  FACEBOOK
+  SHOPIFY
+  GRAILED
+  DEPOP
+  OFFERUP
+  IN_PERSON
   OTHER
 }
 
 enum ExpenseType {
   SHIPPING
-  BOT_FEE
+  BOT_FEE           // legacy – kept for backward compat
+  SUBSCRIPTION_FEE
   MARKETPLACE_FEE
   ADVERTISING
   STORAGE
   SUPPLIES
+  PACKAGING
+  RETURNS
   CUSTOM
 }
 
@@ -88,6 +107,11 @@ model User {
   theme             Theme          @default(LIGHT)
   phone             String?
   pushEndpoint      String?        // Web push subscription JSON
+  emailNotifications  Boolean       @default(true)
+  smsNotifications    Boolean       @default(false)
+  pushNotifications   Boolean       @default(false)
+  weeklySummary       Boolean       @default(true)
+  priceAlertTriggered Boolean       @default(true)
   teamId            String?
   role              String         @default("owner") // owner | member (team)
   createdAt         DateTime       @default(now())
@@ -112,14 +136,15 @@ model Team {
 model InventoryItem {
   id            String        @id @default(uuid())
   userId        String
-  sku           String        // e.g. "DD1391-100"
-  name          String        // e.g. "Air Jordan 1 Retro High OG Chicago"
+  sku           String        // product identifier (e.g. model number, UPC, or custom ID)
+  name          String        // product name
   brand         String
-  size          String        // e.g. "10.5" or "L" (apparel)
-  colorway      String?
+  size          String?       // variant: shoe size, clothing size, storage capacity, etc.
+  color         String?       // color, colorway, or finish
+  category      String?       // e.g. "Sneakers", "Electronics", "Trading Cards"
   purchasePrice Decimal       @db.Decimal(10, 2)
   purchaseDate  DateTime
-  condition     ItemCondition @default(DEADSTOCK)
+  condition     ItemCondition @default(NEW)
   status        ItemStatus    @default(IN_STOCK)
   marketplace   Marketplace?  // where listed
   askingPrice   Decimal?      @db.Decimal(10, 2)
@@ -137,20 +162,21 @@ model InventoryItem {
 
   @@index([userId, sku])
   @@index([userId, status])
-  @@unique([sku, size])
+  @@unique([userId, sku, size])
 }
 
 model MarketPrice {
-  id          String      @id @default(uuid())
-  sku         String
-  size        String
-  marketplace Marketplace
-  askPrice    Decimal?    @db.Decimal(10, 2)
-  lastSold    Decimal?    @db.Decimal(10, 2)
-  bidPrice    Decimal?    @db.Decimal(10, 2)
-  fetchedAt   DateTime    @default(now())
+  id              String      @id @default(uuid())
+  sku             String
+  size            String?
+  marketplace     Marketplace
+  askPrice        Decimal?    @db.Decimal(10, 2)
+  lastSold        Decimal?    @db.Decimal(10, 2)
+  bidPrice        Decimal?    @db.Decimal(10, 2)
+  fetchedAt       DateTime    @default(now())
+  inventoryItemId String?
 
-  inventoryItem InventoryItem? @relation(fields: [sku, size], references: [sku, size])
+  inventoryItem InventoryItem? @relation(fields: [inventoryItemId], references: [id])
 
   @@index([sku, size, marketplace])
   @@index([fetchedAt])
@@ -213,7 +239,7 @@ model PriceAlert {
   id                  String               @id @default(uuid())
   userId              String
   sku                 String
-  size                String
+  size                String?
   productName         String
   marketplace         Marketplace
   targetPrice         Decimal              @db.Decimal(10, 2)

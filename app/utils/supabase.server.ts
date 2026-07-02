@@ -6,7 +6,7 @@ export function getSupabaseServerClient(request: Request) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
-  const supabase = createServerClient(supabaseUrl, supabaseKey, {
+ const supabase = createServerClient(supabaseUrl, supabaseKey, {
     cookies: {
       getAll() {
         return parseCookieHeader(request.headers.get("Cookie") ?? "").map((cookie) => ({
@@ -14,7 +14,7 @@ export function getSupabaseServerClient(request: Request) {
           value: cookie.value ?? ""
         }));
       },
-      setAll(cookiesToSet: Array<{ name: string; value: string; options?: Record<string, unknown> }>) {
+      setAll(cookiesToSet: any[]) {
         cookiesToSet.forEach(({ name, value, options }) =>
           headers.append("Set-Cookie", serializeCookieHeader(name, value, options ?? {}))
         );

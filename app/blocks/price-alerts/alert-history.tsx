@@ -15,7 +15,8 @@ interface AlertItem {
   userId: string;
 }
 
-interface Props { className?: string; alerts?: AlertItem[]; }
+interface Props { className?: string; alerts?: AlertItem[]; }    
+//changed the code to avoid merge conflicts
 
 export function AlertHistory({ className, alerts = [] }: Props) {
   return (

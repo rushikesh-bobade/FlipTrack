@@ -31,7 +31,7 @@ export function HeroSection({ className }: Props) {
 
       <p className={styles.subheadline}>
         FlipTrack replaces your spreadsheet with live market prices, smart alerts,
-        and AI-powered insights &mdash; built for serious sneaker resellers.
+        and AI-powered insights &mdash; built for serious resellers.
       </p>
 
       <div className={styles.ctas}>

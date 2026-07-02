@@ -5,3 +5,8 @@
 .select:focus { border-color: var(--color-primary); }
 .exportBtn { display: flex; align-items: center; gap: var(--space-2); padding: 8px 14px; border-radius: var(--radius-sm); background: var(--color-bg-elevated); border: 1px solid var(--color-border); color: var(--color-text-muted); font-size: 13px; cursor: pointer; transition: all var(--transition-fast); }
 .exportBtn:hover { color: var(--color-text); border-color: var(--color-border-strong); }
+
+.customDates { display: flex; align-items: center; gap: var(--space-2); }
+.dateInput { padding: 8px 12px; border-radius: var(--radius-sm); background: var(--color-bg-elevated); border: 1px solid var(--color-border); color: var(--color-text); font-size: 13px; outline: none; }
+.dateInput:focus { border-color: var(--color-primary); }
+.dateSeparator { color: var(--color-text-muted); font-size: 13px; }

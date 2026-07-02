@@ -12,7 +12,12 @@ const COLORS = {
   SHIPPING: "var(--color-primary)",
   MARKETPLACE_FEE: "var(--color-secondary)",
   BOT_FEE: "var(--color-danger)",
+  SUBSCRIPTION_FEE: "var(--color-warning, #F59E0B)",
+  ADVERTISING: "#8B5CF6",
+  STORAGE: "#06B6D4",
   SUPPLIES: "var(--color-success)",
+  PACKAGING: "#EC4899",
+  RETURNS: "#EF4444",
   OTHER: "var(--color-surface-border)",
   CUSTOM: "var(--color-foreground-muted)",
 };
@@ -65,7 +70,7 @@ export function ExpenseCategoriesChart({ expenses }: Props) {
               ))}
             </Pie>
             <Tooltip
-              formatter={(value: unknown) => [`$${Number(value ?? 0).toFixed(2)}`, "Amount"]}
+              formatter={(value: any) => [`$${Number(value).toFixed(2)}`, "Amount"]}  //changed the code to avoid merge conflicts
               contentStyle={{
                 backgroundColor: "var(--color-surface)",
                 borderColor: "var(--color-surface-border)",
