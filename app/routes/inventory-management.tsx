@@ -63,7 +63,7 @@ export async function loader({ request }: Route.LoaderArgs) {
     }),
   ]);
 
-  const formattedItems = items.map((item) => ({
+  const formattedItems = items.map((item: { priceHistory: { askPrice: any; }[]; }) => ({
     ...item,
     marketValue: item.priceHistory[0]?.askPrice ? Number(item.priceHistory[0].askPrice) : null,
   }));
@@ -148,6 +148,7 @@ export default function InventoryManagementPage() {
   const [showImport, setShowImport] = useState(false);
   const [selected, setSelected] = useState<string[]>([]);
   const [editingItem, setEditingItem] = useState<any>(null);
+  const [duplicatingItem, setDuplicatingItem] = useState<any>(null);
 
   const [searchParams, setSearchParams] = useSearchParams();
   const searchQuery = searchParams.get("q") || "";
@@ -194,10 +195,11 @@ export default function InventoryManagementPage() {
       {selected.length > 0 && (
         <BulkActionsBar count={selected.length} onClear={() => setSelected([])} selectedIds={selected} items={items} />
       )}
-      <InventoryTable selected={selected} onSelectChange={setSelected} items={items} onEdit={setEditingItem} />
+      <InventoryTable selected={selected} onSelectChange={setSelected} items={items} onEdit={setEditingItem}  onDuplicate={(item) => { setEditingItem({...item, sku: "", }); }}/>
       <Pagination totalPages={totalPages} />
       {showAddItem && <AddItemModal onClose={() => setShowAddItem(false)} />}
       {editingItem && <AddItemModal item={editingItem} onClose={() => setEditingItem(null)} />}
+      {duplicatingItem && <AddItemModal item={duplicatingItem} isDuplicate={true} onClose={() => setDuplicatingItem(null)} />}
       {showImport && <ImportExcelModal onClose={() => setShowImport(false)} />}
     </div>
   );
