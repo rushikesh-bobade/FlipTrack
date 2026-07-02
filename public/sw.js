@@ -1,4 +1,4 @@
-﻿const CACHE_NAME = 'fliptrack-static-v1';
+const CACHE_NAME = 'fliptrack-static-v1';
 const STATIC_ASSETS = [
   '/manifest.json',
   '/icons/icon-192.png',
@@ -23,6 +23,12 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
+  
+  // FIX: Only cache static files and build assets, NOT dynamic document/API routes
+  const url = new URL(event.request.url);
+  if (!url.pathname.startsWith('/build/') && !url.pathname.startsWith('/icons/') && url.pathname !== '/manifest.json') {
+    return;
+  }
 
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {

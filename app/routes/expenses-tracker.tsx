@@ -52,8 +52,8 @@ export async function loader({ request }: Route.LoaderArgs) {
   ]);
 
   return {
-    expenses,
-    recurring,
+    expenses: expenses.map(e => ({ ...e, amount: Number(e.amount) })),
+    recurring: recurring.map(r => ({ ...r, amount: Number(r.amount) })),
     totalPages: Math.ceil(totalExpenses / pageSize),
     oneTimeTotal: Number(sumResult._sum.amount || 0),
   };
@@ -64,6 +64,7 @@ export async function action({ request }: Route.ActionArgs) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
+
   if (!user) return new Response("Unauthorized", { status: 401 });
 
   const formData = await request.formData();
@@ -82,8 +83,10 @@ export async function action({ request }: Route.ActionArgs) {
         isActive,
       },
     });
+
     return { ok: true, intent };
   }
+
   if (intent === "create") {
     const isRecurring = formData.get("isRecurring") === "on";
     const type = formData.get("type") as any;
@@ -116,19 +119,49 @@ export async function action({ request }: Route.ActionArgs) {
     }
   }
 
-  return { ok: true, intent };
+  if (intent === "update") {
+    const id = formData.get("id") as string;
+    const type = formData.get("type") as any;
+    const amount = Number(formData.get("amount"));
+    const description = formData.get("description") as string;
+    const date = formData.get("date") ? new Date(formData.get("date") as string) : new Date();
+
+    await prisma.expense.update({
+      where: { id, userId: user.id },
+      data: { type, amount, description, date },
+    });
+
+    return { ok: true, intent: "update" };
+  }
+
+  if (intent === "delete") {
+    const id = formData.get("id") as string;
+    await prisma.expense.delete({
+      where: { id, userId: user.id },
+    });
+
+    return { ok: true, intent: "delete" };
+  }
 }
 
 export default function ExpensesTrackerPage() {
   const { expenses, recurring, totalPages, oneTimeTotal } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   const [showAddExpense, setShowAddExpense] = useState(false);
+  const [editingExpense, setEditingExpense] = useState<any>(null);
 
   useEffect(() => {
     if (actionData?.ok) {
       if (actionData.intent === "create") {
         toast.success("Expense added successfully");
         setShowAddExpense(false);
+      }
+      if (actionData.intent === "update") {
+        toast.success("Expense updated successfully");
+        setEditingExpense(null);
+      }
+      if (actionData.intent === "delete") {
+        toast.success("Expense deleted successfully");
       }
     }
   }, [actionData]);
@@ -138,9 +171,18 @@ export default function ExpensesTrackerPage() {
       <ExpensesHeader onAddExpense={() => setShowAddExpense(true)} />
       <ExpensesSummary expenses={expenses} recurring={recurring} oneTimeTotal={oneTimeTotal} />
       <RecurringExpensesSection recurring={recurring} />
-      <OneTimeExpensesTable expenses={expenses} />
+      <OneTimeExpensesTable
+        expenses={expenses}
+        onEdit={(expense) => setEditingExpense(expense)}
+      />
       <Pagination totalPages={totalPages} />
       {showAddExpense && <AddExpenseModal onClose={() => setShowAddExpense(false)} />}
+      {editingExpense && (
+        <AddExpenseModal
+          expense={editingExpense}
+          onClose={() => setEditingExpense(null)}
+        />
+      )}
     </div>
   );
 }
