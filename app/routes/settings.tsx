@@ -43,14 +43,26 @@ export async function action({ request }: Route.ActionArgs) {
       where: { id: authUser.id },
       data: { name, phone }
     });
-  } else if (intent === "update-preferences") {
-    const currency = formData.get("currency") as string;
-    const theme = formData.get("theme") as string;
-    await prisma.user.update({
-      where: { id: authUser.id },
-      data: { currency, theme }
-    });
-  } else if (intent === "create-team") {
+    return { ok: true, message: "Profile updated successfully." };
+  } 
+  
+if (intent === "update-preferences") {
+  const currency = formData.get("currency") as string;
+  const theme = formData.get("theme") as string;
+
+  await prisma.user.update({
+    where: { id: authUser.id },
+    // Force TypeScript to accept them by casting the database payload properties
+    data: { 
+      currency: currency as any, 
+      theme: theme as any 
+    }
+  });
+
+  return { ok: true, message: "Preferences updated successfully." };
+}
+  
+  if (intent === "create-team") {
     const teamName = formData.get("teamName") as string;
     await prisma.$transaction(async (tx) => {
       const team = await tx.team.create({
@@ -61,9 +73,59 @@ export async function action({ request }: Route.ActionArgs) {
         data: { teamId: team.id, role: "owner" }
       });
     });
+    return { ok: true, message: "Team created successfully." };
+  }
+  
+  if (intent === "change-password") {
+    const currentPassword = formData.get("currentPassword") as string;
+    const password = formData.get("password") as string;
+    const confirmPassword = formData.get("confirmPassword") as string;
+
+    // 1. Basic validation checks
+    if (!currentPassword) {
+      return { ok: false, error: "Current password is required." };
+    }
+
+    if (!password || password.length < 8) {
+      return { ok: false, error: "Password must be at least 8 characters long." };
+    }
+
+    if (password !== confirmPassword) {
+      return { ok: false, error: "Passwords do not match." };
+    }
+
+    // 2. Verify current password by trying to re-authenticate the user
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email: authUser.email!,
+      password: currentPassword,
+    });
+
+    if (signInError) {
+      return {
+        ok: false,
+        error: "The current password you entered is incorrect.",
+      };
+    }
+
+    // 3. If re-authentication succeeded, update to the new password
+    const { error: updateError } = await supabase.auth.updateUser({
+      password,
+    });
+
+    if (updateError) {
+      return {
+        ok: false,
+        error: updateError.message,
+      };
+    }
+
+    return {
+      ok: true,
+      message: "Password updated successfully.",
+    };
   }
 
-  return { ok: true };
+  return { ok: false, error: "Invalid intent" };
 }
 
 type Section = "account" | "preferences" | "notifications" | "billing" | "team" | "security";
