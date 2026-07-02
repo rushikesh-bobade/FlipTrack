@@ -29,6 +29,7 @@
     "recharts": "^3.8.1",
     "sonner": "^2.0.7",
     "stripe": "^22.2.0",
+    "xlsx": "^0.18.5",
     "zod": "^4.4.3"
   },
   "devDependencies": {
