@@ -1,8 +1,18 @@
 import styles from "./sales-table.module.css";
 
-interface Props { className?: string; sales?: any[]; }
+interface Props {
+  className?: string;
+  sales?: any[];
+  onEdit?: (sale: any) => void;
+  onDelete?: (sale: any) => void;
+}
 
-export function SalesTable({ className, sales = [] }: Props) {
+export function SalesTable({
+  className,
+  sales = [],
+  onEdit,
+  onDelete, 
+}: Props) {
   return (
     <div className={[styles.wrap, className].filter(Boolean).join(" ")}>
       <div className={styles.tableWrap}>
@@ -15,12 +25,14 @@ export function SalesTable({ className, sales = [] }: Props) {
               <th className={styles.th}>Date</th>
               <th className={styles.th}>Margin</th>
               <th className={styles.th}>Profit</th>
+              <th className={styles.th}>Actions</th>  
             </tr>
           </thead>
           <tbody>
             {sales.map(s => {
-              const salePrice = Number(s.salePrice);
-              const cost = Number(s.inventoryItem.purchasePrice);
+              console.log("SALE:", s);
+                  const salePrice = s.salePrice;
+                 const cost = s.inventoryItem.purchasePrice;
               const profit = salePrice - cost;
               const margin = salePrice > 0 ? ((profit / salePrice) * 100).toFixed(1) : 0;
               const dateObj = new Date(s.saleDate);
@@ -37,6 +49,22 @@ export function SalesTable({ className, sales = [] }: Props) {
                       {profit >= 0 ? "+" : ""}${profit.toFixed(2)}
                     </span>
                   </td>
+                <td className={styles.td}>
+             <button
+          type="button"
+            onClick={() => onEdit?.(s)}
+             style={{ marginRight: "8px" }}
+         >
+            Edit
+             </button>
+
+               <button
+              type="button"
+               onClick={() => onDelete?.(s)}
+                >
+               Delete
+              </button>
+                 </td>
                 </tr>
               );
             })}

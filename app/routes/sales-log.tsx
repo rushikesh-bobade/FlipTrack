@@ -9,6 +9,7 @@ import { SalesHeader } from "~/blocks/sales-log/sales-header";
 import { SalesSummaryCards } from "~/blocks/sales-log/sales-summary-cards";
 import { SalesTable } from "~/blocks/sales-log/sales-table";
 import { LogSaleModal } from "~/blocks/sales-log/log-sale-modal";
+import { DeleteSaleModal } from "~/blocks/sales-log/delete-sale-modal";
 
 const prisma = new PrismaClient();
 
@@ -29,8 +30,32 @@ export async function loader({ request }: Route.LoaderArgs) {
       orderBy: { createdAt: "desc" },
     }),
   ]);
+  console.log("Logged in user:");
+console.log(user.id, user.email);
 
-  return { sales, inventory };
+const allSales = await prisma.sale.findMany({
+  select: {
+    id: true,
+    userId: true,
+  },
+});
+
+console.log("All sales:", allSales);
+
+console.log("Filtered sales:", sales);
+  const serializedSales = sales.map((sale) => ({
+  ...sale,
+  salePrice: Number(sale.salePrice.toString()),
+  inventoryItem: {
+    ...sale.inventoryItem,
+    purchasePrice: Number(sale.inventoryItem.purchasePrice.toString()),
+  },
+}));
+
+return {
+  sales: serializedSales,
+  inventory,
+};
 }
 
 export async function action({ request }: Route.ActionArgs) {
@@ -65,7 +90,31 @@ export async function action({ request }: Route.ActionArgs) {
       })
     ]);
   }
+    if (intent === "delete") {
+    const saleId = formData.get("saleId") as string;
 
+    const sale = await prisma.sale.findUnique({
+      where: { id: saleId },
+    });
+
+    if (!sale) {
+      return { ok: false };
+    }
+
+    await prisma.$transaction([
+      prisma.sale.delete({
+        where: { id: saleId },
+      }),
+      prisma.inventoryItem.update({
+        where: { id: sale.inventoryItemId },
+        data: {
+          status: "IN_STOCK",
+        },
+      }),
+    ]);
+
+    return { ok: true, intent: "delete" };
+  }
   return { ok: true, intent };
 }
 
@@ -73,6 +122,9 @@ export default function SalesLogPage() {
   const { sales, inventory } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   const [showLogSale, setShowLogSale] = useState(false);
+  const [selectedSale, setSelectedSale] = useState<any>(null);
+  const [showDelete, setShowDelete] = useState(false);
+  const [showEdit, setShowEdit] = useState(false);
 
   useEffect(() => {
     if (actionData?.ok) {
@@ -87,7 +139,33 @@ export default function SalesLogPage() {
     <div className={styles.page}>
       <SalesHeader onLogSale={() => setShowLogSale(true)} />
       <SalesSummaryCards sales={sales} />
-      <SalesTable sales={sales} />
+      
+<SalesTable
+  sales={sales}
+  onEdit={(sale) => {
+    setSelectedSale(sale);
+    setShowEdit(true);
+    console.log("EDIT CLICKED:", sale);
+  }}
+  onDelete={(sale) => {
+    setSelectedSale(sale);
+    setShowDelete(true);
+    console.log("DELETE CLICKED:", sale);
+  }}
+/>
+{showLogSale && (
+  <LogSaleModal
+    inventory={inventory}
+    onClose={() => setShowLogSale(false)}
+  />
+)}
+
+{showDelete && selectedSale && (
+  <DeleteSaleModal
+    saleId={selectedSale.id}
+    onClose={() => setShowDelete(false)}
+  />
+)}
       {showLogSale && <LogSaleModal inventory={inventory} onClose={() => setShowLogSale(false)} />}
     </div>
   );
