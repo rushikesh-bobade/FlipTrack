@@ -3,7 +3,7 @@ import { useLoaderData, useActionData, useSearchParams } from "react-router";
 import type { Route } from "./+types/inventory-management";
 import { toast } from "sonner";
 import { getSupabaseServerClient } from "~/utils/supabase.server";
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, ItemCondition } from "@prisma/client";
 import styles from "./inventory-management.module.css";
 import { InventoryHeader } from "~/blocks/inventory-management/inventory-header";
 import { InventoryTable } from "~/blocks/inventory-management/inventory-table";
@@ -88,7 +88,7 @@ export async function action({ request }: Route.ActionArgs) {
     const size = formData.get("size") as string;
     const purchasePrice = Number(formData.get("purchasePrice"));
     const purchaseDate = formData.get("purchaseDate") as string;
-    const condition = formData.get("condition") as string;
+    const condition = formData.get("condition") as ItemCondition;
     const colorway = formData.get("colorway") as string;
     const notes = formData.get("notes") as string;
 
@@ -115,7 +115,7 @@ export async function action({ request }: Route.ActionArgs) {
     const size = formData.get("size") as string;
     const purchasePrice = Number(formData.get("purchasePrice"));
     const purchaseDate = formData.get("purchaseDate") as string;
-    const condition = formData.get("condition") as string;
+    const condition = formData.get("condition") as ItemCondition;
     const colorway = formData.get("colorway") as string;
     const notes = formData.get("notes") as string;
 
