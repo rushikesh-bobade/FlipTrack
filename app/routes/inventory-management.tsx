@@ -104,8 +104,7 @@ export async function action({ request }: Route.ActionArgs) {
         condition,
         colorway,
         notes,
-        status: "IN_STOCK",
-      },
+        },
     });
   } else if (intent === "update") {
     const itemId = formData.get("itemId") as string;
