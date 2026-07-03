@@ -3,6 +3,8 @@ import { useLoaderData } from "react-router";
 import type { Route } from "./+types/settings";
 import { getSupabaseServerClient } from "~/utils/supabase.server";
 import { PrismaClient, Currency, Theme } from "@prisma/client";
+import { z } from "zod";
+import crypto from "crypto";
 import styles from "./settings.module.css";
 import { SettingsNavigation } from "~/blocks/settings/settings-navigation";
 import { AccountSettings } from "~/blocks/settings/account-settings";
@@ -144,17 +146,27 @@ export async function action({ request }: Route.ActionArgs) {
     };
   }
 
+  /**
+   * Invite Member Flow
+   * Validates email and role using Zod.
+   * Generates a secure invite token and saves it to the database.
+   */
   if (intent === "invite-member") {
-    const email = formData.get("email") as string;
-    const role = formData.get("role") as string;
-    
-    if (!email || !email.includes("@")) {
-      return { ok: false, intent: "invite-member", error: "A valid email is required" };
+    const inviteSchema = z.object({
+      email: z.string().email("A valid email is required").toLowerCase(),
+      role: z.enum(["member", "admin"], { errorMap: () => ({ message: "Role must be either 'member' or 'admin'" }) }),
+    });
+
+    const parsed = inviteSchema.safeParse({
+      email: formData.get("email"),
+      role: formData.get("role"),
+    });
+
+    if (!parsed.success) {
+      return { ok: false, intent: "invite-member", error: parsed.error.issues[0].message };
     }
-    
-    if (role !== "member" && role !== "admin") {
-      return { ok: false, intent: "invite-member", error: "Role must be either 'member' or 'admin'" };
-    }
+
+    const { email, role } = parsed.data;
 
     try {
       const dbUser = await prisma.user.findUnique({ where: { id: authUser.id } });
@@ -166,18 +178,19 @@ export async function action({ request }: Route.ActionArgs) {
          return { ok: false, intent: "invite-member", error: "Only team owners or admins can invite new members" };
       }
       
-      if (email.toLowerCase() === dbUser.email.toLowerCase()) {
+      if (email === dbUser.email.toLowerCase()) {
          return { ok: false, intent: "invite-member", error: "You cannot invite yourself" };
       }
       
-      const secureToken = crypto.randomUUID();
+      // Generate a cryptographically secure pseudo-random number
+      const secureToken = crypto.randomBytes(32).toString("hex");
       
-      // Store the invite in the database (expires in 7 days)
+      // Store the invite securely in the database (expires in 7 days)
       await prisma.invite.create({
         data: {
           teamId: dbUser.teamId,
-          email: email.toLowerCase(),
-          role: role,
+          email,
+          role,
           token: secureToken,
           expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
         }
@@ -191,9 +204,9 @@ export async function action({ request }: Route.ActionArgs) {
         message: `Invitation generated successfully.`, 
         inviteLink 
       };
-    } catch (e) {
+    } catch (e: any) {
       console.error("Error generating invite:", e);
-      return { ok: false, intent: "invite-member", error: "An unexpected error occurred while generating the invite." };
+      return { ok: false, intent: "invite-member", error: `An unexpected error occurred while generating the invite: ${e?.message || "Unknown error"}` };
     }
   }
 
