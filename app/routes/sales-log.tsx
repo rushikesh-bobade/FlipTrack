@@ -78,12 +78,23 @@ export async function action({ request }: Route.ActionArgs) {
       })
     ]);
   }
-    if (intent === "edit") {
+ if (intent === "edit") {
   const saleId = formData.get("saleId") as string;
   const salePrice = Number(formData.get("salePrice"));
   const saleDate = new Date(formData.get("saleDate") as string);
   const marketplace = formData.get("marketplace") as any;
   const trackingNumber = formData.get("trackingNumber") as string;
+
+  const sale = await prisma.sale.findFirst({
+    where: {
+      id: saleId,
+      userId: user.id,
+    },
+  });
+
+  if (!sale) {
+    return { ok: false };
+  }
 
   await prisma.sale.update({
     where: {
@@ -104,7 +115,9 @@ export async function action({ request }: Route.ActionArgs) {
     const saleId = formData.get("saleId") as string;
 
     const sale = await prisma.sale.findUnique({
-      where: { id: saleId },
+      where: { id: saleId,
+      userId: user.id,
+       },
     });
 
     if (!sale) {

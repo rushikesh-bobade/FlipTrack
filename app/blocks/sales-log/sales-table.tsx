@@ -31,7 +31,6 @@ export function SalesTable({
           </thead>
           <tbody>
             {sales.map(s => {
-              console.log("SALE:", s);
                   const salePrice = s.salePrice;
                  const cost = s.inventoryItem.purchasePrice;
               const profit = salePrice - cost;
