@@ -114,7 +114,7 @@ export async function action({ request }: Route.ActionArgs) {
     if (intent === "delete") {
     const saleId = formData.get("saleId") as string;
 
-    const sale = await prisma.sale.findUnique({
+    const sale = await prisma.sale.findFirst({
       where: { id: saleId,
       userId: user.id,
        },
