@@ -144,6 +144,29 @@ export async function action({ request }: Route.ActionArgs) {
     };
   }
 
+  if (intent === "invite-member") {
+    const email = formData.get("email") as string;
+    const role = formData.get("role") as string;
+    
+    if (!email) {
+      return { ok: false, intent: "invite-member", error: "Email is required" };
+    }
+    
+    const dbUser = await prisma.user.findUnique({ where: { id: authUser.id } });
+    if (!dbUser || !dbUser.teamId) {
+       return { ok: false, intent: "invite-member", error: "You are not part of a team" };
+    }
+    
+    const inviteLink = `https://fliptrack.app/join?teamId=${dbUser.teamId}&email=${encodeURIComponent(email)}&role=${encodeURIComponent(role)}`;
+    
+    return { 
+      ok: true, 
+      intent: "invite-member", 
+      message: `Invitation generated successfully.`, 
+      inviteLink 
+    };
+  }
+
   return { ok: false, error: "Invalid intent" };
 }
 
