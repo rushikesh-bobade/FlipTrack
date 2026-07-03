@@ -87,6 +87,10 @@ export async function action({ request }: Route.ActionArgs) {
     const brand = formData.get("brand") as string;
     const size = formData.get("size") as string;
     const purchasePrice = Number(formData.get("purchasePrice"));
+    const purchaseDate = formData.get("purchaseDate") as string;
+    const condition = formData.get("condition") as string;
+    const colorway = formData.get("colorway") as string;
+    const notes = formData.get("notes") as string;
 
     await prisma.inventoryItem.create({
       data: {
@@ -96,8 +100,10 @@ export async function action({ request }: Route.ActionArgs) {
         brand,
         size,
         purchasePrice,
-        purchaseDate: new Date(),
-        condition: "DEADSTOCK",
+        purchaseDate: new Date(purchaseDate),
+        condition,
+        colorway,
+        notes,
         status: "IN_STOCK",
       },
     });
@@ -108,6 +114,10 @@ export async function action({ request }: Route.ActionArgs) {
     const brand = formData.get("brand") as string;
     const size = formData.get("size") as string;
     const purchasePrice = Number(formData.get("purchasePrice"));
+    const purchaseDate = formData.get("purchaseDate") as string;
+    const condition = formData.get("condition") as string;
+    const colorway = formData.get("colorway") as string;
+    const notes = formData.get("notes") as string;
 
     await prisma.inventoryItem.update({
       where: { id: itemId, userId: user.id },
@@ -117,7 +127,11 @@ export async function action({ request }: Route.ActionArgs) {
         brand,
         size,
         purchasePrice,
-        // other fields could be updated here
+        purchaseDate: new Date(purchaseDate),
+        condition,
+        colorway,
+        notes,
+        status: "IN_STOCK",
       },
     });
   } else if (intent === "delete") {
