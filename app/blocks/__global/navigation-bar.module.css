@@ -4,6 +4,7 @@
   z-index: 100;
   height: var(--nav-height);
   background: var(--color-nav-bg);
+  -webkit-backdrop-filter: blur(12px);
   backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--color-border);
   display: flex;
@@ -136,6 +137,13 @@
   color: var(--color-text);
 }
 
+.desktopThemeToggle {
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .btnPrimary {
   padding: 7px var(--space-4);
   border-radius: var(--radius-sm);
@@ -171,6 +179,9 @@
 
 .mobileThemeToggle {
   display: none;
+  padding: 0.5rem;
+  align-items: center;
+  justify-content: center;
 }
 
 .mobileMenu {
