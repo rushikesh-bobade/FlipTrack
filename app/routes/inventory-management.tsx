@@ -104,6 +104,7 @@ export async function action({ request }: Route.ActionArgs) {
         condition,
         colorway,
         notes,
+        status: "IN_STOCK",
         },
     });
   } else if (intent === "update") {
@@ -130,8 +131,7 @@ export async function action({ request }: Route.ActionArgs) {
         condition,
         colorway,
         notes,
-        status: "IN_STOCK",
-      },
+        },
     });
   } else if (intent === "delete") {
     const itemId = formData.get("itemId") as string;
