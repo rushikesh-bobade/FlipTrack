@@ -29,7 +29,6 @@ export async function loader({ request }: Route.LoaderArgs) {
   if (!user)
     return {
       sales: [],
-      inventory: [],
       totalPages: 0,
       summary: { totalSalesCount: 0, totalRevenue: 0, totalProfit: 0 },
     };
@@ -38,7 +37,7 @@ export async function loader({ request }: Route.LoaderArgs) {
   const page = Math.max(1, Number(url.searchParams.get("page")) || 1);
   const pageSize = Number(url.searchParams.get("pageSize")) || 10;
 
-  const [totalSales, sales, inventory, allSalesMetrics] = await Promise.all([
+  const [totalSales, sales, metricsResult] = await Promise.all([
     prisma.sale.count({ where: { userId: user.id } }),
     prisma.sale.findMany({
       where: { userId: user.id },
@@ -47,33 +46,28 @@ export async function loader({ request }: Route.LoaderArgs) {
       skip: (page - 1) * pageSize,
       take: pageSize,
     }),
-    prisma.inventoryItem.findMany({
-      where: { userId: user.id, status: "IN_STOCK" },
-      orderBy: { createdAt: "desc" },
-    }),
-    prisma.sale.findMany({
-      where: { userId: user.id },
-      select: {
-        salePrice: true,
-        inventoryItem: {
-          select: { purchasePrice: true },
-        },
-      },
-    }),
+    prisma.$queryRaw<{ totalRevenue: number, totalProfit: number }[]>`
+      SELECT 
+        COALESCE(SUM(s."salePrice"), 0) as "totalRevenue",
+        COALESCE(SUM(s."salePrice" - i."purchasePrice"), 0) as "totalProfit"
+      FROM "Sale" s
+      JOIN "InventoryItem" i ON s."inventoryItemId" = i.id
+      WHERE s."userId" = ${user.id}
+    `
   ]);
 
-  let totalRevenue = 0;
-  let totalProfit = 0;
-  allSalesMetrics.forEach((s) => {
-    const salePrice = Number(s.salePrice);
-    const cost = Number(s.inventoryItem.purchasePrice);
-    totalRevenue += salePrice;
-    totalProfit += salePrice - cost;
-  });
+  const totalRevenue = Number(metricsResult[0]?.totalRevenue || 0);
+  const totalProfit = Number(metricsResult[0]?.totalProfit || 0);
 
   return {
-    sales,
-    inventory,
+    sales: sales.map(s => ({
+      ...s,
+      salePrice: Number(s.salePrice),
+      inventoryItem: {
+        ...s.inventoryItem,
+        purchasePrice: Number(s.inventoryItem.purchasePrice),
+      }
+    })),
     totalPages: Math.ceil(totalSales / pageSize),
     summary: {
       totalSalesCount: totalSales,
@@ -122,7 +116,7 @@ export async function action({ request }: Route.ActionArgs) {
 }
 
 export default function SalesLogPage() {
-  const { sales, inventory, totalPages, summary } = useLoaderData<typeof loader>();
+  const { sales, totalPages, summary } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   const [showLogSale, setShowLogSale] = useState(false);
 
@@ -141,7 +135,7 @@ export default function SalesLogPage() {
       <SalesSummaryCards sales={sales} summary={summary} />
       <SalesTable sales={sales} />
       <Pagination totalPages={totalPages} />
-      {showLogSale && <LogSaleModal inventory={inventory} onClose={() => setShowLogSale(false)} />}
+      {showLogSale && <LogSaleModal onClose={() => setShowLogSale(false)} />}
     </div>
   );
 }

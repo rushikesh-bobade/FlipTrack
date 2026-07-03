@@ -1,15 +1,31 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Form } from "react-router";
 import { IconX } from "@tabler/icons-react";
 import styles from "./log-sale-modal.module.css";
 
-interface Props { className?: string; onClose: () => void; inventory?: any[]; }
+interface Props { className?: string; onClose: () => void; }
 
-export function LogSaleModal({ className, onClose, inventory = [] }: Props) {
+export function LogSaleModal({ className, onClose }: Props) {
   const [salePrice, setSalePrice] = useState("");
   const [selectedItemId, setSelectedItemId] = useState("");
+  const [selectedItem, setSelectedItem] = useState<any>(null);
+  const [search, setSearch] = useState("");
+  const [searchResults, setSearchResults] = useState<any[]>([]);
   
-  const selectedItem = inventory.find(i => i.id === selectedItemId);
+  useEffect(() => {
+    if (search.length < 2) {
+      setSearchResults([]);
+      return;
+    }
+    const delayDebounceFn = setTimeout(() => {
+      fetch(`/api/inventory/search?q=${search}`)
+        .then(res => res.json())
+        .then(data => setSearchResults(data.items || []))
+        .catch(err => console.error(err));
+    }, 300);
+    return () => clearTimeout(delayDebounceFn);
+  }, [search]);
+
   const purchasePrice = selectedItem ? Number(selectedItem.purchasePrice) : 0;
   const profit = salePrice && selectedItem ? parseFloat(salePrice) - purchasePrice : null;
 
@@ -23,14 +39,34 @@ export function LogSaleModal({ className, onClose, inventory = [] }: Props) {
         <Form method="post" onSubmit={() => onClose()}>
           <input type="hidden" name="intent" value="create" />
           <div className={styles.body}>
-            <div className={styles.field}>
-              <label className={styles.label}>Inventory Item *</label>
-              <select name="inventoryItemId" className={styles.input} required value={selectedItemId} onChange={e => setSelectedItemId(e.target.value)}>
-                <option value="">Select an item...</option>
-                {inventory.map(item => (
-                  <option key={item.id} value={item.id}>{item.name} ({item.size}) - ${Number(item.purchasePrice)}</option>
-                ))}
-              </select>
+            <div className={styles.field} style={{ position: 'relative' }}>
+              <label className={styles.label}>Search Inventory Item *</label>
+              <input 
+                className={styles.input} 
+                placeholder="Type SKU or name..." 
+                value={search} 
+                onChange={e => { setSearch(e.target.value); setSelectedItem(null); setSelectedItemId(""); }} 
+                required={!selectedItemId}
+              />
+              {searchResults.length > 0 && !selectedItem && (
+                <ul className={styles.autocompleteList} style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 10, background: '#fff', border: '1px solid #ccc', maxHeight: '150px', overflowY: 'auto', padding: 0, listStyle: 'none' }}>
+                  {searchResults.map(item => (
+                    <li 
+                      key={item.id} 
+                      style={{ padding: '8px', cursor: 'pointer', borderBottom: '1px solid #eee', color: '#000' }}
+                      onClick={() => {
+                        setSelectedItem(item);
+                        setSelectedItemId(item.id);
+                        setSearchResults([]);
+                        setSearch(`${item.name} (${item.size}) - $${Number(item.purchasePrice)}`);
+                      }}
+                    >
+                      {item.name} ({item.size}) - ${Number(item.purchasePrice)}
+                    </li>
+                  ))}
+                </ul>
+              )}
+              <input type="hidden" name="inventoryItemId" value={selectedItemId} required />
             </div>
           <div className={styles.row}>
             <div className={styles.field}>
