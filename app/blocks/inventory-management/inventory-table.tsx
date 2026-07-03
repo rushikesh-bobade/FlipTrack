@@ -1,12 +1,12 @@
 import { Link, Form } from "react-router";
 import styles from "./inventory-table.module.css";
 
-interface Props { className?: string; selected: string[]; onSelectChange: (ids: string[]) => void; items: any[]; onEdit: (item: any) => void; }
+interface Props { className?: string; selected: string[]; onSelectChange: (ids: string[]) => void; items: any[]; onEdit: (item: any) => void; onDuplicate: (item: any) => void;}
 
 const statusClass: Record<string, string> = { IN_STOCK: styles.inStock, LISTED: styles.listed, SOLD: styles.sold };
 const statusLabel: Record<string, string> = { IN_STOCK: "In Stock", LISTED: "Listed", SOLD: "Sold" };
 
-export function InventoryTable({ className, selected, onSelectChange, items, onEdit }: Props) {
+export function InventoryTable({ className, selected, onSelectChange, items, onEdit, onDuplicate }: Props) {
   const toggle = (id: string) => onSelectChange(selected.includes(id) ? selected.filter(s => s !== id) : [...selected, id]);
   const toggleAll = () => onSelectChange(selected.length === items.length ? [] : items.map(i => i.id));
 
@@ -43,6 +43,7 @@ export function InventoryTable({ className, selected, onSelectChange, items, onE
                   <td className={styles.td}>
                     <div style={{ display: 'flex', gap: '8px' }}>
                       <button className={styles.actionBtn} onClick={() => onEdit(item)}>Edit</button>
+                      <button className={styles.actionBtn} onClick={() => onDuplicate(item)}>Duplicate</button>
                       <Form method="post" action="/app/inventory" style={{ display: 'inline' }}>
                         <input type="hidden" name="intent" value="delete" />
                         <input type="hidden" name="itemId" value={item.id} />

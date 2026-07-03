@@ -3,7 +3,7 @@ import { useLoaderData, useActionData, useSearchParams } from "react-router";
 import type { Route } from "./+types/inventory-management";
 import { toast } from "sonner";
 import { getSupabaseServerClient } from "~/utils/supabase.server";
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, ItemCondition } from "@prisma/client";
 import styles from "./inventory-management.module.css";
 import { InventoryHeader } from "~/blocks/inventory-management/inventory-header";
 import { InventoryTable } from "~/blocks/inventory-management/inventory-table";
@@ -63,7 +63,7 @@ export async function loader({ request }: Route.LoaderArgs) {
     }),
   ]);
 
-  const formattedItems = items.map((item) => ({
+  const formattedItems = items.map((item: { priceHistory: { askPrice: any; }[]; }) => ({
     ...item,
     marketValue: item.priceHistory[0]?.askPrice ? Number(item.priceHistory[0].askPrice) : null,
   }));
@@ -87,6 +87,10 @@ export async function action({ request }: Route.ActionArgs) {
     const brand = formData.get("brand") as string;
     const size = formData.get("size") as string;
     const purchasePrice = Number(formData.get("purchasePrice"));
+    const purchaseDate = formData.get("purchaseDate") as string;
+    const condition = formData.get("condition") as ItemCondition;
+    const colorway = formData.get("colorway") as string;
+    const notes = formData.get("notes") as string;
 
     await prisma.inventoryItem.create({
       data: {
@@ -96,10 +100,12 @@ export async function action({ request }: Route.ActionArgs) {
         brand,
         size,
         purchasePrice,
-        purchaseDate: new Date(),
-        condition: "DEADSTOCK",
+        purchaseDate: new Date(purchaseDate),
+        condition,
+        colorway,
+        notes,
         status: "IN_STOCK",
-      },
+        },
     });
   } else if (intent === "update") {
     const itemId = formData.get("itemId") as string;
@@ -108,6 +114,10 @@ export async function action({ request }: Route.ActionArgs) {
     const brand = formData.get("brand") as string;
     const size = formData.get("size") as string;
     const purchasePrice = Number(formData.get("purchasePrice"));
+    const purchaseDate = formData.get("purchaseDate") as string;
+    const condition = formData.get("condition") as ItemCondition;
+    const colorway = formData.get("colorway") as string;
+    const notes = formData.get("notes") as string;
 
     await prisma.inventoryItem.update({
       where: { id: itemId, userId: user.id },
@@ -117,8 +127,11 @@ export async function action({ request }: Route.ActionArgs) {
         brand,
         size,
         purchasePrice,
-        // other fields could be updated here
-      },
+        purchaseDate: new Date(purchaseDate),
+        condition,
+        colorway,
+        notes,
+        },
     });
   } else if (intent === "delete") {
     const itemId = formData.get("itemId") as string;
@@ -148,6 +161,7 @@ export default function InventoryManagementPage() {
   const [showImport, setShowImport] = useState(false);
   const [selected, setSelected] = useState<string[]>([]);
   const [editingItem, setEditingItem] = useState<any>(null);
+  const [duplicatingItem, setDuplicatingItem] = useState<any>(null);
 
   const [searchParams, setSearchParams] = useSearchParams();
   const searchQuery = searchParams.get("q") || "";
@@ -194,10 +208,11 @@ export default function InventoryManagementPage() {
       {selected.length > 0 && (
         <BulkActionsBar count={selected.length} onClear={() => setSelected([])} selectedIds={selected} items={items} />
       )}
-      <InventoryTable selected={selected} onSelectChange={setSelected} items={items} onEdit={setEditingItem} />
+      <InventoryTable selected={selected} onSelectChange={setSelected} items={items} onEdit={setEditingItem}  onDuplicate={(item) => { setDuplicatingItem({...item, id: undefined, sku: "", }); }}/>
       <Pagination totalPages={totalPages} />
       {showAddItem && <AddItemModal onClose={() => setShowAddItem(false)} />}
       {editingItem && <AddItemModal item={editingItem} onClose={() => setEditingItem(null)} />}
+      {duplicatingItem && <AddItemModal item={duplicatingItem} isDuplicate={true} onClose={() => setDuplicatingItem(null)} />}
       {showImport && <ImportExcelModal onClose={() => setShowImport(false)} />}
     </div>
   );
