@@ -284,7 +284,7 @@ export async function action({ request }: Route.ActionArgs) {
         sku,
         name,
         brand,
-        size: typeof row.size === "string" && row.size.trim().length > 0 ? row.size.trim() : (null as unknown as string),
+        size: typeof row.size === "string" && row.size.trim().length > 0 ? row.size.trim() : "OS",
         purchasePrice,
         purchaseDate,
         condition: normalizeImportedCondition(row.condition),
