@@ -3,17 +3,17 @@ import { Form } from "react-router";
 import { IconX } from "@tabler/icons-react";
 import styles from "./add-item-modal.module.css";
 
-interface Props { className?: string; onClose: () => void; item?: any; }
+interface Props { className?: string; onClose: () => void; item?: any; isDuplicate?: boolean; }
 
 const steps = ["Basic Info", "Purchase Details", "Marketplace"];
 
-export function AddItemModal({ className, onClose, item }: Props) {
+export function AddItemModal({ className, onClose, item, isDuplicate = false }: Props) {
   const [step, setStep] = useState(0);
   return (
     <div className={styles.overlay} onClick={e => e.target === e.currentTarget && onClose()}>
       <div className={[styles.modal, className].filter(Boolean).join(" ")}>
         <div className={styles.header}>
-          <span className={styles.title}>{item ? "Edit Inventory Item" : "Add Inventory Item"}</span>
+          <span className={styles.title}>{ isDuplicate ? "Duplicate Inventory Item": item ? "Edit Inventory Item" : "Add Inventory Item"}</span>
           <button className={styles.closeBtn} onClick={onClose}><IconX size={18} /></button>
         </div>
         <div className={styles.steps}>
@@ -22,8 +22,8 @@ export function AddItemModal({ className, onClose, item }: Props) {
           ))}
         </div>
         <Form method="post" action="/app/inventory" onSubmit={() => onClose()}>
-          <input type="hidden" name="intent" value={item ? "update" : "create"} />
-          {item && <input type="hidden" name="itemId" value={item.id} />}
+          <input type="hidden" name="intent" value={item && !isDuplicate ? "update" : "create"} />
+          {item && !isDuplicate && (<input type="hidden" name="itemId" value={item.id} />)}
           <div className={styles.body}>
           {step === 0 && (
             <>
@@ -69,7 +69,7 @@ export function AddItemModal({ className, onClose, item }: Props) {
             {step < 2 ? (
               <button type="button" className={styles.nextBtn} onClick={() => setStep(s => s + 1)}>Next</button>
             ) : (
-              <button type="submit" className={styles.nextBtn}>{item ? "Save Changes" : "Add Item"}</button>
+              <button type="submit" className={styles.nextBtn}>{ isDuplicate ? "Duplicate Item" : item ? "Save Changes" : "Add Item"}</button>
             )}
           </div>
         </Form>
