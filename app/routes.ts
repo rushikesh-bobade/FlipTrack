@@ -12,9 +12,11 @@ export default [
   route("/changelog", "routes/changelog-page.tsx"),
   route("/privacy", "routes/privacy-policy.tsx"),
   route("/terms", "routes/terms-of-service.tsx"),
-  
-  ...prefix("/app", [
-    layout("routes/app-layout.tsx", [
+
+  layout("routes/app-layout.tsx", [
+    route("/settings", "routes/settings-public.tsx"),
+    route("/settings/billing", "routes/billing-management.tsx"),
+    ...prefix("/app", [
       route("dashboard", "routes/dashboard.tsx"),
       route("inventory", "routes/inventory-management.tsx"),
       route("inventory/:id", "routes/inventory-item-detail.tsx"),
@@ -24,8 +26,6 @@ export default [
       route("income-statement", "routes/income-statement.tsx"),
       route("alerts", "routes/price-alerts.tsx"),
       route("ai-insights", "routes/ai-insights.tsx"),
-      route("settings", "routes/settings.tsx"),
-      route("settings/billing", "routes/billing-management.tsx"),
       route("tax-report", "routes/tax-report-export.tsx"),
     ]),
   ]),

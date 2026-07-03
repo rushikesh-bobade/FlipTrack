@@ -20,7 +20,7 @@ export function BillingSection({ className, user }: Props) {
         </div>
         <div className={styles.actions}>
           {user.plan === 'FREE' && (
-            <Link to="/app/settings/billing" className={styles.upgradeBtn}>Upgrade to Pro</Link>
+            <Link to="/settings/billing" className={styles.upgradeBtn}>Upgrade to Pro</Link>
           )}
           <button className={styles.manageBtn}>Manage Subscription</button>
         </div>

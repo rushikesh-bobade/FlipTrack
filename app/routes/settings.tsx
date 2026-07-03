@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useLoaderData } from "react-router";
 import type { Route } from "./+types/settings";
 import { getSupabaseServerClient } from "~/utils/supabase.server";
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, Currency, Theme } from "@prisma/client";
 import styles from "./settings.module.css";
 import { SettingsNavigation } from "~/blocks/settings/settings-navigation";
 import { AccountSettings } from "~/blocks/settings/account-settings";
@@ -50,16 +50,41 @@ export async function action({ request }: Route.ActionArgs) {
   if (intent === "update-profile") {
     const name = formData.get("name") as string;
     const phone = formData.get("phone") as string;
+    const avatarFile = formData.get("avatar");
+
+    let avatarUrl: string | undefined;
+    if (avatarFile && avatarFile instanceof File && avatarFile.size > 0) {
+      const extension = avatarFile.name.split(".").pop()?.toLowerCase() || "bin";
+      const filePath = `${authUser.id}/${Date.now()}.${extension}`;
+      const { data, error } = await supabase.storage.from("avatars").upload(filePath, avatarFile, {
+        upsert: true,
+        contentType: avatarFile.type || "application/octet-stream"
+      });
+
+      if (error) {
+        return { ok: false, message: error.message };
+      }
+
+      avatarUrl = supabase.storage.from("avatars").getPublicUrl(data?.path ?? filePath).data.publicUrl;
+    }
+
     await prisma.user.update({
       where: { id: authUser.id },
-      data: { name, phone },
+      data: {
+        name,
+        phone,
+        ...(avatarUrl ? { avatarUrl } : {})
+      }
     });
   } else if (intent === "update-preferences") {
-    const currency = formData.get("currency") as string;
-    const theme = formData.get("theme") as string;
+    const currency = (formData.get("currency") as string) || "USD";
+    const normalizedCurrency = ["USD", "EUR", "GBP"].includes(currency) ? (currency as Currency) : Currency.USD;
+    const themeValue = (formData.get("theme") as string) || "LIGHT";
+    const normalizedTheme = ["LIGHT", "DARK", "UNICORN"].includes(themeValue) ? (themeValue as Theme) : Theme.LIGHT;
+
     await prisma.user.update({
       where: { id: authUser.id },
-      data: { currency: currency as any, theme: theme as any },
+      data: { currency: normalizedCurrency, theme: normalizedTheme }
     });
   } else if (intent === "update-notifications") {
     const emailNotifications = formData.get("emailNotifications") === "on";

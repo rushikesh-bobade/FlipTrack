@@ -16,6 +16,7 @@ interface Props {
     name?: string | null;
     email: string;
     plan?: string | null;
+    avatarUrl?: string | null;
   };
 }
 
@@ -33,7 +34,7 @@ export function AppSidebar({ user }: Props) {
     { to: "/app/sales", label: "Sales Log", icon: <IconReceipt size={20} /> },
     { to: "/app/expenses", label: "Expenses", icon: <IconWallet size={20} /> },
     { to: "/app/ai-insights", label: "AI Insights", icon: <IconBrain size={20} /> },
-    { to: "/app/settings", label: "Settings", icon: <IconSettings size={20} /> },
+    { to: "/settings", label: "Settings", icon: <IconSettings size={20} /> },
   ];
 
   return (
@@ -62,7 +63,11 @@ export function AppSidebar({ user }: Props) {
       <div className={styles.footer}>
         <div className={styles.userProfile}>
           <div className={styles.avatar}>
-            {user.name ? user.name.charAt(0).toUpperCase() : user.email.charAt(0).toUpperCase()}
+            {user.avatarUrl ? (
+              <img src={user.avatarUrl} alt={user.name || user.email} className={styles.avatarImage} />
+            ) : (
+              user.name ? user.name.charAt(0).toUpperCase() : user.email.charAt(0).toUpperCase()
+            )}
           </div>
           <div className={styles.userInfo}>
             <span className={styles.userName}>{user.name || "User"}</span>

@@ -12,19 +12,16 @@ export function Preferences({ className, user }: Props) {
         <label className={styles.label}>Currency</label>
         <select name="currency" defaultValue={user?.currency || "USD"} className={styles.select}>
           <option value="USD">USD ($)</option>
-          <option value="CAD">CAD (CA$)</option>
-          <option value="GBP">GBP (£)</option>
           <option value="EUR">EUR (€)</option>
-          <option value="AUD">AUD (A$)</option>
-          <option value="JPY">JPY (¥)</option>
+          <option value="GBP">GBP (£)</option>
         </select>
       </div>
       <div className={styles.field}>
         <label className={styles.label}>Theme</label>
-        <select name="theme" defaultValue={user?.theme || "dark"} className={styles.select}>
-          <option value="light">Light</option>
-          <option value="dark">Dark</option>
-          <option value="system">System</option>
+        <select name="theme" defaultValue={user?.theme || "LIGHT"} className={styles.select}>
+          <option value="LIGHT">Light</option>
+          <option value="DARK">Dark</option>
+          <option value="UNICORN">Unicorn</option>
         </select>
       </div>
       <div className={styles.field}>

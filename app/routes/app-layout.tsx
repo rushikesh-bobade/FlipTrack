@@ -28,7 +28,8 @@ export async function loader({ request }: Route.LoaderArgs) {
   // Fetch full user details from public.User
   const dbUser = await prisma.user.findUnique({
     where: { id: user.id },
-    select: { name: true, email: true, plan: true },
+    select: { name: true, email: true, plan: true, avatarUrl: true }
+//changed the code to avoid merge conflicts
   });
 
   return { user: dbUser || { email: user.email!, plan: "FREE" } };

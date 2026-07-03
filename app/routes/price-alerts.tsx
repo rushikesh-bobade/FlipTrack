@@ -17,6 +17,21 @@ export function headers(_: Route.HeadersArgs) {
   };
 }
 
+interface AlertHistoryItem {
+  id: string;
+  sku: string;
+  size: string;
+  productName: string;
+  marketplace: Marketplace;
+  targetPrice: number;
+  direction: AlertDirection;
+  notificationChannel: NotificationChannel;
+  isActive: boolean;
+  triggeredAt: Date | null;
+  createdAt: Date;
+  userId: string;
+}
+
 const prisma = new PrismaClient();
 
 export async function loader({ request }: Route.LoaderArgs) {
@@ -91,7 +106,7 @@ export default function PriceAlertsPage() {
       <PlanLimitWarning />
       {showCreate && <CreateAlertForm onClose={() => setShowCreate(false)} />}
       <ActiveAlertsTable alerts={alerts} />
-      <AlertHistory alerts={alerts.filter((a: any) => a.triggeredAt)} />
+      <AlertHistory alerts={alerts.filter((a): a is AlertHistoryItem => Boolean(a.triggeredAt))} />
     </div>
   );
 }

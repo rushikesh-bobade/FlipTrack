@@ -13,7 +13,7 @@ export function TeamSection({ className, user }: Props) {
         <div className={styles.gate}>
           Team collaboration is a Business plan feature. Upgrade to invite up to 5 team members and share your inventory.
           <br />
-          <Link to="/app/settings/billing" className={styles.gateBtn}>Upgrade to Business</Link>
+          <Link to="/settings/billing" className={styles.gateBtn}>Upgrade to Business</Link>
         </div>
       </div>
     );
