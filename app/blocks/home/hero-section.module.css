@@ -13,9 +13,7 @@
 .heroBg {
   position: absolute;
   inset: 0;
-  background:
-    radial-gradient(ellipse 80% 60% at 50% -10%, var(--color-primary-glow) 0%, transparent 60%),
-    radial-gradient(ellipse 60% 40% at 80% 100%, var(--color-accent-light) 0%, transparent 50%);
+  background: var(--hero-bg);
   pointer-events: none;
 }
 

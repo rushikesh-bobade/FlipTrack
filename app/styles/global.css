@@ -12,6 +12,7 @@
 }
 
 body {
+  background: var(--body-bg);
   background-color: var(--color-bg);
   color: var(--color-text);
   font-family: var(--family-body);
