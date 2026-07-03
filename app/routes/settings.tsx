@@ -148,23 +148,34 @@ export async function action({ request }: Route.ActionArgs) {
     const email = formData.get("email") as string;
     const role = formData.get("role") as string;
     
-    if (!email) {
-      return { ok: false, intent: "invite-member", error: "Email is required" };
+    if (!email || !email.includes("@")) {
+      return { ok: false, intent: "invite-member", error: "A valid email is required" };
     }
     
-    const dbUser = await prisma.user.findUnique({ where: { id: authUser.id } });
-    if (!dbUser || !dbUser.teamId) {
-       return { ok: false, intent: "invite-member", error: "You are not part of a team" };
+    try {
+      const dbUser = await prisma.user.findUnique({ where: { id: authUser.id } });
+      if (!dbUser || !dbUser.teamId) {
+         return { ok: false, intent: "invite-member", error: "You are not part of a team" };
+      }
+
+      if (dbUser.role !== "owner" && dbUser.role !== "admin") {
+         return { ok: false, intent: "invite-member", error: "Only team owners or admins can invite new members" };
+      }
+      
+      // In a real application, consider using a secure token-based approach and storing it in an Invites table.
+      const secureToken = crypto.randomUUID();
+      const inviteLink = `https://fliptrack.app/join?teamId=${dbUser.teamId}&email=${encodeURIComponent(email)}&role=${encodeURIComponent(role)}&token=${secureToken}`;
+      
+      return { 
+        ok: true, 
+        intent: "invite-member", 
+        message: `Invitation generated successfully.`, 
+        inviteLink 
+      };
+    } catch (e) {
+      console.error("Error generating invite:", e);
+      return { ok: false, intent: "invite-member", error: "An unexpected error occurred while generating the invite." };
     }
-    
-    const inviteLink = `https://fliptrack.app/join?teamId=${dbUser.teamId}&email=${encodeURIComponent(email)}&role=${encodeURIComponent(role)}`;
-    
-    return { 
-      ok: true, 
-      intent: "invite-member", 
-      message: `Invitation generated successfully.`, 
-      inviteLink 
-    };
   }
 
   return { ok: false, error: "Invalid intent" };

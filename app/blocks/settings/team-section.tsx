@@ -48,11 +48,11 @@ export function TeamSection({ className, user }: Props) {
           <button type="button" className={styles.gateBtn} style={{marginTop: "var(--space-4)", alignSelf: "flex-start"}} onClick={() => setIsInviteOpen(true)}>Invite Member</button>
           
           {isInviteOpen && (
-            <div className={styles.modalOverlay}>
-              <div className={styles.modalContent}>
+            <div className={styles.modalOverlay} role="presentation">
+              <div className={styles.modalContent} role="dialog" aria-modal="true" aria-labelledby="modal-title">
                 <div className={styles.modalHeader}>
-                  <h3 className={styles.modalTitle}>Invite Team Member</h3>
-                  <button className={styles.closeBtn} onClick={() => { setIsInviteOpen(false); setShowSuccess(false); }}>&times;</button>
+                  <h3 id="modal-title" className={styles.modalTitle}>Invite Team Member</h3>
+                  <button className={styles.closeBtn} aria-label="Close" onClick={() => { setIsInviteOpen(false); setShowSuccess(false); }}>&times;</button>
                 </div>
                 
                 {showSuccess ? (
