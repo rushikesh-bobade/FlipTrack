@@ -3,57 +3,131 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 2rem;
+  padding: var(--space-8) var(--space-6);
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--family-body);
 }
 
 .errorContainer {
   text-align: center;
-  max-width: 70%;
+  max-width: 32rem;
   width: 100%;
-  padding: 2.5rem;
+  padding: var(--space-10) var(--space-8);
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+}
+
+.iconWrapper {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 4rem;
+  height: 4rem;
+  margin-bottom: var(--space-4);
+  border-radius: var(--radius-full);
+  background: var(--color-danger-bg);
+  color: var(--color-danger);
 }
 
 .errorTitle {
-  font-weight: bold;
-  margin-bottom: 0.5rem;
-  font-size: 3rem;
-  color: #333;
+  font-weight: 700;
+  margin-bottom: var(--space-2);
+  font-size: 1.75rem;
+  color: var(--color-text);
+}
+
+.errorDetails {
+  color: var(--color-text-muted);
+  font-size: 1rem;
+  line-height: 1.5;
+  margin-bottom: var(--space-6);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-2);
+}
+
+.primaryButton,
+.secondaryButton {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 0.625rem var(--space-5);
+  border-radius: var(--radius-md);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  transition:
+    background var(--transition-fast),
+    border-color var(--transition-fast);
+  border: 1px solid transparent;
+}
+
+.primaryButton {
+  background: var(--color-primary);
+  color: var(--color-text-inverse);
+}
+
+.primaryButton:hover {
+  background: var(--color-primary-dark);
+}
+
+.secondaryButton {
+  background: transparent;
+  color: var(--color-text);
+  border-color: var(--color-border-strong);
+}
+
+.secondaryButton:hover {
+  background: var(--color-bg-hover);
 }
 
 .errorStackWrapper {
   position: relative;
+  margin-top: var(--space-6);
 }
 
 .copyButton {
   position: absolute;
-  top: 0.5rem;
-  right: 0.5rem;
-  padding: 0.5rem 0.75rem;
-  background: #e5e5e5;
-  border: 1px solid #d4d4d4;
-  border-radius: 0.25rem;
+  top: var(--space-2);
+  right: var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
   cursor: pointer;
   font-size: 0.75rem;
   font-weight: 500;
-  color: #333;
+  color: var(--color-text);
 }
 
 .copyButton:hover {
-  background: #d4d4d4;
+  background: var(--color-bg-hover);
 }
 
 .copyButton:active {
-  background: #c4c4c4;
+  background: var(--color-bg-hover);
 }
 
 .errorStack {
-  margin-top: 1rem;
+  margin-top: var(--space-4);
   text-align: start;
   overflow: auto;
-  font-size: 0.875rem;
-  padding: 1rem;
-  background: #f5f5f5;
-  border-radius: 0.375rem;
-  border: 1px solid #e5e5e5;
+  font-family: var(--family-mono);
+  font-size: 0.8rem;
+  padding: var(--space-4);
+  background: var(--color-bg-card);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-muted);
   max-height: 20rem;
 }
