@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import { useSubmit } from "react-router";
-// @ts-expect-error: read-excel-file/browser does not export types
+// @ts-ignore: read-excel-file/browser might not export types depending on the environment
 import { readSheet } from "read-excel-file/browser";
 import { toast } from "sonner";
 import { IconX, IconUpload } from "@tabler/icons-react";
