@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import { useSubmit } from "react-router";
-import * as XLSX from "xlsx";
+import { readSheet } from "read-excel-file/browser";
 import { toast } from "sonner";
 import { IconX, IconUpload } from "@tabler/icons-react";
 import styles from "./import-excel-modal.module.css";
@@ -133,6 +133,78 @@ function normalizeCurrency(value: unknown) {
   }
 }
 
+function parseCSV(text: string): string[][] {
+  const result: string[][] = [];
+  let row: string[] = [];
+  let entry = "";
+  let insideQuote = false;
+  let i = 0;
+
+  while (i < text.length) {
+    const char = text[i];
+    const nextChar = text[i + 1];
+
+    if (insideQuote) {
+      if (char === '"') {
+        if (nextChar === '"') {
+          entry += '"';
+          i += 2;
+        } else {
+          insideQuote = false;
+          i++;
+        }
+      } else {
+        entry += char;
+        i++;
+      }
+    } else {
+      if (char === '"') {
+        insideQuote = true;
+        i++;
+      } else if (char === ',') {
+        row.push(entry);
+        entry = "";
+        i++;
+      } else if (char === '\r' || char === '\n') {
+        row.push(entry);
+        entry = "";
+        result.push(row);
+        row = [];
+        if (char === '\r' && nextChar === '\n') {
+          i += 2;
+        } else {
+          i++;
+        }
+      } else {
+        entry += char;
+        i++;
+      }
+    }
+  }
+
+  const endedWithNewline = text.endsWith('\n') || text.endsWith('\r');
+  if (text.length > 0 && !endedWithNewline) {
+    row.push(entry);
+    result.push(row);
+  }
+
+  return result;
+}
+
+function sheetToJSON(rows: unknown[][]): Record<string, unknown>[] {
+  if (rows.length === 0) return [];
+  const headers = rows[0].map((h) => String(h || "").trim());
+  return rows.slice(1).map((row) => {
+    const obj: Record<string, unknown> = {};
+    headers.forEach((header, index) => {
+      if (header) {
+        obj[header] = row[index] !== undefined ? row[index] : null;
+      }
+    });
+    return obj;
+  });
+}
+
 function parseSpreadsheetRows(rows: Record<string, unknown>[]) {
   const parsedItems: ParsedImportItem[] = [];
   const skippedRows: number[] = [];
@@ -184,9 +256,11 @@ export function ImportExcelModal({ className, onClose }: Props) {
 
   const validateFile = (file: File) => {
     const extension = file.name.split(".").pop()?.toLowerCase();
+    const isCsv = file.type === "text/csv" || extension === "csv";
+    const isXlsx = file.type === "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" || extension === "xlsx";
 
-    if (!extension || !["csv", "xls", "xlsx"].includes(extension)) {
-      toast.error("Unsupported file type. Please upload a .csv, .xls, or .xlsx file.");
+    if (!isCsv && !isXlsx) {
+      toast.error("Unsupported file type. Please upload a .csv or .xlsx file.");
       return false;
     }
 
@@ -207,21 +281,19 @@ export function ImportExcelModal({ className, onClose }: Props) {
     setIsLoading(true);
 
     try {
-      const buffer = await file.arrayBuffer();
-      const workbook = XLSX.read(buffer, { type: "array" });
+      let rows: Record<string, unknown>[] = [];
+      const extension = file.name.split(".").pop()?.toLowerCase();
+      const isCsv = file.type === "text/csv" || extension === "csv";
 
-      if (!workbook.SheetNames.length) {
-        toast.error("The spreadsheet does not contain any sheets.");
-        return;
+      if (isCsv) {
+        const text = await file.text();
+        const parsedRows = parseCSV(text);
+        rows = sheetToJSON(parsedRows);
+      } else {
+        const parsedRows = await readSheet(file);
+        rows = sheetToJSON(parsedRows);
       }
 
-      const sheet = workbook.Sheets[workbook.SheetNames[0]];
-      if (!sheet) {
-        toast.error("Unable to read the first sheet in the spreadsheet.");
-        return;
-      }
-
-      const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(sheet, { defval: null, raw: true });
       if (!rows.length) {
         toast.error("The selected file did not contain any importable rows.");
         return;
@@ -285,7 +357,7 @@ export function ImportExcelModal({ className, onClose }: Props) {
             ref={fileInputRef}
             className={styles.fileInput}
             type="file"
-            accept=".csv,.xls,.xlsx"
+            accept=".csv,.xlsx"
             onChange={handleFileChange}
           />
           <div
@@ -315,7 +387,7 @@ export function ImportExcelModal({ className, onClose }: Props) {
           >
             <IconUpload size={36} className={styles.dropIcon} />
             <div className={styles.dropText}>Drop your Excel or CSV file here</div>
-            <div className={styles.dropSub}>Supports .xlsx, .xls, .csv &mdash; max 10MB</div>
+            <div className={styles.dropSub}>Supports .xlsx, .csv &mdash; max 10MB</div>
             {selectedFile && <div className={styles.selectedFile}>{selectedFile.name}</div>}
           </div>
         </div>
