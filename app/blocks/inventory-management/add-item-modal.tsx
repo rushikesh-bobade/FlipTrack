@@ -13,7 +13,7 @@ export function AddItemModal({ className, onClose, item, isDuplicate = false }: 
     <div className={styles.overlay} onClick={e => e.target === e.currentTarget && onClose()}>
       <div className={[styles.modal, className].filter(Boolean).join(" ")}>
         <div className={styles.header}>
-          <span className={styles.title}>{ isDuplicate ? "Duplicate Inventory Item": item ? "Edit Inventory Item" : "Add Inventory Item"}</span>
+          <span className={styles.title}>{isDuplicate ? "Duplicate Inventory Item" : item ? "Edit Inventory Item" : "Add Inventory Item"}</span>
           <button className={styles.closeBtn} onClick={onClose}><IconX size={18} /></button>
         </div>
         <div className={styles.steps}>

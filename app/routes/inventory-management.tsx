@@ -11,11 +11,9 @@ import { BulkActionsBar } from "~/blocks/inventory-management/bulk-actions-bar";
 import { AddItemModal } from "~/blocks/inventory-management/add-item-modal";
 import { ImportExcelModal } from "~/blocks/inventory-management/import-excel-modal";
 import { Pagination } from "~/blocks/__global/pagination";
-import { CACHE_PRIVATE_NO_STORE } from "~/utils/cache-headers";
-
 export function headers(_: Route.HeadersArgs) {
   return {
-    "Cache-Control": CACHE_PRIVATE_NO_STORE,
+    "Cache-Control": "private, no-store",
   };
 }
 
@@ -165,8 +163,9 @@ export async function loader({ request }: Route.LoaderArgs) {
     }),
   ]);
 
-  const formattedItems = items.map((item: { priceHistory: { askPrice: any; }[]; }) => ({
+  const formattedItems = items.map((item) => ({
     ...item,
+    purchasePrice: Number(item.purchasePrice),
     marketValue: item.priceHistory[0]?.askPrice ? Number(item.priceHistory[0].askPrice) : null,
   }));
 
@@ -207,7 +206,7 @@ export async function action({ request }: Route.ActionArgs) {
         colorway,
         notes,
         status: "IN_STOCK",
-        },
+      },
     });
   } else if (intent === "update") {
     const itemId = formData.get("itemId") as string;
@@ -233,7 +232,7 @@ export async function action({ request }: Route.ActionArgs) {
         condition,
         colorway,
         notes,
-        },
+      },
     });
   } else if (intent === "delete") {
     const itemId = formData.get("itemId") as string;
@@ -360,7 +359,7 @@ export default function InventoryManagementPage() {
     } else {
       nextParams.delete("q");
     }
-    nextParams.set("page", "1"); // Reset to page 1
+    nextParams.set("page", "1");
     setSearchParams(nextParams, { replace: true });
   };
 
@@ -405,7 +404,13 @@ export default function InventoryManagementPage() {
       {selected.length > 0 && (
         <BulkActionsBar count={selected.length} onClear={() => setSelected([])} selectedIds={selected} items={items} />
       )}
-      <InventoryTable selected={selected} onSelectChange={setSelected} items={items} onEdit={setEditingItem}  onDuplicate={(item) => { setDuplicatingItem({...item, id: undefined, sku: "", }); }}/>
+      <InventoryTable
+        selected={selected}
+        onSelectChange={setSelected}
+        items={items}
+        onEdit={setEditingItem}
+        onDuplicate={(item) => setDuplicatingItem({ ...item, id: undefined, sku: "" })}
+      />
       <Pagination totalPages={totalPages} />
       {showAddItem && <AddItemModal onClose={() => setShowAddItem(false)} />}
       {editingItem && <AddItemModal item={editingItem} onClose={() => setEditingItem(null)} />}
