@@ -40,7 +40,7 @@ export async function action({ request }: Route.ActionArgs) {
 
             const { text } = await generateText({
               model: groq('llama-3.3-70b-versatile'),
-              system: `You are an expert sneaker reseller analyst. Analyze price data and provide actionable insights.
+              system: `You are an expert retail and e-commerce analyst. Analyze price data and provide actionable insights.
                        Always respond with pure JSON in this exact format: {"trend": "string", "recommendation": "BUY"|"SELL"|"HOLD", "reasoning": "string", "targetPrice": number, "confidence": number}`,
               prompt: `
                 Product: ${item.name} (SKU: ${item.sku})

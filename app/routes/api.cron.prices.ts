@@ -1,6 +1,7 @@
 import type { Route } from "./+types/api.cron.prices";
 import { PrismaClient } from "@prisma/client";
 import { runAllScrapers } from "~/services/scrapers";
+import { waitUntil } from "@vercel/functions";
 
 const prisma = new PrismaClient();
 
@@ -18,7 +19,7 @@ export async function loader({ request }: Route.LoaderArgs) {
   });
 
   // Detach the scraping process so the HTTP request doesn't timeout
-  (async () => {
+  waitUntil((async () => {
     try {
       for (const item of items) {
         if (item.sku && item.size) {
@@ -29,7 +30,7 @@ export async function loader({ request }: Route.LoaderArgs) {
     } catch (error) {
       console.error("Background scraping job failed:", error);
     }
-  })();
+  })());
 
   return new Response(JSON.stringify({ success: true, count: items.length, status: "queued" }), { 
     status: 202,

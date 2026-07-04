@@ -18,6 +18,7 @@
     "@supabase/ssr": "^0.10.3",
     "@supabase/supabase-js": "^2.107.0",
     "@tabler/icons-react": "^3.44.0",
+    "@vercel/functions": "^3.7.5",
     "ai": "^6.0.195",
     "classnames": "^2.5.1",
     "isbot": "^5.1.40",
