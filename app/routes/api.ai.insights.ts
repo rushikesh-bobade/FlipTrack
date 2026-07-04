@@ -32,59 +32,66 @@ export async function action({ request }: Route.ActionArgs) {
       });
     }
 
-    const insights = [];
+    const stream = new ReadableStream({
+      async start(controller) {
+        for (const item of rawInventory) {
+          try {
+            const actualPriceHistory = item.priceHistory || [];
 
-    // FIX 2: Using for...of loop to process sequentially and avoid Groq 429 Rate Limits
-    for (const item of rawInventory) {
-      try {
-        // FIX 1: Removed simulated array, using actual item.priceHistory from Prisma loader
-        const actualPriceHistory = item.priceHistory || [];
+            const { text } = await generateText({
+              model: groq('llama-3.3-70b-versatile'),
+              system: `You are an expert sneaker reseller analyst. Analyze price data and provide actionable insights.
+                       Always respond with pure JSON in this exact format: {"trend": "string", "recommendation": "BUY"|"SELL"|"HOLD", "reasoning": "string", "targetPrice": number, "confidence": number}`,
+              prompt: `
+                Product: ${item.name} (SKU: ${item.sku})
+                Price history (from DB): ${JSON.stringify(actualPriceHistory)}
+                User's purchase price: ${item.purchasePrice}
+                
+                Provide a price trend analysis and buy/sell/hold recommendation based on the data.
+              `,
+            });
 
-        const { text } = await generateText({
-          model: groq('llama-3.3-70b-versatile'),
-          system: `You are an expert sneaker reseller analyst. Analyze price data and provide actionable insights.
-                   Always respond with pure JSON in this exact format: {"trend": "string", "recommendation": "BUY"|"SELL"|"HOLD", "reasoning": "string", "targetPrice": number, "confidence": number}`,
-          prompt: `
-            Product: ${item.name} (SKU: ${item.sku})
-            Price history (from DB): ${JSON.stringify(actualPriceHistory)}
-            User's purchase price: ${item.purchasePrice}
+            const jsonStr = text.replace(/```json/g, "").replace(/```/g, "").trim();
+            const parsedJson = JSON.parse(jsonStr);
+
+            const insight = {
+              id: item.id,
+              name: item.name,
+              sku: item.sku,
+              purchasePrice: Number(item.purchasePrice),
+              recommendation: parsedJson.recommendation || "HOLD",
+              confidence: parsedJson.confidence || 0.8,
+              reasoning: parsedJson.reasoning || parsedJson.trend || "Analysis complete.",
+              targetPrice: parsedJson.targetPrice || Number(item.purchasePrice) * 1.2,
+            };
             
-            Provide a price trend analysis and buy/sell/hold recommendation based on the data.
-          `,
-        });
-
-        const jsonStr = text.replace(/```json/g, "").replace(/```/g, "").trim();
-        const parsedJson = JSON.parse(jsonStr);
-
-        insights.push({
-          id: item.id,
-          name: item.name,
-          sku: item.sku,
-          purchasePrice: Number(item.purchasePrice),
-          recommendation: parsedJson.recommendation || "HOLD",
-          confidence: parsedJson.confidence || 0.8,
-          reasoning: parsedJson.reasoning || parsedJson.trend || "Analysis complete.",
-          targetPrice: parsedJson.targetPrice || Number(item.purchasePrice) * 1.2,
-        });
-      } catch (err) {
-        console.error(`Error analyzing item ${item.sku}:`, err);
-        // Fallback item so the whole loop doesn't crash if one item fails
-        insights.push({
-          id: item.id,
-          name: item.name,
-          sku: item.sku,
-          purchasePrice: Number(item.purchasePrice),
-          recommendation: "HOLD",
-          confidence: 0.5,
-          reasoning: "AI engine analysis failed temporarily.",
-          targetPrice: Number(item.purchasePrice),
-        });
+            controller.enqueue(new TextEncoder().encode(JSON.stringify(insight) + "\n"));
+          } catch (err) {
+            console.error(`Error analyzing item ${item.sku}:`, err);
+            const fallback = {
+              id: item.id,
+              name: item.name,
+              sku: item.sku,
+              purchasePrice: Number(item.purchasePrice),
+              recommendation: "HOLD",
+              confidence: 0.5,
+              reasoning: "AI engine analysis failed temporarily.",
+              targetPrice: Number(item.purchasePrice),
+            };
+            controller.enqueue(new TextEncoder().encode(JSON.stringify(fallback) + "\n"));
+          }
+        }
+        controller.close();
       }
-    }
+    });
 
-    return new Response(JSON.stringify({ insights }), {
+    return new Response(stream, {
       status: 200,
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/x-ndjson",
+        "Cache-Control": "no-cache",
+        "Connection": "keep-alive"
+      },
     });
 
   } catch (error: any) {
