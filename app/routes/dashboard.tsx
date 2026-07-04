@@ -13,12 +13,21 @@ import { RecentSales } from "~/blocks/dashboard/recent-sales";
 import { ExpenseCategoriesChart } from "~/blocks/dashboard/expense-categories-chart";
 
 import { AIInsightsPanel } from "~/blocks/dashboard/ai-insights-panel";
+import { CACHE_PRIVATE_NO_STORE } from "~/utils/cache-headers";
+
+export function headers(_: Route.HeadersArgs) {
+  return {
+    "Cache-Control": CACHE_PRIVATE_NO_STORE,
+  };
+}
 
 const prisma = new PrismaClient();
 
 export async function loader({ request }: Route.LoaderArgs) {
   const { supabase } = getSupabaseServerClient(request);
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   if (!user) {
     return { inventoryStats: null, salesData: [], expensesData: [] };
@@ -61,11 +70,11 @@ export async function loader({ request }: Route.LoaderArgs) {
     userId: user.id,
     ...(startDate || endDate
       ? {
-          saleDate: {
-            ...(startDate ? { gte: startDate } : {}),
-            ...(endDate ? { lte: endDate } : {}),
-          },
-        }
+        saleDate: {
+          ...(startDate ? { gte: startDate } : {}),
+          ...(endDate ? { lte: endDate } : {}),
+        },
+      }
       : {}),
   };
 
@@ -73,24 +82,24 @@ export async function loader({ request }: Route.LoaderArgs) {
     userId: user.id,
     ...(startDate || endDate
       ? {
-          date: {
-            ...(startDate ? { gte: startDate } : {}),
-            ...(endDate ? { lte: endDate } : {}),
-          },
-        }
+        date: {
+          ...(startDate ? { gte: startDate } : {}),
+          ...(endDate ? { lte: endDate } : {}),
+        },
+      }
       : {}),
   };
 
   const [inventoryStats, salesData, expensesData] = await Promise.all([
     prisma.inventoryItem.aggregate({
-      where: { userId: user.id, status: 'IN_STOCK' },
+      where: { userId: user.id, status: "IN_STOCK" },
       _sum: { purchasePrice: true },
       _count: true,
     }),
     prisma.sale.findMany({
       where: saleWhereClause,
       include: { expenses: true, inventoryItem: true },
-      orderBy: { saleDate: 'desc' },
+      orderBy: { saleDate: "desc" },
     }),
     prisma.expense.findMany({
       where: expenseWhereClause,
@@ -99,21 +108,23 @@ export async function loader({ request }: Route.LoaderArgs) {
 
   const serializedStats = {
     _count: inventoryStats?._count || 0,
-    _sum: { purchasePrice: Number(inventoryStats?._sum?.purchasePrice || 0) }
+    _sum: { purchasePrice: Number(inventoryStats?._sum?.purchasePrice || 0) },
   };
 
-  const serializedSales = salesData.map(s => ({
+  const serializedSales = salesData.map((s) => ({
     ...s,
     salePrice: Number(s.salePrice),
+    platformFee: Number(s.platformFee),
+    shippingCost: Number(s.shippingCost),
     inventoryItem: {
       ...s.inventoryItem,
       purchasePrice: Number(s.inventoryItem.purchasePrice),
-    }
+    },
   }));
 
-  const serializedExpenses = expensesData.map(e => ({
+  const serializedExpenses = expensesData.map((e) => ({
     ...e,
-    amount: Number(e.amount)
+    amount: Number(e.amount),
   }));
 
   return { inventoryStats: serializedStats, salesData: serializedSales, expensesData: serializedExpenses };
@@ -127,7 +138,14 @@ export default function DashboardPage() {
       <AIInsightsPanel />
       <StatsCardsRow stats={inventoryStats} sales={salesData} expenses={expensesData} />
       <CashFlowChart sales={salesData} expenses={expensesData} />
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "var(--space-6)", marginBottom: "var(--space-6)" }}>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr 1fr",
+          gap: "var(--space-6)",
+          marginBottom: "var(--space-6)",
+        }}
+      >
         <TopBrandsChart sales={salesData} />
         <SalesByMarketplacePie sales={salesData} />
         <ExpenseCategoriesChart expenses={expensesData} />

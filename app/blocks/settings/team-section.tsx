@@ -1,9 +1,22 @@
-import { Link, Form } from "react-router";
+import { Link, Form, useActionData, useNavigation } from "react-router";
+import { useState, useEffect } from "react";
 import styles from "./team-section.module.css";
 
 interface Props { className?: string; user?: any; }
 
 export function TeamSection({ className, user }: Props) {
+  const [isInviteOpen, setIsInviteOpen] = useState(false);
+  const actionData = useActionData<any>();
+  const navigation = useNavigation();
+  const isSubmitting = navigation.state === "submitting" && navigation.formData?.get("intent") === "invite-member";
+  const [showSuccess, setShowSuccess] = useState(false);
+
+  useEffect(() => {
+    if (actionData?.intent === "invite-member" && actionData?.ok) {
+      setShowSuccess(true);
+    }
+  }, [actionData]);
+
   if (!user) return null;
 
   if (user.plan !== "BUSINESS") {
@@ -34,7 +47,54 @@ export function TeamSection({ className, user }: Props) {
               </div>
             </div>
           ))}
-          <button className={styles.gateBtn} style={{marginTop: "var(--space-4)"}}>Invite Member</button>
+          <button type="button" className={styles.gateBtn} style={{marginTop: "var(--space-4)", alignSelf: "flex-start"}} onClick={() => setIsInviteOpen(true)}>Invite Member</button>
+          
+          {isInviteOpen && (
+            <div className={styles.modalOverlay} role="presentation">
+              <div className={styles.modalContent} role="dialog" aria-modal="true" aria-labelledby="modal-title">
+                <div className={styles.modalHeader}>
+                  <h3 id="modal-title" className={styles.modalTitle}>Invite Team Member</h3>
+                  <button className={styles.closeBtn} aria-label="Close" onClick={() => { setIsInviteOpen(false); setShowSuccess(false); }}>&times;</button>
+                </div>
+                
+                {showSuccess ? (
+                  <div className={styles.successMessage}>
+                    <p style={{marginBottom: "var(--space-2)"}}>{actionData.message}</p>
+                    <p style={{fontSize: "0.85rem", color: "var(--color-text-muted)", wordBreak: "break-all", background: "var(--color-bg)", padding: "var(--space-2)", borderRadius: "var(--radius-sm)"}}>
+                      {actionData.inviteLink}
+                    </p>
+                    <div className={styles.modalActions}>
+                      <button className={styles.gateBtn} onClick={() => { setIsInviteOpen(false); setShowSuccess(false); }}>Close</button>
+                    </div>
+                  </div>
+                ) : (
+                  <Form method="post">
+                    <input type="hidden" name="intent" value="invite-member" />
+                    <div className={styles.formGroup}>
+                      <label className={styles.label}>Email Address</label>
+                      <input name="email" type="email" className={styles.input} required placeholder="member@example.com" />
+                    </div>
+                    <div className={styles.formGroup}>
+                      <label className={styles.label}>Role</label>
+                      <select name="role" className={styles.input}>
+                        <option value="member">Member</option>
+                        <option value="admin">Admin</option>
+                      </select>
+                    </div>
+                    
+                    {actionData?.intent === "invite-member" && !actionData?.ok && (
+                      <p style={{color: "var(--color-danger)", fontSize: "0.85rem", marginTop: "var(--space-2)"}}>{actionData.error}</p>
+                    )}
+                    
+                    <div className={styles.modalActions}>
+                      <button type="button" className={styles.cancelBtn} onClick={() => { setIsInviteOpen(false); setShowSuccess(false); }} disabled={isSubmitting}>Cancel</button>
+                      <button type="submit" className={styles.gateBtn} disabled={isSubmitting}>{isSubmitting ? "Sending..." : "Send Invite"}</button>
+                    </div>
+                  </Form>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       ) : (
         <Form method="post" className={styles.createTeamForm}>

@@ -46,10 +46,10 @@ export function AddExpenseModal({ className, onClose, expense }: Props) {
             )}
             <div className={styles.field}><label className={styles.label}>Amount *</label><input name="amount" className={styles.input} type="number" step="0.01" placeholder="0.00" defaultValue={expense?.amount ?? ""} required /></div>
           </div>
-          <div className={styles.field}><label className={styles.label}>Description *</label><input name="description" className={styles.input} placeholder="e.g. StockX seller fee" defaultValue={expense?.description ?? ""} required /></div>
+          <div className={styles.field}><label className={styles.label}>Description *</label><input name="description" className={styles.input} placeholder="e.g. eBay seller fee" defaultValue={expense?.description ?? ""} required /></div>
           <div className={styles.field}>
             <label className={styles.label}>Category</label>
-            <select name="type" className={styles.input} defaultValue={expense?.type ?? "MARKETPLACE_FEE"}><option value="MARKETPLACE_FEE">Marketplace Fee</option><option value="SHIPPING">Shipping</option><option value="BOT_FEE">Bot Fee</option><option value="ADVERTISING">Advertising</option><option value="STORAGE">Storage</option><option value="SUPPLIES">Supplies</option><option value="CUSTOM">Custom</option></select>
+            <select name="type" className={styles.input} defaultValue={expense?.type ?? "MARKETPLACE_FEE"}><option value="MARKETPLACE_FEE">Marketplace Fee</option><option value="SHIPPING">Shipping</option><option value="SUBSCRIPTION_FEE">Subscription Fee</option><option value="BOT_FEE">Bot Fee</option><option value="ADVERTISING">Advertising</option><option value="STORAGE">Storage</option><option value="SUPPLIES">Supplies</option><option value="PACKAGING">Packaging</option><option value="RETURNS">Returns</option><option value="CUSTOM">Custom</option></select>
           </div>
         </div>
         <div className={styles.footer}>

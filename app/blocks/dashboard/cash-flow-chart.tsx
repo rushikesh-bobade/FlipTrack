@@ -20,7 +20,7 @@ export function CashFlowChart({ className, sales = [], expenses = [] }: Props) {
     const label = d.toLocaleString('default', { month: 'short' });
     if (grouped[label]) {
       grouped[label].revenue += Number(s.salePrice);
-      grouped[label].expenses += Number(s.inventoryItem.purchasePrice);
+      grouped[label].expenses += Number(s.inventoryItem.purchasePrice) + Number(s.platformFee) + Number(s.shippingCost);
     }
   });
   

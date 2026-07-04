@@ -12,7 +12,12 @@ const COLORS = {
   SHIPPING: "var(--color-primary)",
   MARKETPLACE_FEE: "var(--color-secondary)",
   BOT_FEE: "var(--color-danger)",
+  SUBSCRIPTION_FEE: "var(--color-warning, #F59E0B)",
+  ADVERTISING: "#8B5CF6",
+  STORAGE: "#06B6D4",
   SUPPLIES: "var(--color-success)",
+  PACKAGING: "#EC4899",
+  RETURNS: "#EF4444",
   OTHER: "var(--color-surface-border)",
   CUSTOM: "var(--color-foreground-muted)",
 };

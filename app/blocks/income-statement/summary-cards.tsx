@@ -5,15 +5,18 @@ interface Props { className?: string; sales?: any[]; expenses?: any[]; }
 export function SummaryCards({ className, sales = [], expenses = [] }: Props) {
   let totalRevenue = 0;
   let totalCOGS = 0;
-  
+
   sales.forEach(s => {
     totalRevenue += Number(s.salePrice);
-    totalCOGS += Number(s.inventoryItem.purchasePrice);
+    totalCOGS +=
+      Number(s.inventoryItem.purchasePrice) +
+      Number(s.platformFee) +
+      Number(s.shippingCost);
   });
-  
+
   let totalExpenses = 0;
   expenses.forEach(e => totalExpenses += Number(e.amount));
-  
+
   const grossProfit = totalRevenue - totalCOGS;
   const netProfit = grossProfit - totalExpenses;
   const roi = totalCOGS > 0 ? (netProfit / totalCOGS) * 100 : 0;

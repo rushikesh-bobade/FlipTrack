@@ -11,12 +11,21 @@ import { OneTimeExpensesTable } from "~/blocks/expenses-tracker/one-time-expense
 import { ExpensesSummary } from "~/blocks/expenses-tracker/expenses-summary";
 import { AddExpenseModal } from "~/blocks/expenses-tracker/add-expense-modal";
 import { Pagination } from "~/blocks/__global/pagination";
+import { CACHE_PRIVATE_NO_STORE } from "~/utils/cache-headers";
+
+export function headers(_: Route.HeadersArgs) {
+  return {
+    "Cache-Control": CACHE_PRIVATE_NO_STORE,
+  };
+}
 
 const prisma = new PrismaClient();
 
 export async function loader({ request }: Route.LoaderArgs) {
   const { supabase } = getSupabaseServerClient(request);
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   if (!user) return { expenses: [], recurring: [], totalPages: 0, oneTimeTotal: 0 };
 
@@ -38,21 +47,24 @@ export async function loader({ request }: Route.LoaderArgs) {
     }),
     prisma.expense.aggregate({
       where: { userId: user.id },
-      _sum: { amount: true }
-    })
+      _sum: { amount: true },
+    }),
   ]);
 
   return {
     expenses: expenses.map(e => ({ ...e, amount: Number(e.amount) })),
     recurring: recurring.map(r => ({ ...r, amount: Number(r.amount) })),
     totalPages: Math.ceil(totalExpenses / pageSize),
-    oneTimeTotal: Number(sumResult._sum.amount || 0)
+    oneTimeTotal: Number(sumResult._sum.amount || 0),
   };
 }
 
 export async function action({ request }: Route.ActionArgs) {
   const { supabase } = getSupabaseServerClient(request);
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
   if (!user) return new Response("Unauthorized", { status: 401 });
 
   const formData = await request.formData();
@@ -65,12 +77,13 @@ export async function action({ request }: Route.ActionArgs) {
     await prisma.recurringExpense.updateMany({
       where: {
         id,
-        userId: user.id
+        userId: user.id,
       },
       data: {
         isActive,
       },
     });
+
     return { ok: true, intent };
   }
 
@@ -90,8 +103,8 @@ export async function action({ request }: Route.ActionArgs) {
           amount,
           description,
           dayOfMonth,
-          isActive: true
-        }
+          isActive: true,
+        },
       });
     } else {
       await prisma.expense.create({
@@ -101,7 +114,7 @@ export async function action({ request }: Route.ActionArgs) {
           amount,
           description,
           date,
-        }
+        },
       });
     }
   }
@@ -126,7 +139,7 @@ export async function action({ request }: Route.ActionArgs) {
     await prisma.expense.delete({
       where: { id, userId: user.id },
     });
-    
+
     return { ok: true, intent: "delete" };
   }
 }

@@ -41,4 +41,5 @@ export default [
   route("/api/ai/price-insight", "routes/api.ai.insights.ts"),
   route("/api/insights", "routes/api.insights.ts"),
   route("/api/export/tax", "routes/api.export.tax.ts"),
+  route("/api/inventory/search", "routes/api.inventory.search.ts"),
 ] satisfies RouteConfig;

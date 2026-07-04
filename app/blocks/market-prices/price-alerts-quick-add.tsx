@@ -17,7 +17,7 @@ export function PriceAlertsQuickAdd({ className }: Props) {
         <div className={styles.field}>
           <label className={styles.label}>Marketplace</label>
           <select className={styles.input}>
-            <option>StockX</option><option>GOAT</option><option>eBay</option><option>Flight Club</option><option>Stadium Goods</option>
+            <option>StockX</option><option>GOAT</option><option>eBay</option><option>Flight Club</option><option>Stadium Goods</option><option>Amazon</option><option>Mercari</option><option>Poshmark</option><option>Facebook</option><option>Shopify</option><option>Grailed</option><option>Depop</option><option>OfferUp</option><option>Other</option>
           </select>
         </div>
         <div className={styles.field}>
