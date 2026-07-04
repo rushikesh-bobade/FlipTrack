@@ -25,8 +25,12 @@ export async function action({ request }: Route.ActionArgs) {
   const password = formData.get("password") as string;
   const confirmPassword = formData.get("confirmPassword") as string;
 
+  if (!name || !email || !password) {
+    return { error: "All fields are required." };
+  }
+
   if (password !== confirmPassword) {
-    return { error: "Passwords do not match" };
+    return { error: "Passwords do not match." };
   }
 
   const { data, error } = await supabase.auth.signUp({
@@ -41,17 +45,30 @@ export async function action({ request }: Route.ActionArgs) {
     return { error: error.message };
   }
 
-  // Insert into public.User if signed up successfully
-  if (data.user) {
-    await prisma.user.upsert({
-      where: { id: data.user.id },
-      update: {},
-      create: {
+  if (data.user && data.user.identities && data.user.identities.length === 0) {
+    return {
+      error: "An account with this email already exists. Try logging in instead.",
+    };
+  }
+
+  if (!data.user) {
+    return { error: "Something went wrong creating your account. Please try again." };
+  }
+
+  try {
+    await prisma.user.create({
+      data: {
         id: data.user.id,
         email: data.user.email!,
         name,
       },
     });
+  } catch (dbError) {
+    // FIXED: Let the error fail gracefully and removed admin cleanup block entirely
+    console.error("Failed to create profile row after auth signup:", dbError);
+    return {
+      error: "Something went wrong creating your account database profile. Please try again or contact support.",
+    };
   }
 
   return redirect("/app/dashboard", { headers });

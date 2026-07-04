@@ -65,8 +65,26 @@ jobs:
               return;
             }
 
-            // 6. Post the response
-            const replyBody = `Hi @${commenter}! 👋\n\n${botSignature} to this repository! Please wait until a maintainer officially assigns you to this issue before opening a Pull Request. \n\nWhile you wait, please consider starring ⭐ this repository to show your support! We review requests regularly and will assign it as soon as possible if it's available. Happy coding! 🚀`;
+            // 6. Check if the user already has open assigned issues/PRs
+            const assignedItemsResponse = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              assignee: commenter,
+              state: 'open'
+            });
+
+            // Filter out the current issue they are commenting on (just in case)
+            const activeAssignments = assignedItemsResponse.data.filter(item => item.number !== issue.number);
+            const hasOpenAssignments = activeAssignments.length > 0;
+
+            let replyBody = '';
+
+            if (hasOpenAssignments) {
+              const assignedItem = activeAssignments[0];
+              replyBody = `Hi @${commenter}! 👋\n\nWe love the enthusiasm! However, to keep things fair and manageable, our policy is that contributors may only take on **one active issue at a time**.\n\nIt looks like you currently have unfinished work ([#${assignedItem.number}](${assignedItem.html_url})). Please focus on completing that one first!\n\nOnce your current work is merged, if this issue is still open, you are more than welcome to claim it. Happy coding! 🚀`;
+            } else {
+              replyBody = `Hi @${commenter}! 👋\n\n${botSignature} to this repository! Please wait until a maintainer officially assigns you to this issue before opening a Pull Request. \n\nWhile you wait, please consider starring ⭐ this repository to show your support! We review requests regularly and will assign it as soon as possible if it's available. Happy coding! 🚀`;
+            }
 
             await github.rest.issues.createComment({
               owner: context.repo.owner,

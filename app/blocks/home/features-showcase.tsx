@@ -25,14 +25,14 @@ const features = [
     tag: "Live Prices",
     icon: IconTrendingUp,
     title: "Stop checking 5 tabs. We check them for you.",
-    desc: "Live prices from StockX, GOAT, eBay, Flight Club, and Stadium Goods — refreshed every 15 minutes automatically.",
+    desc: "Live prices from eBay, Amazon, Mercari, StockX, Poshmark and more — refreshed every 15 minutes automatically.",
     bullets: ["All marketplaces in one table", "Color-coded profit indicators", "'Best to Sell' auto-highlighted"],
     link: "/features",
     reverse: true,
     mockupRows: [
-      { label: "StockX", value: "$420", color: "green" },
-      { label: "GOAT", value: "$395", color: "green" },
-      { label: "eBay", value: "$340", color: "red" },
+      { label: "Amazon", value: "$420", color: "green" },
+      { label: "eBay", value: "$395", color: "green" },
+      { label: "Mercari", value: "$340", color: "red" },
     ],
   },
   {
@@ -44,8 +44,8 @@ const features = [
     link: "/features",
     reverse: false,
     mockupRows: [
-      { label: "AJ1 Chicago sz10 > $500", value: "ACTIVE", color: "green" },
-      { label: "Yeezy 350 sz11 < $200", value: "TRIGGERED", color: "red" },
+      { label: "PS5 Disc Ed. > $500", value: "ACTIVE", color: "green" },
+      { label: "MacBook Air < $800", value: "TRIGGERED", color: "red" },
     ],
   },
   {
@@ -57,9 +57,9 @@ const features = [
     link: "/features",
     reverse: true,
     mockupRows: [
-      { label: "AJ1 Chicago — SELL", value: "94%", color: "red" },
-      { label: "Yeezy 350 — HOLD", value: "71%", color: "" },
-      { label: "Dunk Low — BUY", value: "88%", color: "green" },
+      { label: "PS5 Pro — SELL", value: "94%", color: "red" },
+      { label: "iPhone 15 — HOLD", value: "71%", color: "" },
+      { label: "Pokemon 151 — BUY", value: "88%", color: "green" },
     ],
   },
   {

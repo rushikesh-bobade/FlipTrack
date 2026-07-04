@@ -8,9 +8,9 @@ interface Props {
 /* PLACEHOLDER: These testimonials are placeholder data for UI demonstration purposes only */
 const testimonials = [
   {
-    quote: "FlipTrack completely replaced my Google Sheets setup. The live price comparison table alone saves me 2 hours a week. The AI insights are actually useful — it flagged a sell window on my Jordan 1s that netted me an extra $80.",
+    quote: "FlipTrack completely replaced my Google Sheets setup. The live price comparison table alone saves me 2 hours a week. The AI insights are actually useful — it flagged a sell window on my PS5 inventory that netted me an extra $80.",
     name: "Marcus T.",
-    role: "Full-time Sneaker Reseller",
+    role: "Full-time Reseller",
     initials: "MT",
   },
   {
@@ -20,7 +20,7 @@ const testimonials = [
     initials: "JK",
   },
   {
-    quote: "Our team uses the Business plan and it's been a game changer. Everyone can see inventory in real-time, no more double-selling the same pair. The activity log keeps everyone accountable.",
+    quote: "Our team uses the Business plan and it's been a game changer. Everyone can see inventory in real-time, no more double-selling the same item. The activity log keeps everyone accountable.",
     name: "Riley & Sam",
     role: "Reselling Team, Business Plan",
     initials: "RS",

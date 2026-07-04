@@ -1,5 +1,6 @@
 import { IconBox, IconTrendingUp, IconBell, IconBrain, IconReceipt, IconFileText, IconGlobe, IconUsers } from "@tabler/icons-react";
 import styles from "./feature-categories-grid.module.css";
+import { useTilt } from "~/hooks/use-tilt";
 
 interface Props { className?: string; }
 
@@ -14,6 +15,17 @@ const categories = [
   { icon: IconUsers, title: "Team Collaboration", desc: "Share inventory with your team. Role-based access control." },
 ];
 
+function FeatureCardItem({ c }: { c: typeof categories[0] }) {
+  const tiltRef = useTilt<HTMLDivElement>();
+  return (
+    <div ref={tiltRef} className={styles.card}>
+      <div className={styles.iconWrap}><c.icon size={20} /></div>
+      <div className={styles.cardTitle}>{c.title}</div>
+      <div className={styles.cardDesc}>{c.desc}</div>
+    </div>
+  );
+}
+
 export function FeatureCategoriesGrid({ className }: Props) {
   return (
     <section className={[styles.section, className].filter(Boolean).join(" ")}>
@@ -21,11 +33,7 @@ export function FeatureCategoriesGrid({ className }: Props) {
         <h2 className={styles.heading}>Everything in one platform</h2>
         <div className={styles.grid}>
           {categories.map((c) => (
-            <div key={c.title} className={styles.card}>
-              <div className={styles.iconWrap}><c.icon size={20} /></div>
-              <div className={styles.cardTitle}>{c.title}</div>
-              <div className={styles.cardDesc}>{c.desc}</div>
-            </div>
+            <FeatureCardItem key={c.title} c={c} />
           ))}
         </div>
       </div>
