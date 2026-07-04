@@ -100,6 +100,13 @@ export async function action({ request }: Route.ActionArgs) {
     const marketplace = formData.get("marketplace") as any;
     const trackingNumber = formData.get("trackingNumber") as string;
 
+    // formData.get() can return null (missing field) or a File; the `as string`
+    // cast hides that from tsc but Prisma would throw a 500 at runtime. Validate
+    // the type up front so a malformed request fails gracefully with a 400.
+    if (typeof inventoryItemId !== "string" || !inventoryItemId) {
+      return new Response("Bad Request", { status: 400 });
+    }
+
     // Verify the item belongs to the current user before logging a sale against it,
     // otherwise a tampered request could mark another user's inventory as sold.
     const ownedItem = await prisma.inventoryItem.findFirst({
