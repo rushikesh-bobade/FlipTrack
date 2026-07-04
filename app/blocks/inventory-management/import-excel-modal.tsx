@@ -349,7 +349,7 @@ export function ImportExcelModal({ className, onClose }: Props) {
       <div className={[styles.modal, className].filter(Boolean).join(" ")}>
         <div className={styles.header}>
           <span className={styles.title}>Import from Excel / CSV</span>
-          <button className={styles.closeBtn} onClick={handleClose} disabled={isLoading}>
+          <button className={styles.closeBtn} onClick={handleClose} disabled={isLoading} aria-label="Close modal" title="Close modal">
             <IconX size={18} />
           </button>
         </div>
@@ -360,6 +360,8 @@ export function ImportExcelModal({ className, onClose }: Props) {
             type="file"
             accept=".csv,.xlsx"
             onChange={handleFileChange}
+            aria-label="Upload Excel or CSV file"
+            title="Upload Excel or CSV file"
           />
           <div
             className={[styles.dropzone, isDragging ? styles.dropzoneActive : ""].filter(Boolean).join(" ")}
