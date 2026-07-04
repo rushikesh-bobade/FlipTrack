@@ -32,66 +32,56 @@ export async function action({ request }: Route.ActionArgs) {
       });
     }
 
-    const stream = new ReadableStream({
-      async start(controller) {
-        for (const item of rawInventory) {
-          try {
-            const actualPriceHistory = item.priceHistory || [];
+    const insights = [];
 
-            const { text } = await generateText({
-              model: groq('llama-3.3-70b-versatile'),
-              system: `You are an expert retail and e-commerce analyst. Analyze price data and provide actionable insights.
-                       Always respond with pure JSON in this exact format: {"trend": "string", "recommendation": "BUY"|"SELL"|"HOLD", "reasoning": "string", "targetPrice": number, "confidence": number}`,
-              prompt: `
-                Product: ${item.name} (SKU: ${item.sku})
-                Price history (from DB): ${JSON.stringify(actualPriceHistory)}
-                User's purchase price: ${item.purchasePrice}
-                
-                Provide a price trend analysis and buy/sell/hold recommendation based on the data.
-              `,
-            });
+    for (const item of rawInventory) {
+      try {
+        const actualPriceHistory = item.priceHistory || [];
 
-            const jsonStr = text.replace(/```json/g, "").replace(/```/g, "").trim();
-            const parsedJson = JSON.parse(jsonStr);
-
-            const insight = {
-              id: item.id,
-              name: item.name,
-              sku: item.sku,
-              purchasePrice: Number(item.purchasePrice),
-              recommendation: parsedJson.recommendation || "HOLD",
-              confidence: parsedJson.confidence || 0.8,
-              reasoning: parsedJson.reasoning || parsedJson.trend || "Analysis complete.",
-              targetPrice: parsedJson.targetPrice || Number(item.purchasePrice) * 1.2,
-            };
+        const { text } = await generateText({
+          model: groq('llama-3.3-70b-versatile'),
+          system: `You are an expert retail and e-commerce analyst. Analyze price data and provide actionable insights.
+                   Always respond with pure JSON in this exact format: {"trend": "string", "recommendation": "BUY"|"SELL"|"HOLD", "reasoning": "string", "targetPrice": number, "confidence": number}`,
+          prompt: `
+            Product: ${item.name} (SKU: ${item.sku})
+            Price history (from DB): ${JSON.stringify(actualPriceHistory)}
+            User's purchase price: ${item.purchasePrice}
             
-            controller.enqueue(new TextEncoder().encode(JSON.stringify(insight) + "\n"));
-          } catch (err) {
-            console.error(`Error analyzing item ${item.sku}:`, err);
-            const fallback = {
-              id: item.id,
-              name: item.name,
-              sku: item.sku,
-              purchasePrice: Number(item.purchasePrice),
-              recommendation: "HOLD",
-              confidence: 0.5,
-              reasoning: "AI engine analysis failed temporarily.",
-              targetPrice: Number(item.purchasePrice),
-            };
-            controller.enqueue(new TextEncoder().encode(JSON.stringify(fallback) + "\n"));
-          }
-        }
-        controller.close();
-      }
-    });
+            Provide a price trend analysis and buy/sell/hold recommendation based on the data.
+          `,
+        });
 
-    return new Response(stream, {
+        const jsonStr = text.replace(/```json/g, "").replace(/```/g, "").trim();
+        const parsedJson = JSON.parse(jsonStr);
+
+        insights.push({
+          id: item.id,
+          name: item.name,
+          sku: item.sku,
+          purchasePrice: Number(item.purchasePrice),
+          recommendation: parsedJson.recommendation || "HOLD",
+          confidence: parsedJson.confidence || 0.8,
+          reasoning: parsedJson.reasoning || parsedJson.trend || "Analysis complete.",
+          targetPrice: parsedJson.targetPrice || Number(item.purchasePrice) * 1.2,
+        });
+      } catch (err) {
+        console.error(`Error analyzing item ${item.sku}:`, err);
+        insights.push({
+          id: item.id,
+          name: item.name,
+          sku: item.sku,
+          purchasePrice: Number(item.purchasePrice),
+          recommendation: "HOLD",
+          confidence: 0.5,
+          reasoning: "AI engine analysis failed temporarily.",
+          targetPrice: Number(item.purchasePrice),
+        });
+      }
+    }
+
+    return new Response(JSON.stringify({ insights }), {
       status: 200,
-      headers: {
-        "Content-Type": "application/x-ndjson",
-        "Cache-Control": "no-cache",
-        "Connection": "keep-alive"
-      },
+      headers: { "Content-Type": "application/json" },
     });
 
   } catch (error: any) {
