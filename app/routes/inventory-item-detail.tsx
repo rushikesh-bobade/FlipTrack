@@ -143,7 +143,7 @@ export default function InventoryItemDetailPage() {
     return <div>Item not found</div>;
   }
 
-  return (
+  return 
     <div className={styles.page}>
       <ItemHeader item={item} />
 
@@ -168,9 +168,5 @@ export default function InventoryItemDetailPage() {
       <RelatedItems items={relatedItems} />
         <PriceHistoryChart priceHistory={item.priceHistory} />
       </div>
-      <MarketplaceComparison priceHistory={item.priceHistory} />
-      <SalesHistory sale={item.sale} />
-      <RelatedItems />
-    </div>
+      
   );
-}

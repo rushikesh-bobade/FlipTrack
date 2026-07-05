@@ -5,23 +5,24 @@ interface Props {
   className?: string;
   items: any[];
 }
-interface Props { className?: string; items: any[]; }
-interface Props {
-  className?: string;
-}
 
 export function RelatedItems({ className, items }: Props) {
   return (
     <div className={[styles.section, className].filter(Boolean).join(" ")}>
       <div className={styles.title}>Related Items</div>
+
       <div className={styles.grid}>
         {items.map((item) => (
-        {items.map(item => (
-        {related.map((item) => (
-          <Link key={item.id} to={`/app/inventory/${item.id}`} className={styles.card}>
+          <Link
+            key={item.id}
+            to={`/app/inventory/${item.id}`}
+            className={styles.card}
+          >
             <div className={styles.image}>Image</div>
             <div className={styles.name}>{item.name}</div>
-            <div className={styles.price}>${item.marketValue}</div>
+            <div className={styles.price}>
+              ${item.marketValue ?? "N/A"}
+            </div>
           </Link>
         ))}
       </div>
