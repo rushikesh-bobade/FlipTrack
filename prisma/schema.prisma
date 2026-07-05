@@ -98,6 +98,7 @@ enum Theme {
 model User {
   id                String         @id @default(uuid())
   email             String         @unique
+  username          String?        @unique
   name              String?
   avatarUrl         String?
   plan              Plan           @default(FREE)
@@ -150,6 +151,7 @@ model InventoryItem {
   askingPrice   Decimal?      @db.Decimal(10, 2)
   notes         String?
   imageUrl      String?
+  isPublic      Boolean       @default(false)
   currency      Currency      @default(USD)
   tags          String[]      // flexible tags
   createdAt     DateTime      @default(now())
