@@ -1,0 +1,143 @@
+.chatWrapper {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 9999;
+  font-family: sans-serif;
+}
+
+/* Floating Button */
+.fab {
+  background: #00ff88;
+  color: black;
+  border: none;
+  padding: 14px;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 0 15px #00ff88;
+  animation: glow 2s infinite;
+}
+
+/* Chat Box */
+.chatBox {
+  width: 320px;
+  height: 420px;
+  background: #111;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 0 20px rgba(0, 255, 136, 0.2);
+}
+
+/* Header */
+.header {
+  padding: 10px;
+  background: #00ff88;
+  color: black;
+  display: flex;
+  justify-content: space-between;
+  font-weight: 600;
+}
+
+/* Chat body */
+.body {
+  flex: 1;
+  padding: 10px;
+  overflow-y: auto;
+}
+
+/* Messages */
+.user {
+  text-align: right;
+  margin: 5px 0;
+  color: white;
+}
+
+.bot {
+  text-align: left;
+  margin: 5px 0;
+  color: #00ff88;
+  text-shadow: 0 0 6px #00ff88;
+}
+
+/* Input area */
+.inputBox {
+  display: flex;
+}
+
+.inputBox input {
+  flex: 1;
+  padding: 8px;
+  border: none;
+  outline: none;
+}
+
+.inputBox button {
+  background: #00ff88;
+  border: none;
+  color: black;
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+/* Suggestions */
+.suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 6px;
+}
+
+.suggestions button {
+  font-size: 10px;
+  border: none;
+  padding: 4px 6px;
+  cursor: pointer;
+}
+
+/* Hover effects */
+.fab:hover,
+.inputBox button:hover,
+.suggestions button:hover {
+  box-shadow: 0 0 10px #00ff88;
+  transform: scale(1.05);
+}
+
+/* Glow animation */
+@keyframes glow {
+  0% { box-shadow: 0 0 5px #00ff88; }
+  50% { box-shadow: 0 0 20px #00ff88; }
+  100% { box-shadow: 0 0 5px #00ff88; }
+}
+
+.suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 10px;
+}
+
+.suggestionBtn {
+  background: rgba(0, 255, 136, 0.08);
+  border: 1px solid rgba(0, 255, 136, 0.4);
+  color: #00ff88;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.suggestionBtn:hover {
+  background: #00ff88;
+  color: #0b0f0e;
+  transform: translateY(-1px);
+  box-shadow: 0 0 10px rgba(0, 255, 136, 0.4);
+}
+
+.suggestionBtn:active {
+  transform: scale(0.95);
+}
