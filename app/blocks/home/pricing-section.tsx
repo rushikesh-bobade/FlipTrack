@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router";
 import { IconCheck } from "@tabler/icons-react";
 import styles from "./pricing-section.module.css";
+import { useMagnetic } from "~/hooks/use-magnetic";
 
 interface Props {
   className?: string;
@@ -39,6 +40,19 @@ const plans = [
     featured: false,
   },
 ];
+
+function PricingCTA({ plan }: { plan: typeof plans[0] }) {
+  const magneticRef = useMagnetic<HTMLAnchorElement>();
+  return (
+    <Link
+      ref={magneticRef}
+      to={plan.ctaLink}
+      className={[styles.ctaBtn, plan.featured ? styles.ctaBtnPrimary : styles.ctaBtnOutline].join(" ")}
+    >
+      {plan.cta}
+    </Link>
+  );
+}
 
 export function PricingSection({ className }: Props) {
   const [annual, setAnnual] = useState(false);
@@ -82,12 +96,7 @@ export function PricingSection({ className }: Props) {
                   </div>
                 ))}
               </div>
-              <Link
-                to={plan.ctaLink}
-                className={[styles.ctaBtn, plan.featured ? styles.ctaBtnPrimary : styles.ctaBtnOutline].join(" ")}
-              >
-                {plan.cta}
-              </Link>
+              <PricingCTA plan={plan} />
             </div>
           ))}
         </div>

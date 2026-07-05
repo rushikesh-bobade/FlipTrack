@@ -5,9 +5,9 @@ import styles from "./general-questions.module.css";
 interface Props { className?: string; }
 
 const faqs = [
-  { q: "What is FlipTrack?", a: "FlipTrack is a SaaS platform for sneaker, streetwear, and collectibles resellers. It provides live price tracking, inventory management, sales logging, AI insights, and tax reporting in one platform." },
-  { q: "Who is FlipTrack for?", a: "FlipTrack is built for sneaker resellers of all levels — from beginners flipping a few pairs a month to full-time resellers managing hundreds of items across multiple marketplaces." },
-  { q: "How does FlipTrack work?", a: "You add your inventory to FlipTrack, and we automatically track live prices from StockX, GOAT, eBay, Flight Club, and Stadium Goods. When you sell, you log the sale and FlipTrack calculates your profit." },
+  { q: "What is FlipTrack?", a: "FlipTrack is a SaaS platform for all online resellers. It provides live price tracking, inventory management, sales logging, AI insights, and tax reporting in one platform." },
+  { q: "Who is FlipTrack for?", a: "FlipTrack is built for resellers of all levels — from beginners flipping a few items a month to full-time resellers managing hundreds of items across multiple marketplaces." },
+  { q: "How does FlipTrack work?", a: "You add your inventory to FlipTrack, and we automatically track live prices from eBay, Amazon, Mercari, StockX, Poshmark, and more. When you sell, you log the sale and FlipTrack calculates your profit." },
   { q: "Why choose FlipTrack over a spreadsheet?", a: "Spreadsheets require manual data entry and can't automatically track live prices. FlipTrack saves hours per week by automating price tracking, P&L calculations, and tax reporting." },
   { q: "Is there a free trial?", a: "Yes! Our Free plan is free forever with up to 15 inventory items and 5 price alerts. You can upgrade to Pro or Business at any time." },
   { q: "How do I get started?", a: "Sign up at fliptrack.io — no credit card required. Add your first inventory item and we'll start tracking prices immediately." },

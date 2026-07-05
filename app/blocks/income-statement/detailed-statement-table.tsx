@@ -26,11 +26,14 @@ export function DetailedStatementTable({ className, sales = [], expenses = [] }:
           <tbody>
             {sales.map(s => {
               const cogs = Number(s.inventoryItem.purchasePrice);
-              const gross = Number(s.salePrice) - cogs;
+              const platformFee = Number(s.platformFee);
+              const shippingCost = Number(s.shippingCost);
+              
+              const gross = Number(s.salePrice) - cogs - platformFee - shippingCost;
               // Sum expenses related to this sale if they exist
               const saleExpenses = expenses.filter(e => e.saleId === s.id).reduce((acc, e) => acc + Number(e.amount), 0);
               const profit = gross - saleExpenses;
-              
+
               return (
                 <tr key={s.id} className={styles.tr}>
                   <td className={styles.td}>{new Date(s.saleDate).toLocaleDateString()}</td>

@@ -9,26 +9,37 @@ import { PlanLimitWarning } from "~/blocks/price-alerts/plan-limit-warning";
 import { CreateAlertForm } from "~/blocks/price-alerts/create-alert-form";
 import { ActiveAlertsTable } from "~/blocks/price-alerts/active-alerts-table";
 import { AlertHistory } from "~/blocks/price-alerts/alert-history";
+import { CACHE_PRIVATE_NO_STORE } from "~/utils/cache-headers";
+
+export function headers(_: Route.HeadersArgs) {
+  return {
+    "Cache-Control": CACHE_PRIVATE_NO_STORE,
+  };
+}
 
 const prisma = new PrismaClient();
 
 export async function loader({ request }: Route.LoaderArgs) {
   const { supabase } = getSupabaseServerClient(request);
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   if (!user) return { alerts: [] };
 
   const alerts = await prisma.priceAlert.findMany({
     where: { userId: user.id },
-    orderBy: { createdAt: 'desc' }
+    orderBy: { createdAt: "desc" },
   });
 
-  return { alerts: alerts.map(a => ({ ...a, targetPrice: Number(a.targetPrice) })) };
+  return { alerts: alerts.map((a) => ({ ...a, targetPrice: Number(a.targetPrice) })) };
 }
 
 export async function action({ request }: Route.ActionArgs) {
   const { supabase } = getSupabaseServerClient(request);
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) return new Response("Unauthorized", { status: 401 });
 
   const formData = await request.formData();
@@ -46,15 +57,21 @@ export async function action({ request }: Route.ActionArgs) {
     await prisma.priceAlert.create({
       data: {
         userId: user.id,
-        sku, size, productName, marketplace, targetPrice, direction, notificationChannel: channel
-      }
+        sku,
+        size,
+        productName,
+        marketplace,
+        targetPrice,
+        direction,
+        notificationChannel: channel,
+      },
     });
   } else if (intent === "toggle") {
     const id = formData.get("id") as string;
     const isActive = formData.get("isActive") === "true";
     await prisma.priceAlert.update({
       where: { id, userId: user.id },
-      data: { isActive: !isActive } // Toggle
+      data: { isActive: !isActive }, // Toggle
     });
   } else if (intent === "delete") {
     const id = formData.get("id") as string;

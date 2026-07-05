@@ -9,9 +9,9 @@ export function getSupabaseServerClient(request: Request) {
   const supabase = createServerClient(supabaseUrl, supabaseKey, {
     cookies: {
       getAll() {
-        return parseCookieHeader(request.headers.get("Cookie") ?? "");
+        return parseCookieHeader(request.headers.get("Cookie") ?? "") as any;
       },
-      setAll(cookiesToSet) {
+      setAll(cookiesToSet: any[]) {
         cookiesToSet.forEach(({ name, value, options }) =>
           headers.append("Set-Cookie", serializeCookieHeader(name, value, options))
         );

@@ -27,7 +27,7 @@ export async function action({ request }: Route.ActionArgs) {
     let totalCostOfSold = 0;
     sales.forEach(s => {
       totalRevenue += Number(s.salePrice);
-      totalCostOfSold += Number(s.inventoryItem.purchasePrice);
+      totalCostOfSold += Number(s.inventoryItem.purchasePrice) + Number(s.platformFee) + Number(s.shippingCost);
     });
     const totalExpenses = expenses.reduce((acc, e) => acc + Number(e.amount), 0);
     const netProfit = totalRevenue - totalCostOfSold - totalExpenses;

@@ -35,25 +35,34 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--space-4);
-  padding: var(--space-5) 0;
-  background: none;
+  padding: var(--space-5) var(--space-4);
+  background: transparent;
   border: none;
   cursor: pointer;
   text-align: left;
   font-size: 15px;
   font-weight: 600;
   color: var(--color-text);
-  transition: color var(--transition-fast);
+  border-radius: var(--radius-md);
+  transition: color 200ms, background 200ms;
 }
 
-.question:hover {
-  color: var(--color-primary);
+@media (hover: hover) and (pointer: fine) {
+  @media (prefers-reduced-motion: no-preference) {
+    .question:hover {
+      color: var(--color-primary);
+      background: var(--color-bg-elevated);
+    }
+    .question:hover .chevron:not(.open) {
+      transform: rotate(180deg);
+    }
+  }
 }
 
 .chevron {
   color: var(--color-text-muted);
   flex-shrink: 0;
-  transition: transform var(--transition-base);
+  transition: transform 200ms;
 }
 
 .chevron.open {

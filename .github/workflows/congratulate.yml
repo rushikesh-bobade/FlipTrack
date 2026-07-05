@@ -1,0 +1,35 @@
+name: Congratulate Contributor
+
+on:
+  pull_request_target:
+    types:
+      - closed
+
+permissions:
+  pull-requests: write
+  issues: write
+
+jobs:
+  congratulate:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Comment on merged PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const prAuthor = context.payload.pull_request.user.login;
+            
+            // Don't congratulate the repository owner/bot
+            if (prAuthor === context.repo.owner || prAuthor.includes('[bot]')) {
+              return;
+            }
+
+            const body = `🎉 **Congratulations @${prAuthor}!** 🎉\n\nYour Pull Request has been successfully merged! Thank you so much for your hard work and contribution to FlipTrack. We really appreciate it! 🚀`;
+            
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.pull_request.number,
+              body: body
+            });

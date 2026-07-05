@@ -36,7 +36,7 @@ export function SalesTable({
               const profit = salePrice - cost;
               const margin = salePrice > 0 ? ((profit / salePrice) * 100).toFixed(1) : 0;
               const dateObj = new Date(s.saleDate);
-              
+
               return (
                 <tr key={s.id} className={styles.tr}>
                   <td className={styles.td}>{s.inventoryItem.name}</td>
