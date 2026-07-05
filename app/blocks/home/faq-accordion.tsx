@@ -9,7 +9,7 @@ interface Props {
 const faqs = [
   {
     q: "What is FlipTrack?",
-    a: "FlipTrack is a SaaS platform for sneaker, streetwear, and collectibles resellers. It tracks live market prices across StockX, GOAT, eBay, Flight Club, and Stadium Goods, manages your inventory, logs sales, and generates P&L and tax reports — all in one place.",
+    a: "FlipTrack is a SaaS platform for all online resellers. It tracks live market prices across eBay, Amazon, Mercari, StockX, Poshmark, and more. It manages your inventory, logs sales, and generates P&L and tax reports — all in one place.",
   },
   {
     q: "Is FlipTrack really free?",
@@ -21,7 +21,7 @@ const faqs = [
   },
   {
     q: "Which marketplaces are supported?",
-    a: "We currently support StockX, GOAT, eBay, Flight Club, and Stadium Goods. More marketplaces are on the roadmap — vote on GitHub to prioritize your favorites.",
+    a: "We currently support eBay, Amazon, Mercari, Poshmark, Facebook Marketplace, Shopify, StockX, and more. New marketplaces are added regularly — vote on GitHub to prioritize your favorites.",
   },
   {
     q: "Is there a mobile app?",

@@ -18,6 +18,16 @@ const formatMarketplaceName = (name: string) => {
     ebay: "eBay",
     flightclub: "Flight Club",
     stadiumgoods: "Stadium Goods",
+    amazon: "Amazon",
+    mercari: "Mercari",
+    poshmark: "Poshmark",
+    facebook: "Facebook Marketplace",
+    shopify: "Shopify",
+    grailed: "Grailed",
+    depop: "Depop",
+    offerup: "OfferUp",
+    in_person: "In Person",
+    other: "Other",
   };
   return map[name.toLowerCase()] || name;
 };

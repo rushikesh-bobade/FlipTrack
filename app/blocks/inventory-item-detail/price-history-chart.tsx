@@ -18,6 +18,16 @@ const marketplaceColors: Record<string, string> = {
   ebay: "#3B82F6",
   flightclub: "#FFB347",
   stadiumgoods: "#FF4D6A",
+  amazon: "#FF9900",
+  mercari: "#E44B3B",
+  poshmark: "#7B2D8B",
+  facebook: "#1877F2",
+  shopify: "#96BF48",
+  grailed: "#000000",
+  depop: "#FF2300",
+  offerup: "#00AB80",
+  in_person: "#6B7280",
+  other: "#9CA3AF",
 };
 
 export function PriceHistoryChart({ className, priceHistory }: Props) {

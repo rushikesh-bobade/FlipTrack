@@ -97,8 +97,7 @@ export function NavigationBar({ className, appMode }: Props) {
                   document.documentElement.setAttribute('data-theme', next);
                   localStorage.setItem('fliptrack-theme', next);
                 }}
-                className={styles.btnGhost}
-                style={{ padding: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                className={[styles.btnGhost, styles.desktopThemeToggle].join(" ")}
                 title="Toggle Theme"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
@@ -109,13 +108,28 @@ export function NavigationBar({ className, appMode }: Props) {
           </>
         )}
 
-        <button
-          className={styles.hamburger}
-          onClick={() => setMenuOpen((o) => !o)}
-          aria-label="Toggle menu"
-        >
-          {menuOpen ? <IconX size={22} /> : <IconMenu2 size={22} />}
-        </button>
+        <div className={styles.mobileControls}>
+          <button type="button" aria-label="Toggle theme"
+            onClick={() => {
+              const current = document.documentElement.getAttribute('data-theme') || 'dark';
+              const next = current === 'dark' ? 'light' : 'dark';
+              document.documentElement.setAttribute('data-theme', next);
+              localStorage.setItem('fliptrack-theme', next);
+            }}
+            className={[styles.btnGhost, styles.mobileThemeToggle].join(" ")}
+            title="Toggle Theme"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+          </button>
+
+          <button
+            className={styles.hamburger}
+            onClick={() => setMenuOpen((o) => !o)}
+            aria-label="Toggle menu"
+          >
+            {menuOpen ? <IconX size={22} /> : <IconMenu2 size={22} />}
+          </button>
+        </div>
       </div>
 
       <div className={[styles.mobileMenu, menuOpen ? styles.open : ""].join(" ")}>

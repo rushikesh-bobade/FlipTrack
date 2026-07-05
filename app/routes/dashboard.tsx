@@ -70,11 +70,11 @@ export async function loader({ request }: Route.LoaderArgs) {
     userId: user.id,
     ...(startDate || endDate
       ? {
-          saleDate: {
-            ...(startDate ? { gte: startDate } : {}),
-            ...(endDate ? { lte: endDate } : {}),
-          },
-        }
+        saleDate: {
+          ...(startDate ? { gte: startDate } : {}),
+          ...(endDate ? { lte: endDate } : {}),
+        },
+      }
       : {}),
   };
 
@@ -82,11 +82,11 @@ export async function loader({ request }: Route.LoaderArgs) {
     userId: user.id,
     ...(startDate || endDate
       ? {
-          date: {
-            ...(startDate ? { gte: startDate } : {}),
-            ...(endDate ? { lte: endDate } : {}),
-          },
-        }
+        date: {
+          ...(startDate ? { gte: startDate } : {}),
+          ...(endDate ? { lte: endDate } : {}),
+        },
+      }
       : {}),
   };
 
@@ -114,6 +114,8 @@ export async function loader({ request }: Route.LoaderArgs) {
   const serializedSales = salesData.map((s) => ({
     ...s,
     salePrice: Number(s.salePrice),
+    platformFee: Number(s.platformFee),
+    shippingCost: Number(s.shippingCost),
     inventoryItem: {
       ...s.inventoryItem,
       purchasePrice: Number(s.inventoryItem.purchasePrice),

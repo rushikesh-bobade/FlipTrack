@@ -13,3 +13,16 @@
 .field { display: flex; flex-direction: column; gap: var(--space-2); }
 .label { font-size: 0.85rem; font-weight: 600; color: var(--color-text-secondary); }
 .input { background: var(--color-bg); border: 1px solid var(--color-border); padding: 10px 12px; border-radius: var(--radius-sm); color: var(--color-text); width: 100%; max-width: 300px; }
+
+/* Modal Styles */
+.modalOverlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 100; backdrop-filter: blur(4px); }
+.modalContent { background: var(--color-bg); padding: var(--space-6); border-radius: var(--radius-lg); width: 100%; max-width: 400px; border: 1px solid var(--color-border); box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+.modalHeader { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-4); }
+.modalTitle { font-size: 1.25rem; font-weight: 700; color: var(--color-text); margin: 0; }
+.closeBtn { background: none; border: none; color: var(--color-text-muted); cursor: pointer; font-size: 1.5rem; line-height: 1; padding: 0; }
+.closeBtn:hover { color: var(--color-text); }
+.formGroup { display: flex; flex-direction: column; gap: var(--space-2); margin-bottom: var(--space-4); }
+.modalActions { display: flex; justify-content: flex-end; gap: var(--space-3); margin-top: var(--space-6); }
+.cancelBtn { background: transparent; border: 1px solid var(--color-border); padding: 9px 18px; border-radius: var(--radius-sm); color: var(--color-text); cursor: pointer; font-weight: 600; }
+.cancelBtn:hover { background: var(--color-bg-card); }
+.successMessage { padding: var(--space-4); background: var(--color-bg-card); border-radius: var(--radius-md); border: 1px solid var(--color-border); text-align: center; }

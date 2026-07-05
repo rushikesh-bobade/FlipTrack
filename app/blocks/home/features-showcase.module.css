@@ -140,6 +140,27 @@
   align-items: center;
   justify-content: center;
   position: relative;
+  transition: transform 250ms cubic-bezier(.2,.8,.2,1), box-shadow 250ms cubic-bezier(.2,.8,.2,1);
+  animation: floatMockup 7s ease-in-out infinite;
+  will-change: transform, translate;
+}
+
+.featureRow:nth-child(even) .featureMockup {
+  animation-delay: -3.5s;
+}
+
+@keyframes floatMockup {
+  0%, 100% { translate: 0 0; }
+  50% { translate: 0 -8px; }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  @media (prefers-reduced-motion: no-preference) {
+    .featureMockup:hover {
+      transform: translateY(-8px) rotateX(3deg) rotateY(2deg) scale(1.01);
+      box-shadow: var(--shadow-xl);
+    }
+  }
 }
 
 .mockupInner {

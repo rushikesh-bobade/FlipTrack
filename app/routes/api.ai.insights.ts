@@ -34,15 +34,13 @@ export async function action({ request }: Route.ActionArgs) {
 
     const insights = [];
 
-    // FIX 2: Using for...of loop to process sequentially and avoid Groq 429 Rate Limits
     for (const item of rawInventory) {
       try {
-        // FIX 1: Removed simulated array, using actual item.priceHistory from Prisma loader
         const actualPriceHistory = item.priceHistory || [];
 
         const { text } = await generateText({
           model: groq('llama-3.3-70b-versatile'),
-          system: `You are an expert sneaker reseller analyst. Analyze price data and provide actionable insights.
+          system: `You are an expert retail and e-commerce analyst. Analyze price data and provide actionable insights.
                    Always respond with pure JSON in this exact format: {"trend": "string", "recommendation": "BUY"|"SELL"|"HOLD", "reasoning": "string", "targetPrice": number, "confidence": number}`,
           prompt: `
             Product: ${item.name} (SKU: ${item.sku})
@@ -68,7 +66,6 @@ export async function action({ request }: Route.ActionArgs) {
         });
       } catch (err) {
         console.error(`Error analyzing item ${item.sku}:`, err);
-        // Fallback item so the whole loop doesn't crash if one item fails
         insights.push({
           id: item.id,
           name: item.name,

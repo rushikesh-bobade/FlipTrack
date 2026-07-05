@@ -43,6 +43,8 @@ export async function loader({ request }: Route.LoaderArgs) {
   const serializedSales = sales.map((s) => ({
     ...s,
     salePrice: Number(s.salePrice),
+    platformFee: Number(s.platformFee),
+    shippingCost: Number(s.shippingCost),
     inventoryItem: {
       ...s.inventoryItem,
       purchasePrice: Number(s.inventoryItem.purchasePrice),

@@ -29,8 +29,12 @@ export function ItemHeader({ className, item }: Props) {
         <h1 className={styles.name}>{item.name}</h1>
         <div className={styles.meta}>
           <span>{item.brand}</span>
-          <span>·</span>
-          <span>Size {item.size}</span>
+          {item.size && (
+            <>
+              <span>·</span>
+              <span>{item.size}</span>
+            </>
+          )}
           <span>·</span>
           <span>{displayCondition}</span>
         </div>
