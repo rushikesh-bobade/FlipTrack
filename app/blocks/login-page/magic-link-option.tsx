@@ -7,17 +7,33 @@ interface Props {
 }
 
 function getSupabaseClient() {
-  const supabaseUrl = import.meta.env.VITE_NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseAnonKey = import.meta.env.VITE_NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  let supabaseUrl: string | undefined;
+  let supabaseAnonKey: string | undefined;
 
+  // 1. Safe extraction for Next.js / Webpack
+  try {
+    supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  } catch (e) {
+    
+  }
 
-  // Avoid throwing during SSR/full reload if env vars are missing
+  if (!supabaseUrl || !supabaseAnonKey) {
+    try {
+      // @ts-ignore - bypass compilation warnings if import.meta is missing
+      supabaseUrl = import.meta.env.VITE_NEXT_PUBLIC_SUPABASE_URL || import.meta.env.VITE_SUPABASE_URL;
+      // @ts-ignore
+      supabaseAnonKey = import.meta.env.VITE_NEXT_PUBLIC_SUPABASE_ANON_KEY || import.meta.env.VITE_SUPABASE_ANON_KEY;
+    } catch (e) {
+      // import.meta is completely missing in this environment
+    }
+  }
+
+  // Final confirmation check
   if (!supabaseUrl || !supabaseAnonKey) return null;
 
   return createBrowserClient(supabaseUrl, supabaseAnonKey);
 }
-
-
 
 export function MagicLinkOption({ className }: Props) {
   const [email, setEmail] = useState("");
@@ -44,12 +60,11 @@ export function MagicLinkOption({ className }: Props) {
     try {
       const supabase = getSupabaseClient();
       if (!supabase) {
-        setErrorMsg("Supabase is not configured (missing URL/anon key)." );
+        setErrorMsg("Supabase is not configured (missing URL/anon key).");
         return;
       }
 
       const { error } = await supabase.auth.signInWithOtp({
-
         email: trimmed,
         options: {
           emailRedirectTo: window.location.origin,
@@ -103,4 +118,3 @@ export function MagicLinkOption({ className }: Props) {
     </div>
   );
 }
-
