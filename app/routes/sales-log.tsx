@@ -10,8 +10,15 @@ import { SalesSummaryCards } from "~/blocks/sales-log/sales-summary-cards";
 import { SalesTable } from "~/blocks/sales-log/sales-table";
 import { LogSaleModal } from "~/blocks/sales-log/log-sale-modal";
 import type { SortField, SortDirection } from "~/blocks/sales-log/sales-table";
+import { CACHE_PRIVATE_NO_STORE } from "~/utils/cache-headers";
 
 const prisma = new PrismaClient();
+
+export function headers(_: Route.HeadersArgs) {
+  return {
+    "Cache-Control": CACHE_PRIVATE_NO_STORE,
+  };
+}
 
 // Helper function to validate sort parameters
 function getSortParams(searchParams: URLSearchParams): { field: SortField; direction: SortDirection } {
@@ -30,18 +37,21 @@ function getSortParams(searchParams: URLSearchParams): { field: SortField; direc
 
 export async function loader({ request }: Route.LoaderArgs) {
   const { supabase } = getSupabaseServerClient(request);
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  if (!user) return { 
-    sales: [], 
-    inventory: [], 
-    totalCount: 0, 
-    sortField: 'saleDate', 
-    sortDirection: 'desc', 
-    currentPage: 1, 
-    pageSize: 10,
-    summary: { totalSalesCount: 0, totalRevenue: 0, totalProfit: 0 }
-  };
+  if (!user) {
+    return {
+      sales: [],
+      totalPages: 0,
+      summary: { totalSalesCount: 0, totalRevenue: 0, totalProfit: 0 },
+      sortField: 'saleDate',
+      sortDirection: 'desc',
+      currentPage: 1,
+      pageSize: 10,
+    };
+  }
 
   // Get URL search params
   const url = new URL(request.url);
@@ -74,7 +84,11 @@ export async function loader({ request }: Route.LoaderArgs) {
   }
 
   // Fetch all data in parallel
-  const [sales, totalCount, inventory, allSales] = await Promise.all([
+  const [totalSales, sales, metricsResult] = await Promise.all([
+    // Total count for pagination
+    prisma.sale.count({ 
+      where: { userId: user.id } 
+    }),
     // Paginated sales with sorting
     prisma.sale.findMany({
       where: { userId: user.id },
@@ -83,51 +97,56 @@ export async function loader({ request }: Route.LoaderArgs) {
       skip: skip,
       take: pageSize,
     }),
-    // Total count for pagination
-    prisma.sale.count({
-      where: { userId: user.id },
-    }),
-    // Inventory items for the modal
-    prisma.inventoryItem.findMany({
-      where: { userId: user.id, status: "IN_STOCK" },
-      orderBy: { createdAt: "desc" },
-    }),
-    // All sales for summary calculations (lifetime totals)
-    prisma.sale.findMany({
-      where: { userId: user.id },
-      include: { inventoryItem: true },
-    }),
+    // Summary metrics using raw SQL for accurate calculations
+    prisma.$queryRaw<{ totalRevenue: number; totalProfit: number }[]>`
+      SELECT
+        COALESCE(SUM(s."salePrice"), 0) AS "totalRevenue",
+        COALESCE(
+          SUM(
+            s."salePrice"
+            - i."purchasePrice"
+            - s."platformFee"
+            - s."shippingCost"
+          ),
+          0
+        ) AS "totalProfit"
+      FROM "Sale" s
+      JOIN "InventoryItem" i
+        ON s."inventoryItemId" = i.id
+      WHERE s."userId" = ${user.id}
+    `
   ]);
 
-  // Calculate summary metrics from all sales (not just current page)
-  const totalSalesCount = allSales.length;
-  const totalRevenue = allSales.reduce((acc, s) => acc + Number(s.salePrice), 0);
-  const totalProfit = allSales.reduce((acc, s) => {
-    const cost = Number(s.inventoryItem?.purchasePrice || 0);
-    return acc + (Number(s.salePrice) - cost);
-  }, 0);
+  const totalRevenue = Number(metricsResult[0]?.totalRevenue || 0);
+  const totalProfit = Number(metricsResult[0]?.totalProfit || 0);
 
-  const summary = {
-    totalSalesCount,
-    totalRevenue,
-    totalProfit
-  };
-
-  return { 
-    sales, 
-    inventory, 
-    totalCount,
+  return {
+    sales: sales.map(s => ({
+      ...s,
+      salePrice: Number(s.salePrice),
+      inventoryItem: {
+        ...s.inventoryItem,
+        purchasePrice: Number(s.inventoryItem.purchasePrice),
+      }
+    })),
+    totalPages: Math.ceil(totalSales / pageSize),
+    summary: {
+      totalSalesCount: totalSales,
+      totalRevenue,
+      totalProfit,
+    },
     sortField: field,
     sortDirection: direction,
     currentPage: page,
     pageSize,
-    summary
   };
 }
 
 export async function action({ request }: Route.ActionArgs) {
   const { supabase } = getSupabaseServerClient(request);
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) return new Response("Unauthorized", { status: 401 });
 
   const formData = await request.formData();
@@ -136,9 +155,25 @@ export async function action({ request }: Route.ActionArgs) {
   if (intent === "create") {
     const inventoryItemId = formData.get("inventoryItemId") as string;
     const salePrice = Number(formData.get("salePrice"));
+    const platformFee = Number(formData.get("platformFee") || 0);
+    const shippingCost = Number(formData.get("shippingCost") || 0);
     const saleDate = new Date(formData.get("saleDate") as string);
     const marketplace = formData.get("marketplace") as any;
     const trackingNumber = formData.get("trackingNumber") as string;
+
+    // Validate the type up front so a malformed request fails gracefully
+    if (typeof inventoryItemId !== "string" || !inventoryItemId) {
+      return new Response("Bad Request", { status: 400 });
+    }
+
+    // Verify the item belongs to the current user
+    const ownedItem = await prisma.inventoryItem.findFirst({
+      where: { id: inventoryItemId, userId: user.id },
+      select: { id: true },
+    });
+    if (!ownedItem) {
+      return new Response("Not Found", { status: 404 });
+    }
 
     await prisma.$transaction([
       prisma.sale.create({
@@ -146,15 +181,17 @@ export async function action({ request }: Route.ActionArgs) {
           userId: user.id,
           inventoryItemId,
           salePrice,
+          platformFee,
+          shippingCost,
           saleDate,
           marketplace,
           trackingNumber,
-        }
+        },
       }),
       prisma.inventoryItem.update({
-        where: { id: inventoryItemId },
-        data: { status: "SOLD" }
-      })
+        where: { id: inventoryItemId, userId: user.id },
+        data: { status: "SOLD" },
+      }),
     ]);
   }
 
@@ -162,7 +199,7 @@ export async function action({ request }: Route.ActionArgs) {
 }
 
 export default function SalesLogPage() {
-  const { sales, inventory, totalCount, sortField, sortDirection, currentPage, pageSize, summary } = useLoaderData<typeof loader>();
+  const { sales, totalPages, summary, sortField, sortDirection, currentPage, pageSize } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   const [searchParams, setSearchParams] = useSearchParams();
   const [showLogSale, setShowLogSale] = useState(false);
@@ -206,16 +243,16 @@ export default function SalesLogPage() {
       <SalesHeader onLogSale={() => setShowLogSale(true)} />
       <SalesSummaryCards summary={summary} />
       <SalesTable 
-        sales={sales} 
+        sales={sales}
         sortField={sortField}
         sortDirection={sortDirection}
         onSort={handleSort}
         currentPage={currentPage}
-        totalCount={totalCount}
+        totalCount={totalSales}
         pageSize={pageSize}
         onPageChange={handlePageChange}
       />
-      {showLogSale && <LogSaleModal inventory={inventory} onClose={() => setShowLogSale(false)} />}
+      {showLogSale && <LogSaleModal onClose={() => setShowLogSale(false)} />}
     </div>
   );
 }

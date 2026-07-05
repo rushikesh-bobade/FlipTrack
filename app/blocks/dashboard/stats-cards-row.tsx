@@ -10,7 +10,7 @@ export function StatsCardsRow({ className, stats, sales = [], expenses = [] }: P
   let totalCostOfSold = 0;
   sales.forEach(s => {
     totalRevenue += Number(s.salePrice);
-    totalCostOfSold += Number(s.inventoryItem.purchasePrice);
+    totalCostOfSold += Number(s.inventoryItem.purchasePrice) + Number(s.platformFee) + Number(s.shippingCost);
   });
   
   let totalExpenses = 0;

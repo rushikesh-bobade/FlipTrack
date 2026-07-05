@@ -91,10 +91,12 @@ export function SalesTable({
             {sales.map(s => {
               const salePrice = Number(s.salePrice);
               const cost = Number(s.inventoryItem?.purchasePrice || 0);
-              const profit = salePrice - cost;
+              const platformFee = Number(s.platformFee || 0);
+              const shippingCost = Number(s.shippingCost || 0);
+              const profit = salePrice - cost - platformFee - shippingCost;
               const margin = salePrice > 0 ? ((profit / salePrice) * 100).toFixed(1) : 0;
               const dateObj = new Date(s.saleDate);
-              
+
               return (
                 <tr key={s.id} className={styles.tr}>
                   <td className={styles.td}>{s.inventoryItem?.name || 'Unknown'}</td>

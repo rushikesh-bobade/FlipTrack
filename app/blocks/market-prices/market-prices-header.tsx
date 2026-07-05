@@ -3,7 +3,7 @@ import styles from "./market-prices-header.module.css";
 
 interface Props { className?: string; }
 
-const marketplaces = ["StockX", "GOAT", "eBay", "Flight Club", "Stadium Goods"];
+const marketplaces = ["StockX", "GOAT", "eBay", "Flight Club", "Stadium Goods", "Amazon", "Mercari", "Poshmark", "Facebook", "Shopify", "Grailed", "Depop", "OfferUp"];
 
 export function MarketPricesHeader({ className }: Props) {
   return (

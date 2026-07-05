@@ -5,10 +5,10 @@ interface Props { className?: string; sales?: any[]; }
 
 export function TopBrandsChart({ className, sales = [] }: Props) {
   const brandProfit: Record<string, number> = {};
-  
+
   sales.forEach(s => {
     const brand = s.inventoryItem.brand;
-    const profit = Number(s.salePrice) - Number(s.inventoryItem.purchasePrice);
+    const profit = Number(s.salePrice) - Number(s.inventoryItem.purchasePrice) - Number(s.platformFee) - Number(s.shippingCost);
     if (!brandProfit[brand]) brandProfit[brand] = 0;
     brandProfit[brand] += profit;
   });

@@ -5,10 +5,10 @@ interface Props { className?: string; sales?: any[]; }
 
 export function TopSellingItemsTable({ className, sales = [] }: Props) {
   const itemStats: Record<string, { id: string, name: string, sold: number, profit: number, revenue: number }> = {};
-  
+
   sales.forEach(s => {
     const sku = s.inventoryItem.sku;
-    const profit = Number(s.salePrice) - Number(s.inventoryItem.purchasePrice);
+    const profit = Number(s.salePrice) - Number(s.inventoryItem.purchasePrice) - Number(s.platformFee) - Number(s.shippingCost);
     if (!itemStats[sku]) {
       itemStats[sku] = { id: s.inventoryItem.id, name: s.inventoryItem.name, sold: 0, profit: 0, revenue: 0 };
     }
@@ -22,7 +22,7 @@ export function TopSellingItemsTable({ className, sales = [] }: Props) {
     .slice(0, 5);
 
   if (chartData.length === 0) {
-    return <div className={[styles.card, className].filter(Boolean).join(" ")}><div className={styles.header}><span className={styles.title}>Top Selling Items</span></div><p style={{padding: '1rem', color: 'var(--color-text-subtle)'}}>No sales logged yet.</p></div>;
+    return <div className={[styles.card, className].filter(Boolean).join(" ")}><div className={styles.header}><span className={styles.title}>Top Selling Items</span></div><p style={{ padding: '1rem', color: 'var(--color-text-subtle)' }}>No sales logged yet.</p></div>;
   }
 
   return (
