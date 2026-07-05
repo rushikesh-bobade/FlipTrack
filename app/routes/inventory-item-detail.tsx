@@ -68,7 +68,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
             shippingCost: Number(item.sale.shippingCost),
           }
         : null,
-      priceHistory: item.priceHistory.map((ph) => ({
+      priceHistory: item.priceHistory.map((ph: { askPrice: any; bidPrice: any; lastSold: any; }) => ({
         ...ph,
         askPrice: ph.askPrice ? Number(ph.askPrice) : null,
         bidPrice: ph.bidPrice ? Number(ph.bidPrice) : null,
@@ -79,62 +79,6 @@ export async function loader({ request, params }: Route.LoaderArgs) {
   };
 }
 
-const prisma = new PrismaClient();
-
-export async function loader({ request, params }: Route.LoaderArgs) {
-  const { supabase } = getSupabaseServerClient(request);
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    throw new Response("Unauthorized", { status: 401 });
-  }
-
-  const { id } = params;
-  if (!id) {
-    throw new Response("Not Found", { status: 404 });
-  }
-
-  const item = await prisma.inventoryItem.findFirst({
-    where: {
-      id,
-      userId: user.id,
-    },
-    include: {
-      sale: true,
-      priceHistory: {
-        orderBy: { fetchedAt: "desc" },
-      },
-    },
-  });
-
-  if (!item) {
-    throw new Response("Not Found", { status: 404 });
-  }
-
-  return {
-    item: {
-      ...item,
-      purchasePrice: Number(item.purchasePrice),
-      askingPrice: item.askingPrice ? Number(item.askingPrice) : null,
-      sale: item.sale
-        ? {
-          ...item.sale,
-          salePrice: Number(item.sale.salePrice),
-          platformFee: Number(item.sale.platformFee),
-          shippingCost: Number(item.sale.shippingCost),
-        }
-        : null,
-      priceHistory: item.priceHistory.map((ph) => ({
-        ...ph,
-        askPrice: ph.askPrice ? Number(ph.askPrice) : null,
-        bidPrice: ph.bidPrice ? Number(ph.bidPrice) : null,
-        lastSold: ph.lastSold ? Number(ph.lastSold) : null,
-      })),
-    },
-  };
-}
 
 export default function InventoryItemDetailPage() {
   const { item, relatedItems } = useLoaderData<typeof loader>();
@@ -143,11 +87,6 @@ export default function InventoryItemDetailPage() {
     return <div>Item not found</div>;
   }
 
-  return 
-    <div className={styles.page}>
-      <ItemHeader item={item} />
-
-  const { item } = useLoaderData<typeof loader>();
   return (
     <div className={styles.page}>
       <ItemHeader item={item} />
@@ -163,10 +102,10 @@ export default function InventoryItemDetailPage() {
         <ItemInfoCard item={item} />
         <PriceHistoryChart priceHistory={item.priceHistory} />
       </div>
-      <MarketplaceComparison priceHistory={item.priceHistory} />
-      <SalesHistory sale={item.sale} />
+
+      <MarketplaceComparison priceHistory={[]} />
+      <SalesHistory sale={null} />
       <RelatedItems items={relatedItems} />
-        <PriceHistoryChart priceHistory={item.priceHistory} />
-      </div>
-      
+    </div>
   );
+}

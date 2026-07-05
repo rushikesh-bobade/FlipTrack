@@ -13,7 +13,7 @@ export function ItemHeader({ className, item }: Props) {
   const displayCondition = item.condition
     .replace(/_/g, " ")
     .toLowerCase()
-    .replace(/\b\w/g, (l) => l.toUpperCase());
+    .replace(/\b\w/g, (l: string) => l.toUpperCase());
 
   return (
     <div className={[styles.header, className].filter(Boolean).join(" ")}>
