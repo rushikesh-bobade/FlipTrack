@@ -1,9 +1,16 @@
 import type { InventoryItem } from "@prisma/client";
 import styles from "./item-header.module.css";
 
-interface Props { className?: string; item: any; }
+interface Props {
+  className?: string;
+  item: Pick<InventoryItem, "sku" | "name" | "brand" | "size" | "condition" | "imageUrl">;
+}
 
 export function ItemHeader({ className, item }: Props) {
+  const displayCondition = item.condition
+    .replace(/_/g, " ")
+    .toLowerCase()
+    .replace(/\b\w/g, (l) => l.toUpperCase());
 interface Props {
   className?: string;
   item: Pick<InventoryItem, "sku" | "name" | "brand" | "size" | "condition" | "imageUrl">;
@@ -35,6 +42,7 @@ export function ItemHeader({ className, item }: Props) {
           <span>·</span>
           <span>Size {item.size}</span>
           <span>·</span>
+          <span>{displayCondition}</span>
           <span>{item.condition}</span>
           {item.size && (
             <>
@@ -53,3 +61,4 @@ export function ItemHeader({ className, item }: Props) {
     </div>
   );
 }
+

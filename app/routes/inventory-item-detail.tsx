@@ -9,67 +9,75 @@ import { PriceHistoryChart } from "~/blocks/inventory-item-detail/price-history-
 import { MarketplaceComparison } from "~/blocks/inventory-item-detail/marketplace-comparison";
 import { SalesHistory } from "~/blocks/inventory-item-detail/sales-history";
 import { RelatedItems } from "~/blocks/inventory-item-detail/related-items";
-import { useLoaderData } from "react-router";
-
-import { PrismaClient } from "@prisma/client";
-import { getSupabaseServerClient } from "~/utils/supabase.server";
 
 const prisma = new PrismaClient();
 
-export async function loader({ request, params }: any) {
+export async function loader({ request, params }: Route.LoaderArgs) {
   const { supabase } = getSupabaseServerClient(request);
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
- if (!user) {
-  return {
-    item: null,
-    priceHistory: [],
-    relatedItems: [],
-  };
-}
+  if (!user) {
+    throw new Response("Unauthorized", { status: 401 });
+  }
 
-const item = await prisma.inventoryItem.findFirst({
-  where: {
-    id: params.id,
-    userId: user.id,
-  },
-  include: {
-    priceHistory: {
-      orderBy: {
-        fetchedAt: "asc",
+  const { id } = params;
+  if (!id) {
+    throw new Response("Not Found", { status: 404 });
+  }
+
+  const item = await prisma.inventoryItem.findFirst({
+    where: {
+      id,
+      userId: user.id,
+    },
+    include: {
+      sale: true,
+      priceHistory: {
+        orderBy: { fetchedAt: "desc" },
       },
     },
-  },
-});
+  });
 
-if (!item) {
+  if (!item) {
+    throw new Response("Not Found", { status: 404 });
+  }
+
+  const relatedItems = await prisma.inventoryItem.findMany({
+    where: {
+      userId: user.id,
+      brand: item.brand,
+      id: {
+        not: item.id,
+      },
+    },
+    take: 4,
+  });
+
   return {
-    item: null,
-    priceHistory: [],
-    relatedItems: [],
+    item: {
+      ...item,
+      purchasePrice: Number(item.purchasePrice),
+      askingPrice: item.askingPrice ? Number(item.askingPrice) : null,
+      sale: item.sale
+        ? {
+            ...item.sale,
+            salePrice: Number(item.sale.salePrice),
+            platformFee: Number(item.sale.platformFee),
+            shippingCost: Number(item.sale.shippingCost),
+          }
+        : null,
+      priceHistory: item.priceHistory.map((ph) => ({
+        ...ph,
+        askPrice: ph.askPrice ? Number(ph.askPrice) : null,
+        bidPrice: ph.bidPrice ? Number(ph.bidPrice) : null,
+        lastSold: ph.lastSold ? Number(ph.lastSold) : null,
+      })),
+    },
+    relatedItems,
   };
 }
-
-const relatedItems = await prisma.inventoryItem.findMany({
-  where: {
-    userId: user.id,
-    brand: item.brand, // <-- issue requirement
-    id: {
-      not: item.id,
-    },
-  },
-  take: 4,
-});
-
-return {
-  item,
-  priceHistory: item.priceHistory,
-  relatedItems,
-};
-}
-  
 
 const prisma = new PrismaClient();
 
@@ -129,8 +137,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 }
 
 export default function InventoryItemDetailPage() {
-  const { item, priceHistory, relatedItems } =
-    useLoaderData<typeof loader>();
+  const { item, relatedItems } = useLoaderData<typeof loader>();
 
   if (!item) {
     return <div>Item not found</div>;
@@ -144,6 +151,7 @@ export default function InventoryItemDetailPage() {
   return (
     <div className={styles.page}>
       <ItemHeader item={item} />
+
       <div
         style={{
           display: "grid",
@@ -153,11 +161,10 @@ export default function InventoryItemDetailPage() {
         }}
       >
         <ItemInfoCard item={item} />
-        <PriceHistoryChart priceHistory={priceHistory} />
+        <PriceHistoryChart priceHistory={item.priceHistory} />
       </div>
-
-      <MarketplaceComparison />
-      <SalesHistory />
+      <MarketplaceComparison priceHistory={item.priceHistory} />
+      <SalesHistory sale={item.sale} />
       <RelatedItems items={relatedItems} />
         <PriceHistoryChart priceHistory={item.priceHistory} />
       </div>
