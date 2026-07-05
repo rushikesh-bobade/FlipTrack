@@ -31,6 +31,7 @@ export default [
   ]),
 
   route("/auth/login", "routes/login-page.tsx"),
+  route("/auth/callback", "routes/auth.callback.tsx"),
   route("/auth/signup", "routes/signup-page.tsx"),
   route("/auth/forgot-password", "routes/forgot-password-page.tsx"),
   route("/auth/reset-password", "routes/reset-password-page.tsx"),
