@@ -1,6 +1,9 @@
 import { Link } from "react-router";
 import { IconPlayerPlay } from "@tabler/icons-react";
 import styles from "./hero-section.module.css";
+import { useTilt } from "~/hooks/use-tilt";
+import { useMagnetic } from "~/hooks/use-magnetic";
+import { useParallax } from "~/hooks/use-parallax";
 
 interface Props {
   className?: string;
@@ -16,10 +19,15 @@ const mockStats = [
 const barHeights = [40, 60, 45, 80, 55, 90, 70, 85, 65, 95, 75, 100];
 
 export function HeroSection({ className }: Props) {
+  const tiltRef = useTilt<HTMLDivElement>();
+  const magneticRef1 = useMagnetic<HTMLAnchorElement>();
+  const magneticRef2 = useMagnetic<HTMLAnchorElement>();
+  const parallaxRef = useParallax<HTMLDivElement>();
+
   return (
     <section className={[styles.hero, className].filter(Boolean).join(" ")}>
       <div className={styles.heroBg} />
-      <div className={styles.grid} />
+      <div ref={parallaxRef} className={styles.grid} />
 
 
 
@@ -35,16 +43,16 @@ export function HeroSection({ className }: Props) {
       </p>
 
       <div className={styles.ctas}>
-        <Link to="/auth/signup" className={styles.btnPrimary}>
+        <Link ref={magneticRef1} to="/auth/signup" className={styles.btnPrimary}>
           Start Free &mdash; No Credit Card
         </Link>
-        <Link to="/features" className={styles.btnSecondary}>
+        <Link ref={magneticRef2} to="/features" className={styles.btnSecondary}>
           <IconPlayerPlay size={16} />
           See How It Works
         </Link>
       </div>
 
-      <div className={styles.mockup}>
+      <div ref={tiltRef} className={styles.mockup}>
         <div className={styles.mockupBar}>
           <div className={styles.mockupDot} style={{ background: "#FF5F57" }} />
           <div className={styles.mockupDot} style={{ background: "#FEBC2E" }} />

@@ -31,9 +31,9 @@ enum ItemCondition {
   USED_FAIR
   REFURBISHED
   DAMAGED
-  DEADSTOCK       // legacy alias for NEW
-  NEW_WITH_BOX    // legacy alias for NEW
-  USED            // legacy alias for USED_GOOD
+  DEADSTOCK // legacy alias for NEW
+  NEW_WITH_BOX // legacy alias for NEW
+  USED // legacy alias for USED_GOOD
 }
 
 enum Currency {
@@ -65,7 +65,7 @@ enum Marketplace {
 
 enum ExpenseType {
   SHIPPING
-  BOT_FEE           // legacy – kept for backward compat
+  BOT_FEE // legacy – kept for backward compat
   SUBSCRIPTION_FEE
   MARKETPLACE_FEE
   ADVERTISING
@@ -123,7 +123,8 @@ model User {
   expenses          Expense[]
   recurringExpenses RecurringExpense[]
   priceAlerts       PriceAlert[]
-  team              Team?           @relation(fields: [teamId], references: [id])
+  integrations      Integration[]
+  team              Team?              @relation(fields: [teamId], references: [id])
 }
 
 model Team {
@@ -132,39 +133,56 @@ model Team {
   ownerId   String   @unique
   createdAt DateTime @default(now())
   members   User[]
+  invites   Invite[]
+  integrations Integration[]
+}
+
+model Invite {
+  id        String   @id @default(uuid())
+  teamId    String
+  email     String
+  role      String
+  token     String   @unique
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+
+  team Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  @@index([teamId])
+  @@index([token])
 }
 
 model InventoryItem {
   id            String        @id @default(uuid())
   userId        String
-  sku           String        // product identifier (e.g. model number, UPC, or custom ID)
-  name          String        // product name
+  sku           String // product identifier (e.g. model number, UPC, or custom ID)
+  name          String // product name
   brand         String
-  size          String?       // variant: shoe size, clothing size, storage capacity, etc.
-  color         String?       // color, colorway, or finish
-  category      String?       // e.g. "Sneakers", "Electronics", "Trading Cards"
+  size          String? // variant: shoe size, clothing size, storage capacity, etc.
+  color         String? // color, colorway, or finish
+  category      String? // e.g. "Sneakers", "Electronics", "Trading Cards"
   purchasePrice Decimal       @db.Decimal(10, 2)
   purchaseDate  DateTime
   condition     ItemCondition @default(NEW)
   status        ItemStatus    @default(IN_STOCK)
-  marketplace   Marketplace?  // where listed
+  marketplace   Marketplace? // where listed
   askingPrice   Decimal?      @db.Decimal(10, 2)
   notes         String?
   imageUrl      String?
   isPublic      Boolean       @default(false)
   currency      Currency      @default(USD)
-  tags          String[]      // flexible tags
+  tags          String[] // flexible tags
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
 
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  sale   Sale?
-  expenses Expense[]
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sale         Sale?
+  expenses     Expense[]
   priceHistory MarketPrice[]
 
+  @@unique([userId, sku, size])
   @@index([userId, sku])
   @@index([userId, status])
-  @@unique([userId, sku, size])
 }
 
 model MarketPrice {
@@ -232,7 +250,7 @@ model RecurringExpense {
   description String
   amount      Decimal     @db.Decimal(10, 2)
   currency    Currency    @default(USD)
-  dayOfMonth  Int         // 1–28
+  dayOfMonth  Int // 1–28
   isActive    Boolean     @default(true)
   createdAt   DateTime    @default(now())
 
@@ -240,21 +258,40 @@ model RecurringExpense {
 }
 
 model PriceAlert {
-  id                  String               @id @default(uuid())
+  id                  String              @id @default(uuid())
   userId              String
   sku                 String
   size                String?
   productName         String
   marketplace         Marketplace
-  targetPrice         Decimal              @db.Decimal(10, 2)
+  targetPrice         Decimal             @db.Decimal(10, 2)
   direction           AlertDirection
   notificationChannel NotificationChannel
-  isActive            Boolean              @default(true)
+  isActive            Boolean             @default(true)
   triggeredAt         DateTime?
-  createdAt           DateTime             @default(now())
+  createdAt           DateTime            @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, isActive])
   @@index([sku, size, marketplace])
+}
+
+model Integration {
+  id           String    @id @default(uuid())
+  userId       String
+  teamId       String?
+  platform     String    // e.g., "SHOPIFY", "EBAY"
+  accessToken  String    // Encrypted access token or API key
+  refreshToken String?   // Encrypted refresh token (optional)
+  expiresAt    DateTime? // Expiration date/time (optional)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  team         Team?     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, platform])
+  @@index([userId])
+  @@index([teamId])
 }

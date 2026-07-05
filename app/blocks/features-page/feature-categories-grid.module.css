@@ -7,9 +7,29 @@
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   padding: var(--space-6);
-  transition: border-color var(--transition-base), transform var(--transition-base);
+  transition: transform 250ms cubic-bezier(.2,.8,.2,1), box-shadow 250ms cubic-bezier(.2,.8,.2,1), border-color var(--transition-base);
+  animation: floatCard 7s ease-in-out infinite;
+  will-change: transform, translate;
 }
-.card:hover { border-color: var(--color-primary); transform: translateY(-2px); }
+
+.card:nth-child(even) {
+  animation-delay: -3.5s;
+}
+
+@keyframes floatCard {
+  0%, 100% { translate: 0 0; }
+  50% { translate: 0 -4px; }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  @media (prefers-reduced-motion: no-preference) {
+    .card:hover {
+      border-color: var(--color-primary);
+      transform: translateY(-8px) rotateX(3deg) rotateY(2deg) scale(1.01);
+      box-shadow: var(--shadow-md);
+    }
+  }
+}
 .iconWrap {
   width: 40px; height: 40px;
   border-radius: var(--radius-sm);

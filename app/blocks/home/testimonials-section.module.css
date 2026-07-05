@@ -34,6 +34,16 @@
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   padding: var(--space-6);
+  transition: transform 250ms cubic-bezier(.2,.8,.2,1), box-shadow 250ms cubic-bezier(.2,.8,.2,1);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  @media (prefers-reduced-motion: no-preference) {
+    .card:hover {
+      transform: translateY(-6px) rotateX(2deg);
+      box-shadow: var(--shadow-lg);
+    }
+  }
 }
 
 .stars {

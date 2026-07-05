@@ -1,4 +1,5 @@
 import styles from "./detailed-feature-sections.module.css";
+import { useTilt } from "~/hooks/use-tilt";
 
 interface Props { className?: string; }
 
@@ -23,25 +24,32 @@ const sections = [
   },
 ];
 
+function FeatureSectionItem({ s }: { s: typeof sections[0] }) {
+  const tiltRef = useTilt<HTMLDivElement>();
+  return (
+    <div className={[styles.row, s.reverse ? styles.reverse : ""].join(" ")}>
+      <div className={styles.content}>
+        <h3>{s.title}</h3>
+        <p>{s.desc}</p>
+        <div className={styles.bullets}>
+          {s.bullets.map((b) => (
+            <div key={b} className={styles.bullet}>
+              <span>✓</span> {b}
+            </div>
+          ))}
+        </div>
+      </div>
+      <div ref={tiltRef} className={styles.mockup}>Feature Preview</div>
+    </div>
+  );
+}
+
 export function DetailedFeatureSections({ className }: Props) {
   return (
     <section className={[styles.section, className].filter(Boolean).join(" ")}>
       <div className={styles.inner}>
         {sections.map((s) => (
-          <div key={s.title} className={[styles.row, s.reverse ? styles.reverse : ""].join(" ")}>
-            <div className={styles.content}>
-              <h3>{s.title}</h3>
-              <p>{s.desc}</p>
-              <div className={styles.bullets}>
-                {s.bullets.map((b) => (
-                  <div key={b} className={styles.bullet}>
-                    <span>✓</span> {b}
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div className={styles.mockup}>Feature Preview</div>
-          </div>
+          <FeatureSectionItem key={s.title} s={s} />
         ))}
       </div>
     </section>
