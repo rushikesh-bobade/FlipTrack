@@ -35,23 +35,16 @@
 .logo {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
   white-space: nowrap;
-  font-family: var(--family-display);
-  font-weight: 700;
-  font-size: 18px;
-  color: var(--color-text-subtle);
-  transition: color var(--transition-fast);
 }
 
-.logo:hover {
-  color: var(--color-text);
+.logoImage {
+  height: 32px;
+  width: auto;
+  filter: grayscale(100%) opacity(80%) invert(1);
+  transition: filter 0.3s ease;
 }
 
-.dot {
-  width: 6px;
-  height: 6px;
-  background: var(--color-primary);
-  border-radius: 50%;
-  opacity: 0.6;
+.logoImage:hover {
+  filter: grayscale(0%) opacity(100%);
 }
