@@ -201,7 +201,7 @@ export async function action({ request }: Route.ActionArgs) {
 }
 
 export default function SalesLogPage() {
-  const { sales, totalPages, summary, sortField, sortDirection, currentPage, pageSize } = useLoaderData<typeof loader>();
+  const { sales, summary, sortField, sortDirection, totalCount, pageSize } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   const [searchParams, setSearchParams] = useSearchParams();
   const [showLogSale, setShowLogSale] = useState(false);
