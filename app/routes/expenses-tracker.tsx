@@ -18,17 +18,22 @@ export async function loader({ request }: Route.LoaderArgs) {
   const { supabase } = getSupabaseServerClient(request);
   const { data: { user } } = await supabase.auth.getUser();
 
-  if (!user) return { expenses: [], recurring: [], totalPages: 0, oneTimeTotal: 0 };
+  if (!user) return { expenses: [], recurring: [], totalPages: 0, oneTimeTotal: 0, sort: "date", dir: "desc" };
 
   const url = new URL(request.url);
   const page = Math.max(1, Number(url.searchParams.get("page")) || 1);
   const pageSize = Number(url.searchParams.get("pageSize")) || 10;
 
+  const allowedSort = ["date", "amount", "description", "type"];
+  const sortParam = url.searchParams.get("sort") || "date";
+  const sort = allowedSort.includes(sortParam) ? sortParam : "date";
+  const dir = url.searchParams.get("dir") === "asc" ? "asc" : "desc";
+
   const [totalExpenses, expenses, recurring, sumResult] = await Promise.all([
     prisma.expense.count({ where: { userId: user.id } }),
     prisma.expense.findMany({
       where: { userId: user.id },
-      orderBy: { date: "desc" },
+      orderBy: { [sort]: dir },
       skip: (page - 1) * pageSize,
       take: pageSize,
     }),
@@ -46,7 +51,9 @@ export async function loader({ request }: Route.LoaderArgs) {
     expenses,
     recurring,
     totalPages: Math.ceil(totalExpenses / pageSize),
-    oneTimeTotal: Number(sumResult._sum.amount || 0)
+    oneTimeTotal: Number(sumResult._sum.amount || 0),
+    sort,
+    dir,
   };
 }
 
@@ -59,22 +66,16 @@ export async function action({ request }: Route.ActionArgs) {
   const intent = formData.get("intent");
 
   if (intent === "toggle") {
-  const id = formData.get("id") as string;
-  const isActive = formData.get("isActive") === "true";
+    const id = formData.get("id") as string;
+    const isActive = formData.get("isActive") === "true";
 
-  await prisma.recurringExpense.updateMany({
-    where: {
-      id,
-      userId:user.id
-    },
-    data: {
-      isActive,
-    },
-  });
-  return {ok: true,intent};
+    await prisma.recurringExpense.updateMany({
+      where: { id, userId: user.id },
+      data: { isActive },
+    });
+    return { ok: true, intent };
+  }
 
-  
-}
   if (intent === "create") {
     const isRecurring = formData.get("isRecurring") === "on";
     const type = formData.get("type") as any;
@@ -85,24 +86,11 @@ export async function action({ request }: Route.ActionArgs) {
     if (isRecurring) {
       const dayOfMonth = Number(formData.get("dayOfMonth")) || 1;
       await prisma.recurringExpense.create({
-        data: {
-          userId: user.id,
-          type,
-          amount,
-          description,
-          dayOfMonth,
-          isActive: true
-        }
+        data: { userId: user.id, type, amount, description, dayOfMonth, isActive: true }
       });
     } else {
       await prisma.expense.create({
-        data: {
-          userId: user.id,
-          type,
-          amount,
-          description,
-          date,
-        }
+        data: { userId: user.id, type, amount, description, date }
       });
     }
   }
@@ -111,7 +99,7 @@ export async function action({ request }: Route.ActionArgs) {
 }
 
 export default function ExpensesTrackerPage() {
-  const { expenses, recurring, totalPages, oneTimeTotal } = useLoaderData<typeof loader>();
+  const { expenses, recurring, totalPages, oneTimeTotal, sort, dir } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   const [showAddExpense, setShowAddExpense] = useState(false);
 
@@ -123,13 +111,13 @@ export default function ExpensesTrackerPage() {
       }
     }
   }, [actionData]);
-  
+
   return (
     <div className={styles.page}>
       <ExpensesHeader onAddExpense={() => setShowAddExpense(true)} />
       <ExpensesSummary expenses={expenses} recurring={recurring} oneTimeTotal={oneTimeTotal} />
       <RecurringExpensesSection recurring={recurring} />
-      <OneTimeExpensesTable expenses={expenses} />
+      <OneTimeExpensesTable expenses={expenses} sort={sort} dir={dir} />
       <Pagination totalPages={totalPages} />
       {showAddExpense && <AddExpenseModal onClose={() => setShowAddExpense(false)} />}
     </div>
