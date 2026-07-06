@@ -42,16 +42,17 @@ export async function loader({ request }: Route.LoaderArgs) {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return {
-      sales: [],
-      totalPages: 0,
-      summary: { totalSalesCount: 0, totalRevenue: 0, totalProfit: 0 },
-      sortField: 'saleDate',
-      sortDirection: 'desc',
-      currentPage: 1,
-      pageSize: 10,
-    };
-  }
+  return {
+    sales: [],
+    totalCount: 0,  // Add this
+    totalPages: 0,
+    summary: { totalSalesCount: 0, totalRevenue: 0, totalProfit: 0 },
+    sortField: 'saleDate',
+    sortDirection: 'desc',
+    currentPage: 1,
+    pageSize: 10,
+  };
+}
 
   // Get URL search params
   const url = new URL(request.url);
@@ -120,26 +121,27 @@ export async function loader({ request }: Route.LoaderArgs) {
   const totalRevenue = Number(metricsResult[0]?.totalRevenue || 0);
   const totalProfit = Number(metricsResult[0]?.totalProfit || 0);
 
-  return {
-    sales: sales.map(s => ({
-      ...s,
-      salePrice: Number(s.salePrice),
-      inventoryItem: {
-        ...s.inventoryItem,
-        purchasePrice: Number(s.inventoryItem.purchasePrice),
-      }
-    })),
-    totalPages: Math.ceil(totalSales / pageSize),
-    summary: {
-      totalSalesCount: totalSales,
-      totalRevenue,
-      totalProfit,
-    },
-    sortField: field,
-    sortDirection: direction,
-    currentPage: page,
-    pageSize,
-  };
+ return {
+  sales: sales.map(s => ({
+    ...s,
+    salePrice: Number(s.salePrice),
+    inventoryItem: {
+      ...s.inventoryItem,
+      purchasePrice: Number(s.inventoryItem.purchasePrice),
+    }
+  })),
+  totalCount: totalSales,  // Changed from totalPages
+  totalPages: Math.ceil(totalSales / pageSize),
+  summary: {
+    totalSalesCount: totalSales,
+    totalRevenue,
+    totalProfit,
+  },
+  sortField: field,
+  sortDirection: direction,
+  currentPage: page,
+  pageSize,
+};
 }
 
 export async function action({ request }: Route.ActionArgs) {
@@ -244,13 +246,11 @@ export default function SalesLogPage() {
       <SalesSummaryCards summary={summary} />
       <SalesTable 
         sales={sales}
-        sortField={sortField}
-        sortDirection={sortDirection}
+        sortField={sortField as SortField}
+        sortDirection={sortDirection as SortDirection}
         onSort={handleSort}
-        currentPage={currentPage}
-        totalCount={totalSales}
+        totalCount={totalCount}
         pageSize={pageSize}
-        onPageChange={handlePageChange}
       />
       {showLogSale && <LogSaleModal onClose={() => setShowLogSale(false)} />}
     </div>

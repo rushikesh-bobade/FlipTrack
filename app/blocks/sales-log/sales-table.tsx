@@ -11,10 +11,8 @@ interface Props {
   sortField: SortField;
   sortDirection: SortDirection;
   onSort: (field: SortField) => void;
-  currentPage: number;
   totalCount: number;
   pageSize: number;
-  onPageChange: (page: number) => void;
 }
 
 export function SalesTable({ 
@@ -23,10 +21,8 @@ export function SalesTable({
   sortField,
   sortDirection,
   onSort,
-  currentPage,
   totalCount,
-  pageSize,
-  onPageChange
+  pageSize
 }: Props) {
   
   const getSortIndicator = (field: SortField) => {
@@ -116,11 +112,7 @@ export function SalesTable({
         </table>
       </div>
       {totalPages > 1 && (
-        <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={onPageChange}
-        />
+        <Pagination totalPages={totalPages} />
       )}
     </div>
   );
