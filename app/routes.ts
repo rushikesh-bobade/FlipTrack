@@ -11,6 +11,7 @@ export default [
   route("/blog/:slug", "routes/blog-post.tsx"),
   route("/changelog", "routes/changelog-page.tsx"),
   route("/privacy", "routes/privacy-policy.tsx"),
+route("/api/chat", "routes/api.chat.ts"),
   route("/terms", "routes/terms-of-service.tsx"),
   
   ...prefix("/app", [
