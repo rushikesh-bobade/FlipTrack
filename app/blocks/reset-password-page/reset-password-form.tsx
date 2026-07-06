@@ -1,23 +1,18 @@
-import { Form, useActionData } from "react-router";
+import { Form } from "react-router";
 import styles from "./reset-password-form.module.css";
 
 interface Props {
   className?: string;
+  error?: string;
 }
 
-export function ResetPasswordForm({ className }: Props) {
-  const actionData = useActionData<{ error?: string }>();
-
+export function ResetPasswordForm({ className, error }: Props) {
   return (
     <Form method="post" className={[styles.form, className].filter(Boolean).join(" ")}>
       <h1 className={styles.heading}>Set New Password</h1>
       <p className={styles.desc}>Choose a strong password for your FlipTrack account.</p>
 
-      {actionData?.error && (
-        <div style={{ color: "red", fontSize: 14, marginBottom: 12 }}>
-          {actionData.error}
-        </div>
-      )}
+      {error && <div className={styles.error}>{error}</div>}
 
       <div className={styles.field}>
         <label className={styles.label}>New Password</label>

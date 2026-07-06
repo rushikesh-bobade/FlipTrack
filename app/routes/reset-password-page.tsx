@@ -12,20 +12,16 @@ export async function loader({ request }: Route.LoaderArgs) {
 
 if (code) {
   try {
-    console.log("Recovery code:", code);
-
-    const { data, error } = await supabase.auth.exchangeCodeForSession(code);
-
-    console.log("Exchange data:", data);
-    console.log("Exchange error:", error);
+    const { error } = await supabase.auth.exchangeCodeForSession(code);
 
     if (error) throw error;
 
     return redirect("/auth/reset-password", { headers });
-  } catch (e) {
-    console.error("exchangeCodeForSession failed:", e);
-
-    return redirect("/auth/login?error=Invalid or expired reset link");
+  } catch {
+    return redirect(
+      "/auth/login?error=Invalid%20or%20expired%20reset%20link",
+      { headers }
+    );
   }
 }
 
@@ -88,8 +84,12 @@ export default function ResetPasswordPage() {
 
   return (
     <div className={styles.page}>
-      <div style={{ width: "100%", maxWidth: 400 }}>
-        {success ? <SuccessMessage /> : <ResetPasswordForm />}
+      <div className={styles.container}>
+        {success ? (
+          <SuccessMessage />
+        ) : (
+          <ResetPasswordForm error={actionData?.error} />
+        )}
       </div>
     </div>
   );

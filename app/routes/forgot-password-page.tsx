@@ -51,8 +51,12 @@ export default function ForgotPasswordPage() {
 
   return (
     <div className={styles.page}>
-      <div style={{ width: "100%", maxWidth: 400 }}>
-        {sent ? <ConfirmationMessage /> : <ForgotPasswordForm />}
+      <div className={styles.container}>
+        {sent ? (
+          <ConfirmationMessage />
+        ) : (
+          <ForgotPasswordForm error={actionData?.error} />
+        )}
       </div>
     </div>
   );
