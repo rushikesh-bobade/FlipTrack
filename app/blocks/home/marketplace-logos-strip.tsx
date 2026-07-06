@@ -4,7 +4,7 @@ interface Props {
   className?: string;
 }
 
-const marketplaces = ["StockX", "GOAT", "eBay", "Flight Club", "Stadium Goods"];
+const marketplaces = ["eBay", "Amazon", "Mercari", "StockX", "GOAT", "Poshmark", "Depop", "Facebook", "Grailed", "Shopify", "OfferUp"];
 
 export function MarketplaceLogosStrip({ className }: Props) {
   const doubled = [...marketplaces, ...marketplaces];

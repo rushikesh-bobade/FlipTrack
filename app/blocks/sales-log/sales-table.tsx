@@ -21,10 +21,12 @@ export function SalesTable({ className, sales = [] }: Props) {
             {sales.map(s => {
               const salePrice = Number(s.salePrice);
               const cost = Number(s.inventoryItem.purchasePrice);
-              const profit = salePrice - cost;
+              const platformFee = Number(s.platformFee);
+              const shippingCost = Number(s.shippingCost);
+              const profit = salePrice - cost - platformFee - shippingCost;
               const margin = salePrice > 0 ? ((profit / salePrice) * 100).toFixed(1) : 0;
               const dateObj = new Date(s.saleDate);
-              
+
               return (
                 <tr key={s.id} className={styles.tr}>
                   <td className={styles.td}>{s.inventoryItem.name}</td>

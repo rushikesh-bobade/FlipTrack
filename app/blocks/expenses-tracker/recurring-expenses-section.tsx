@@ -1,8 +1,11 @@
 import styles from "./recurring-expenses-section.module.css";
+import { useFetcher } from "react-router";
+
 
 interface Props { className?: string; recurring?: any[]; }
 
 export function RecurringExpensesSection({ className, recurring = [] }: Props) {
+  const fetcher = useFetcher();
   if (recurring.length === 0) return null;
 
   return (
@@ -17,7 +20,19 @@ export function RecurringExpensesSection({ className, recurring = [] }: Props) {
             </div>
             <div className={styles.right}>
               <span className={styles.amount}>${Number(e.amount).toFixed(2)}/mo</span>
-              <input type="checkbox" className={styles.toggle} defaultChecked={e.isActive} />
+
+              <input type="checkbox"
+              className={styles.toggle}
+              defaultChecked={e.isActive}
+              onChange={(event) => {
+                const formData = new FormData();
+                formData.append("intent", "toggle");
+                formData.append("id", String(e.id));
+                formData.append("isActive", String(event.target.checked));
+
+                fetcher.submit(formData, { method: "post" });
+              }}
+            />
             </div>
           </div>
         ))}

@@ -1,6 +1,6 @@
 <div align="center">
   <h1>🎯 FlipTrack</h1>
-  <p><strong>Your Reselling Empire, Tracked in Real Time.</strong></p>
+  <p><strong>Your Universal Reselling Empire, Tracked in Real Time.</strong></p>
   
   <p>
     <a href="https://github.com/rushikesh-bobade/FlipTrack/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT"></a>
@@ -11,11 +11,11 @@
   </p>
 
   <p>
-    An open-source SaaS platform designed specifically for sneaker, streetwear, and collectibles resellers to manage their inventory, track market prices, and analyze their business using AI. Built for the <strong>Open Source Hackathon by Elite Coders</strong>.
+    An open-source SaaS platform designed for resellers of <strong>any</strong> physical goods (electronics, vintage clothing, collectibles, streetwear, etc.) to manage their inventory, track market prices, and analyze their business using AI. Built to be a world-class, production-grade platform driven by the open-source community.
   </p>
   
   <p>
-    ⭐ <strong>If you find FlipTrack useful or are participating in the hackathon, please consider giving this repository a star! It helps our open-source community grow.</strong> ⭐
+    ⭐ <strong>If you find FlipTrack useful or are participating in a hackathon, please consider giving this repository a star! It helps our open-source community grow.</strong> ⭐
   </p>
 </div>
 
@@ -140,7 +140,7 @@ The application will be running locally at `http://localhost:5173`.
 
 ## 💡 Demo Credentials
 
-Want to test FlipTrack's UI and features without manually creating data? We have included an automated seed script that provisions a test user and sample sneaker inventory.
+Want to test FlipTrack's UI and features without manually creating data? We have included an automated seed script that provisions a test user and sample inventory items.
 
 1. Ensure your development server is running (`npm run dev`).
 2. Execute the demo creation script:

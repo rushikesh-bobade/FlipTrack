@@ -7,7 +7,7 @@ export function RecentSales({ className, sales = [] }: Props) {
   const recentSales = sales.slice(0, 5);
 
   if (recentSales.length === 0) {
-    return <div className={[styles.card, className].filter(Boolean).join(" ")}><div className={styles.header}><span className={styles.title}>Recent Sales</span></div><p style={{padding: '1rem', color: 'var(--color-text-subtle)'}}>No sales logged yet.</p></div>;
+    return <div className={[styles.card, className].filter(Boolean).join(" ")}><div className={styles.header}><span className={styles.title}>Recent Sales</span></div><p style={{ padding: '1rem', color: 'var(--color-text-subtle)' }}>No sales logged yet.</p></div>;
   }
 
   return (
@@ -28,7 +28,7 @@ export function RecentSales({ className, sales = [] }: Props) {
         </thead>
         <tbody>
           {recentSales.map(s => {
-            const profit = Number(s.salePrice) - Number(s.inventoryItem.purchasePrice);
+            const profit = Number(s.salePrice) - Number(s.inventoryItem.purchasePrice) - Number(s.platformFee) - Number(s.shippingCost);
             return (
               <tr key={s.id}>
                 <td className={styles.td}>{s.inventoryItem.name}</td>

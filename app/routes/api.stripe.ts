@@ -4,7 +4,7 @@ import Stripe from "stripe";
 
 const prisma = new PrismaClient();
 const stripeKey = process.env.STRIPE_SECRET_KEY || "sk_test_placeholder";
-const stripe = new Stripe(stripeKey, { apiVersion: "2024-06-20" });
+const stripe = new Stripe(stripeKey, { apiVersion: "2024-06-20" as any });
 
 export async function action({ request }: Route.ActionArgs) {
   const payload = await request.text();
