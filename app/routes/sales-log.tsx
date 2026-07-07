@@ -113,8 +113,8 @@ export async function action({ request }: Route.ActionArgs) {
     const inventoryItemId = formData.get("inventoryItemId") as string;
     const salePrice = Number(formData.get("salePrice"));
 
-    const platformFee = Number(formData.get("platformFee") || 0);
-    const shippingCost = Number(formData.get("shippingCost") || 0);
+     const platformFee = Number(formData.get("platformFee") || 0);
+     const shippingCost = Number(formData.get("shippingCost") || 0);
 
     const saleDate = new Date(formData.get("saleDate") as string);
     const marketplace = formData.get("marketplace") as any;
@@ -162,6 +162,8 @@ export async function action({ request }: Route.ActionArgs) {
   const saleDate = new Date(formData.get("saleDate") as string);
   const marketplace = formData.get("marketplace") as any;
   const trackingNumber = formData.get("trackingNumber") as string;
+  const platformFee = Number(formData.get("platformFee") || 0);
+const shippingCost = Number(formData.get("shippingCost") || 0);
 
   const sale = await prisma.sale.findFirst({
     where: {
@@ -179,6 +181,8 @@ export async function action({ request }: Route.ActionArgs) {
       id: saleId,
     },
     data: {
+      platformFee,
+      shippingCost,
       salePrice,
       saleDate,
       marketplace,

@@ -187,6 +187,34 @@ export function LogSaleModal({
             </div>
             <div className={styles.row}>
               <div className={styles.field}>
+                
+             <div className={styles.row}>
+  <div className={styles.field}>
+    <label className={styles.label}>Sale Price *</label>
+    <input
+      name="salePrice"
+      className={styles.input}
+      type="number"
+      step="0.01"
+      placeholder="450"
+      required
+      value={salePrice}
+      onChange={(e) => setSalePrice(e.target.value)}
+    />
+  </div>
+
+  <div className={styles.field}>
+    <label className={styles.label}>Sale Date *</label>
+    <input
+      name="saleDate"
+      className={styles.input}
+      type="date"
+      required
+      value={saleDate}
+      onChange={(e) => setSaleDate(e.target.value)}
+    />
+  </div>
+</div>
 
 <div className={styles.row}>
   <div className={styles.field}>
