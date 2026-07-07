@@ -1,4 +1,6 @@
-export async function action({ request }: any) {
+import type { ActionFunctionArgs } from "react-router";
+
+export async function action({ request }: ActionFunctionArgs) { {
   try {
     const { messages } = await request.json();
 

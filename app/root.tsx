@@ -1,5 +1,5 @@
 ﻿import { useEffect } from "react";
-import ChatWidget from "./blocks/home/ChatWidget";
+
 import { Links, Meta, Outlet, Scripts, ScrollRestoration } from "react-router";
 import type { Route } from "./+types/root";
 import { ErrorBoundary as ErrorBoundaryRoot } from "~/components/error-boundary/error-boundary";
@@ -88,8 +88,8 @@ function RootLayout({ children }: { children: React.ReactNode }) {
         </footer>
       )}
       <Toaster position="top-right" richColors theme="system" />
-      <ChatWidget />
-    </>
+      
+   
   );
 }
 
