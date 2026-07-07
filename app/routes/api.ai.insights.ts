@@ -1,7 +1,7 @@
 import { generateText } from "ai";
 import { createGroq } from "@ai-sdk/groq";
-import type { Route } from "./+types/api.ai.insights";
 import { getSupabaseServerClient } from "~/utils/supabase.server";
+import type { Route } from "./+types/api.ai.insights";
 
 const groq = createGroq({
   apiKey: process.env.GROQ_API_KEY,
@@ -12,48 +12,83 @@ export async function action({ request }: Route.ActionArgs) {
     return new Response("Method not allowed", { status: 405 });
   }
 
-  // Optional: protect this endpoint so only logged-in users can use it
   const { supabase } = getSupabaseServerClient(request);
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
-    return new Response("Unauthorized", { status: 401 });
+    return new Response(JSON.stringify({ error: "Unauthorized" }), { 
+      status: 401, 
+      headers: { "Content-Type": "application/json" } 
+    });
   }
 
-  const body = await request.json();
-  const { sku, productName, priceHistory, currentInventory } = body;
-
   try {
-    const { text } = await generateText({
-      model: groq('llama-3.3-70b-versatile'),
-      system: `You are an expert sneaker reseller analyst. Analyze price data and provide actionable insights.
-               Always respond with pure JSON in this exact format: {"trend": "string", "recommendation": "BUY"|"SELL"|"HOLD", "reasoning": "string", "targetPrice": number, "confidence": number}`,
-      prompt: `
-        Product: ${productName} (SKU: ${sku})
-        Price history (last 30 days): ${JSON.stringify(priceHistory)}
-        User's purchase price: ${currentInventory?.purchasePrice}
-        Current lowest ask on StockX: ${priceHistory?.stockx?.at(-1)?.askPrice}
-        
-        Provide a price trend analysis and buy/sell recommendation based on the data.
-      `,
-    });
+    const body = await request.json();
+    const rawInventory = body.inventory ? JSON.parse(body.inventory) : [];
 
-    // Try to parse the JSON response from LLM
-    let parsedJson;
-    try {
-      // In case the LLM wrapped it in markdown code blocks
-      const jsonStr = text.replace(/```json/g, "").replace(/```/g, "").trim();
-      parsedJson = JSON.parse(jsonStr);
-    } catch (err) {
-      console.error("Failed to parse LLM JSON response:", text);
-      return new Response(JSON.stringify({ error: "Failed to parse AI response" }), { status: 500, headers: { "Content-Type": "application/json" } });
+    if (rawInventory.length === 0) {
+      return new Response(JSON.stringify({ insights: [] }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
-    return new Response(JSON.stringify(parsedJson), {
+    const insights = [];
+
+    for (const item of rawInventory) {
+      try {
+        const actualPriceHistory = item.priceHistory || [];
+
+        const { text } = await generateText({
+          model: groq('llama-3.3-70b-versatile'),
+          system: `You are an expert retail and e-commerce analyst. Analyze price data and provide actionable insights.
+                   Always respond with pure JSON in this exact format: {"trend": "string", "recommendation": "BUY"|"SELL"|"HOLD", "reasoning": "string", "targetPrice": number, "confidence": number}`,
+          prompt: `
+            Product: ${item.name} (SKU: ${item.sku})
+            Price history (from DB): ${JSON.stringify(actualPriceHistory)}
+            User's purchase price: ${item.purchasePrice}
+            
+            Provide a price trend analysis and buy/sell/hold recommendation based on the data.
+          `,
+        });
+
+        const jsonStr = text.replace(/```json/g, "").replace(/```/g, "").trim();
+        const parsedJson = JSON.parse(jsonStr);
+
+        insights.push({
+          id: item.id,
+          name: item.name,
+          sku: item.sku,
+          purchasePrice: Number(item.purchasePrice),
+          recommendation: parsedJson.recommendation || "HOLD",
+          confidence: parsedJson.confidence || 0.8,
+          reasoning: parsedJson.reasoning || parsedJson.trend || "Analysis complete.",
+          targetPrice: parsedJson.targetPrice || Number(item.purchasePrice) * 1.2,
+        });
+      } catch (err) {
+        console.error(`Error analyzing item ${item.sku}:`, err);
+        insights.push({
+          id: item.id,
+          name: item.name,
+          sku: item.sku,
+          purchasePrice: Number(item.purchasePrice),
+          recommendation: "HOLD",
+          confidence: 0.5,
+          reasoning: "AI engine analysis failed temporarily.",
+          targetPrice: Number(item.purchasePrice),
+        });
+      }
+    }
+
+    return new Response(JSON.stringify({ insights }), {
       status: 200,
       headers: { "Content-Type": "application/json" },
     });
+
   } catch (error: any) {
-    console.error("AI Insight Error:", error);
-    return new Response(JSON.stringify({ error: error.message }), { status: 500, headers: { "Content-Type": "application/json" } });
+    console.error("API Action handling error:", error);
+    return new Response(JSON.stringify({ error: error.message }), { 
+      status: 500, 
+      headers: { "Content-Type": "application/json" } 
+    });
   }
 }

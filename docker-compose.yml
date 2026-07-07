@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:15
+    container_name: fliptrack_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: fliptrack_dev
+    ports:
+      - "5432:5432"
+    volumes:
+      - fliptrack_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  fliptrack_pgdata:

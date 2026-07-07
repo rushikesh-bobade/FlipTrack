@@ -11,8 +11,8 @@ test.describe('Inventory Management', () => {
     await page.goto('/app/inventory');
     await expect(page.getByRole('heading', { name: 'Inventory' })).toBeVisible();
 
-    // Open the Add Item modal via the header button
-    await page.getByRole('button', { name: 'Add Item' }).click();
+    // Open the Add Item modal via the header button (use .first() to distinguish from the always-mounted form submit button)
+    await page.getByRole('button', { name: 'Add Item' }).first().click();
 
     // Verify modal opened — the modal title "Add Inventory Item" should be visible
     await expect(page.getByText('Add Inventory Item')).toBeVisible();
@@ -32,7 +32,7 @@ test.describe('Inventory Management', () => {
 
     // ── Step 2: Marketplace (optional fields — skip) ──
     // Submit the form. On step 2, the submit button reads "Add Item".
-    await page.getByRole('button', { name: 'Add Item' }).click();
+    await page.getByTestId('submit-add-item').click();
 
     // Verify success toast appears (sonner toast)
     await expect(page.getByText('Item added successfully')).toBeVisible();

@@ -39,3 +39,6 @@ yarn-error.log*
 /playwright-report/
 /test-results/
 .env.test
+
+# AI agents
+.agents/
