@@ -122,6 +122,11 @@ Ensure you have the following installed and configured on your machine:
 3. **Configure Environment Variables**
    Create a `.env` file in the root directory by copying `.env.example` .
 
+
+```bash
+cp .env.example .env
+```
+
 ### Database Setup
 
 You can set up your database using either a free cloud project or a local PostgreSQL instance.
@@ -195,7 +200,7 @@ The application will be running locally at `http://localhost:5173` .
 
 ## 🔐 Local Authentication
 
-FlipTrack uses **Supabase Auth** for authentication, while application data is managed through Prisma.
+FlipTrack uses **Supabase Auth** for authentication, while the dashboard data is stored in Prisma-managed tables.
 
 The local setup involves two separate scripts:
 
@@ -210,20 +215,16 @@ Both scripts serve different purposes and should be run during local setup.
 
 Want to test FlipTrack's UI and features without manually creating data? We have included an automated seed script that provisions a test user and sample inventory items.
 
-1. Ensure your development server is running (`npm run dev`).
-2. Execute the demo creation script:
-   
-
-```bash
-   npx tsx scripts/create-demo-user.ts
-   ```
-
-3. Navigate to `http://localhost:5173/auth/login`.
-4. Click the **"Use Demo Credentials"** button on the login form to instantly authenticate and view the populated dashboard.
+1. Set `NEXT_PUBLIC_SUPABASE_URL`,  `NEXT_PUBLIC_SUPABASE_ANON_KEY`,  `DATABASE_URL`, and `DIRECT_URL` in `.env`.
+2. Run the seed and demo-user scripts:
 
 ```bash
 npx tsx prisma/seed.ts
+npx tsx scripts/create-demo-user.ts
 ```
+
+3. Start the development server with `npm run dev`.
+4. Open `http://localhost:5173/auth/login` and click **"Use Demo Credentials"** to autofill the demo Supabase Auth account.
 
 ---
 
