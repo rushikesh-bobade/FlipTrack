@@ -38,8 +38,11 @@ export default [
   route("/auth/logout", "routes/auth.logout.ts"),
   route("/api/cron/refresh-prices", "routes/api.cron.prices.ts"),
   route("/api/webhooks/stripe", "routes/api.stripe.ts"),
+  route("/api/webhooks/orders", "routes/api.webhooks.orders.ts"),
   route("/api/ai/price-insight", "routes/api.ai.insights.ts"),
+  route("/api/ai/ocr", "routes/api.ai.ocr.ts"),
   route("/api/insights", "routes/api.insights.ts"),
   route("/api/export/tax", "routes/api.export.tax.ts"),
   route("/api/inventory/search", "routes/api.inventory.search.ts"),
+  route("/api/integrations", "routes/api.integrations.ts"),
 ] satisfies RouteConfig;

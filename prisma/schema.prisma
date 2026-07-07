@@ -122,6 +122,7 @@ model User {
   expenses          Expense[]
   recurringExpenses RecurringExpense[]
   priceAlerts       PriceAlert[]
+  integrations      Integration[]
   team              Team?              @relation(fields: [teamId], references: [id])
 }
 
@@ -132,6 +133,7 @@ model Team {
   createdAt DateTime @default(now())
   members   User[]
   invites   Invite[]
+  integrations Integration[]
 }
 
 model Invite {
@@ -271,4 +273,23 @@ model PriceAlert {
 
   @@index([userId, isActive])
   @@index([sku, size, marketplace])
+}
+
+model Integration {
+  id           String    @id @default(uuid())
+  userId       String
+  teamId       String?
+  platform     String    // e.g., "SHOPIFY", "EBAY"
+  accessToken  String    // Encrypted access token or API key
+  refreshToken String?   // Encrypted refresh token (optional)
+  expiresAt    DateTime? // Expiration date/time (optional)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  team         Team?     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, platform])
+  @@index([userId])
+  @@index([teamId])
 }

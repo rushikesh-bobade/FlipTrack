@@ -1,19 +1,27 @@
-import { Link } from "react-router";
+import { Form, Link } from "react-router";
 import styles from "./forgot-password-form.module.css";
 
-interface Props { className?: string; onSent?: () => void; }
+interface Props {
+  className?: string;
+  error?: string;
+}
 
-export function ForgotPasswordForm({ className, onSent }: Props) {
+export function ForgotPasswordForm({ className, error }: Props) {
   return (
-    <div className={[styles.form, className].filter(Boolean).join(" ")}>
+    <Form method="post" className={[styles.form, className].filter(Boolean).join(" ")}>
       <h1 className={styles.heading}>Reset Password</h1>
       <p className={styles.desc}>Enter your email address and we&apos;ll send you a link to reset your password.</p>
+      
+      {error && <div className={styles.error}>{error}</div>}
+
       <div className={styles.field}>
         <label className={styles.label}>Email</label>
-        <input className={styles.input} type="email" placeholder="your@email.com" />
+        <input className={styles.input} type="email" name="email" placeholder="your@email.com" required />
       </div>
-      <button className={styles.submitBtn} onClick={onSent}>Send Reset Link</button>
+      
+      <button type="submit" className={styles.submitBtn}>Send Reset Link</button>
       <Link to="/auth/login" className={styles.backLink}>Back to Login</Link>
-    </div>
+    </Form>
   );
 }
+
