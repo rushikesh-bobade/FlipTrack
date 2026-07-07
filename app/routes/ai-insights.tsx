@@ -1,15 +1,15 @@
-import { useState, useEffect } from "react";
-import { useLoaderData, useFetcher } from "react-router";
+import { useState, useEffect, Suspense } from "react";
+import { useLoaderData, useFetcher, Await } from "react-router";
 import type { Route } from "./+types/ai-insights";
 import { PrismaClient } from "@prisma/client";
-import { getSupabaseServerClient } from "~/utils/supabase.server";
-
+import { getSupabaseServerClient, getUserFromRequest } from "~/utils/supabase.server";
 import styles from "./ai-insights.module.css";
 import { AiInsightsHeader } from "~/blocks/ai-insights/ai-insights-header";
 import { PlanGateMessage } from "~/blocks/ai-insights/plan-gate-message";
 import { BatchAnalysisStatus } from "~/blocks/ai-insights/batch-analysis-status";
 import { ItemAnalysisCards } from "~/blocks/ai-insights/item-analysis-cards";
 import { DetailedAnalysisModal } from "~/blocks/ai-insights/detailed-analysis-modal";
+import { IconLoader2 } from "@tabler/icons-react";
 
 export interface AiInsightItem {
   id: string;
@@ -27,29 +27,31 @@ const prisma = new PrismaClient();
 export async function loader({ request }: Route.LoaderArgs) {
   try {
     const { supabase } = getSupabaseServerClient(request);
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { user } } = await getUserFromRequest(request, supabase);
     
     if (!user) {
-      return { inventory: [] };
+      return { deferredData: Promise.resolve([] as any[]) };
     }
 
-    const inventory = await prisma.inventoryItem.findMany({
+    const deferredData = prisma.inventoryItem.findMany({
       where: { userId: user.id },
       include: {
         priceHistory: true 
       }
     });
 
-    return { inventory };
+    return { deferredData };
   } catch (error) {
     console.error("Failed to load inventory for insights:", error);
-    return { inventory: [] };
+    return { deferredData: Promise.resolve([] as any[]) };
   }
 }
 
-export default function AiInsightsPage() {
-  const { inventory } = useLoaderData() as { inventory: any[] };
-  
+interface PageContentProps {
+  inventory: any[];
+}
+
+function AiInsightsPageContent({ inventory }: PageContentProps) {
   const fetcher = useFetcher();
   const [insights, setInsights] = useState<AiInsightItem[]>([]);
   const [analyzing, setAnalyzing] = useState(false);
@@ -72,7 +74,7 @@ export default function AiInsightsPage() {
   };
 
   return (
-    <div className={styles.page}>
+    <>
       <AiInsightsHeader onAnalyzeAll={triggerAiAnalysis} isPro={isPro} />
       {!isPro && <PlanGateMessage />}
       {isPro && (analyzing || fetcher.state === "submitting") && (
@@ -88,6 +90,27 @@ export default function AiInsightsPage() {
           onClose={() => setSelectedItem(null)} 
         />
       )}
+    </>
+  );
+}
+
+export default function AiInsightsPage() {
+  const { deferredData } = useLoaderData<typeof loader>();
+  
+  return (
+    <div className={styles.page}>
+      <Suspense
+        fallback={
+          <div className={styles.loadingContainer}>
+            <IconLoader2 size={32} className={styles.spin} />
+            <span>Loading insights data...</span>
+          </div>
+        }
+      >
+        <Await resolve={deferredData}>
+          {(inventory) => <AiInsightsPageContent inventory={inventory} />}
+        </Await>
+      </Suspense>
     </div>
   );
 }
