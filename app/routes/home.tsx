@@ -1,4 +1,5 @@
 import styles from "./home.module.css";
+import ChatWidget from "~/blocks/home/ChatWidget";
 import { HeroSection } from "~/blocks/home/hero-section";
 import { ProblemSolutionStrip } from "~/blocks/home/problem-solution-strip";
 import { FeaturesShowcase } from "~/blocks/home/features-showcase";
@@ -27,6 +28,8 @@ export default function HomePage() {
       <TestimonialsSection />
       <FaqAccordion />
       <CtaBanner />
+
+      <ChatWidget />
     </div>
   );
 }
