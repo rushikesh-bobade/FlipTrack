@@ -1,5 +1,5 @@
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
-import { mockCashFlow } from "~/data/mock-data";
+
 import styles from "./monthly-breakdown-chart.module.css";
 
 interface Props { className?: string; sales?: any[]; expenses?: any[]; }

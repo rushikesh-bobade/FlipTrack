@@ -1,4 +1,3 @@
-import { mockSales } from "~/data/mock-data";
 import styles from "./detailed-statement-table.module.css";
 
 interface Props { className?: string; sales?: any[]; expenses?: any[]; }
