@@ -33,3 +33,9 @@ prisma/*.db
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# Playwright
+/playwright/.auth/
+/playwright-report/
+/test-results/
+.env.test
