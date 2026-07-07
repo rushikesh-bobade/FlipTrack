@@ -192,6 +192,7 @@ export async function action({ request }: Route.ActionArgs) {
     const condition = formData.get("condition") as ItemCondition;
     const colorway = formData.get("colorway") as string;
     const notes = formData.get("notes") as string;
+    const imageUrl = (formData.get("imageUrl") as string) || null;
 
     await prisma.inventoryItem.create({
       data: {
@@ -205,6 +206,7 @@ export async function action({ request }: Route.ActionArgs) {
         condition,
         colorway,
         notes,
+        imageUrl,
         status: "IN_STOCK",
       },
     });
@@ -219,6 +221,7 @@ export async function action({ request }: Route.ActionArgs) {
     const condition = formData.get("condition") as ItemCondition;
     const colorway = formData.get("colorway") as string;
     const notes = formData.get("notes") as string;
+    const imageUrl = (formData.get("imageUrl") as string) || null;
 
     await prisma.inventoryItem.update({
       where: { id: itemId, userId: user.id },
@@ -232,6 +235,7 @@ export async function action({ request }: Route.ActionArgs) {
         condition,
         colorway,
         notes,
+        imageUrl,
       },
     });
   } else if (intent === "delete") {

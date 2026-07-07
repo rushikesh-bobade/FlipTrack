@@ -1,5 +1,5 @@
 import { Link, Form } from "react-router";
-import { IconAlertTriangle } from "@tabler/icons-react";
+import { IconAlertTriangle, IconPhoto } from "@tabler/icons-react";
 import styles from "./inventory-table.module.css";
 
 interface Props {
@@ -33,6 +33,7 @@ export function InventoryTable({ className, selected, onSelectChange, items, onE
                   onChange={toggleAll}
                 />
               </th>
+              <th className={styles.th}>Photo</th>
               <th className={styles.th}>Item</th>
               <th className={styles.th}>SKU</th>
               <th className={styles.th}>Size</th>
@@ -56,6 +57,21 @@ export function InventoryTable({ className, selected, onSelectChange, items, onE
                       checked={selected.includes(item.id)}
                       onChange={() => toggle(item.id)}
                     />
+                  </td>
+                  <td className={styles.td}>
+                    {item.imageUrl ? (
+                      <img
+                        src={item.imageUrl}
+                        alt={item.name}
+                        className={styles.thumbnail}
+                        loading="lazy"
+                        title={item.name}
+                      />
+                    ) : (
+                      <div className={styles.thumbnailPlaceholder} title="No image">
+                        <IconPhoto size={16} />
+                      </div>
+                    )}
                   </td>
                   <td className={styles.td}>
                     <Link to={`/app/inventory/${item.id}`} className={styles.nameLink}>

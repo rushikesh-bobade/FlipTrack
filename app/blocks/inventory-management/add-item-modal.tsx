@@ -1,6 +1,14 @@
 import { useState, useRef } from "react";
 import { Form } from "react-router";
-import { IconX, IconScan, IconLoader2, IconCheck } from "@tabler/icons-react";
+import {
+  IconX,
+  IconScan,
+  IconLoader2,
+  IconCheck,
+  IconPhoto,
+  IconTrash,
+  IconUpload,
+} from "@tabler/icons-react";
 import { toast } from "sonner";
 import styles from "./add-item-modal.module.css";
 
@@ -12,6 +20,7 @@ interface Props {
 }
 
 type ScanState = "idle" | "scanning" | "success";
+type UploadState = "idle" | "uploading" | "done" | "error";
 
 const steps = ["Basic Info", "Purchase Details", "Marketplace"];
 
@@ -24,6 +33,12 @@ export function AddItemModal({ className, onClose, item, isDuplicate = false }: 
   const [purchasePrice, setPurchasePrice] = useState<string>(
     item?.purchasePrice ? String(Number(item.purchasePrice)) : "",
   );
+
+  // Image upload state
+  const [imageUrl, setImageUrl] = useState<string>(item?.imageUrl ?? "");
+  const [imagePreview, setImagePreview] = useState<string>(item?.imageUrl ?? "");
+  const [uploadState, setUploadState] = useState<UploadState>("idle");
+  const imageInputRef = useRef<HTMLInputElement>(null);
 
   const [scanState, setScanState] = useState<ScanState>("idle");
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -86,6 +101,55 @@ export function AddItemModal({ className, onClose, item, isDuplicate = false }: 
     }
   };
 
+  /** Handle item image selection and upload to Supabase Storage */
+  const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Reset input value so the same file can be re-selected if needed
+    e.target.value = "";
+
+    // Show local preview immediately
+    const objectUrl = URL.createObjectURL(file);
+    setImagePreview(objectUrl);
+    setUploadState("uploading");
+
+    try {
+      const fd = new FormData();
+      fd.append("image", file);
+
+      const res = await fetch("/api/inventory/upload-image", {
+        method: "POST",
+        body: fd,
+      });
+
+      const data = await res.json();
+
+      if (!data.ok) {
+        throw new Error(data.error ?? "Upload failed.");
+      }
+
+      setImageUrl(data.url);
+      setUploadState("done");
+      toast.success("Image uploaded successfully.");
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Image upload failed.";
+      toast.error(message);
+      setImageUrl("");
+      setImagePreview("");
+      setUploadState("error");
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setImageUrl("");
+    setImagePreview("");
+    setUploadState("idle");
+    if (imageInputRef.current) {
+      imageInputRef.current.value = "";
+    }
+  };
+
   const scanButtonLabel =
     scanState === "scanning" ? "Scanning…" : scanState === "success" ? "Extracted!" : "Scan Receipt / Invoice";
 
@@ -110,6 +174,8 @@ export function AddItemModal({ className, onClose, item, isDuplicate = false }: 
         <Form method="post" action="/app/inventory">
           <input type="hidden" name="intent" value={item && !isDuplicate ? "update" : "create"} />
           {item && !isDuplicate && <input type="hidden" name="itemId" value={item.id} />}
+          {/* Hidden field to carry the uploaded image URL to the server */}
+          <input type="hidden" name="imageUrl" value={imageUrl} />
           <div className={styles.body}>
             {step === 0 && (
               <>
@@ -150,6 +216,68 @@ export function AddItemModal({ className, onClose, item, isDuplicate = false }: 
                     {scanButtonLabel}
                   </button>
                   <span className={styles.scanHint}>AI will auto-fill SKU, name &amp; price from your image</span>
+                </div>
+
+                {/* ── Image Upload ── */}
+                <div className={styles.field}>
+                  <label className={styles.label} htmlFor="field-item-image">
+                    Item / Receipt Photo
+                  </label>
+                  <input
+                    ref={imageInputRef}
+                    id="field-item-image"
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp,image/gif"
+                    className={styles.hiddenFileInput}
+                    onChange={handleImageSelect}
+                    aria-label="Upload item or receipt photo"
+                  />
+                  {imagePreview ? (
+                    <div className={styles.imagePreviewWrapper}>
+                      <img
+                        src={imagePreview}
+                        alt="Item preview"
+                        className={styles.imagePreview}
+                      />
+                      <div className={styles.imagePreviewOverlay}>
+                        {uploadState === "uploading" && (
+                          <div className={styles.imageUploadingBadge}>
+                            <IconLoader2 size={14} className={styles.spinnerIcon} />
+                            Uploading…
+                          </div>
+                        )}
+                        {uploadState === "done" && (
+                          <div className={styles.imageUploadedBadge}>
+                            <IconCheck size={14} />
+                            Uploaded
+                          </div>
+                        )}
+                        <button
+                          type="button"
+                          className={styles.imageRemoveBtn}
+                          onClick={handleRemoveImage}
+                          aria-label="Remove image"
+                          title="Remove image"
+                        >
+                          <IconTrash size={14} />
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      id="upload-item-image-btn"
+                      className={styles.imageUploadBtn}
+                      onClick={() => imageInputRef.current?.click()}
+                    >
+                      <IconPhoto size={20} />
+                      <span>
+                        <strong>Click to upload</strong> item photo or receipt
+                      </span>
+                      <span className={styles.imageUploadHint}>JPEG, PNG, WebP or GIF · max 5 MB</span>
+                      <IconUpload size={14} className={styles.imageUploadIcon} />
+                    </button>
+                  )}
                 </div>
 
                 {/* ── Basic Info Fields ── */}
@@ -317,7 +445,7 @@ export function AddItemModal({ className, onClose, item, isDuplicate = false }: 
                 Next
               </button>
             ) : (
-              <button type="submit" className={styles.nextBtn}>
+              <button type="submit" className={styles.nextBtn} disabled={uploadState === "uploading"}>
                 {isDuplicate ? "Duplicate Item" : item ? "Save Changes" : "Add Item"}
               </button>
             )}

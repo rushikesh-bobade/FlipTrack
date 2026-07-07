@@ -46,6 +46,7 @@ export default [
   
   // 🌟 Kept from main branch merge (Placed safely above dynamic route)
   route("/api/inventory/search", "routes/api.inventory.search.ts"),
+  route("/api/inventory/upload-image", "routes/api.inventory.upload-image.ts"),
   route("/api/integrations", "routes/api.integrations.ts"),
   
   // 🌟 Your dynamic showroom route (Must stay at the very end as a catch-all)
