@@ -1,12 +1,16 @@
-import { useState } from "react";
 import styles from "./blog-header.module.css";
 
-interface Props { className?: string; }
+interface Props { 
+  className?: string; 
+  searchQuery: string;
+  setSearchQuery: (query: string) => void;
+  selectedCategory: string;
+  setSelectedCategory: (category: string) => void;
+}
 
 const categories = ["All", "Tips & Tricks", "Market Analysis", "News", "Product Updates"];
 
-export function BlogHeader({ className }: Props) {
-  const [active, setActive] = useState("All");
+export function BlogHeader({ className, searchQuery, setSearchQuery, selectedCategory, setSelectedCategory }: Props) {
   return (
     <div className={[styles.header, className].filter(Boolean).join(" ")}>
       <div className={styles.inner}>
@@ -15,10 +19,22 @@ export function BlogHeader({ className }: Props) {
         <div className={styles.controls}>
           <div className={styles.categories}>
             {categories.map(c => (
-              <button key={c} className={[styles.cat, active === c ? styles.active : ""].join(" ")} onClick={() => setActive(c)}>{c}</button>
+              <button 
+                key={c} 
+                className={[styles.cat, selectedCategory === c ? styles.active : ""].join(" ")} 
+                onClick={() => setSelectedCategory(c)}
+              >
+                {c}
+              </button>
             ))}
           </div>
-          <input className={styles.search} type="search" placeholder="Search articles..." />
+          <input 
+            className={styles.search} 
+            type="search" 
+            placeholder="Search articles..." 
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
         </div>
       </div>
     </div>
