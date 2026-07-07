@@ -12,7 +12,7 @@ export function Pagination({ className, currentPage, totalPages, onPageChange }:
   if (totalPages <= 1) return null;
 
   return (
-    <div className={[styles.section, className].filter(Boolean).join(" ")}>
+    <nav aria-label="Pagination" className={[styles.section, className].filter(Boolean).join(" ")}>
       <div className={styles.inner}>
         <button 
           className={styles.btn} 
@@ -28,6 +28,8 @@ export function Pagination({ className, currentPage, totalPages, onPageChange }:
             key={p} 
             className={[styles.btn, p === currentPage ? styles.active : ""].join(" ")} 
             onClick={() => onPageChange(p)}
+            aria-label={`Page ${p}`}
+            aria-current={p === currentPage ? "page" : undefined}
           >
             {p}
           </button>
@@ -42,6 +44,6 @@ export function Pagination({ className, currentPage, totalPages, onPageChange }:
           <IconChevronRight size={14} />
         </button>
       </div>
-    </div>
+    </nav>
   );
 }
