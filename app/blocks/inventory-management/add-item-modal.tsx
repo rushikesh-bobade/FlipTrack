@@ -25,8 +25,7 @@ export function AddItemModal({ className, onClose, item }: Props) {
           <input type="hidden" name="intent" value={item ? "update" : "create"} />
           {item && <input type="hidden" name="itemId" value={item.id} />}
           <div className={styles.body}>
-          {step === 0 && (
-            <>
+          <div style={{ display: step === 0 ? "block" : "none" }}>
               <div className={styles.field}><label className={styles.label}>SKU *</label><input name="sku" defaultValue={item?.sku} className={styles.input} placeholder="e.g. DD1391-100" required /></div>
               <div className={styles.field}><label className={styles.label}>Product Name *</label><input name="name" defaultValue={item?.name} className={styles.input} placeholder="e.g. Air Jordan 1 Retro High OG Chicago" required /></div>
               <div className={styles.row}>
@@ -34,10 +33,8 @@ export function AddItemModal({ className, onClose, item }: Props) {
                 <div className={styles.field}><label className={styles.label}>Size *</label><input name="size" defaultValue={item?.size} className={styles.input} placeholder="10.5" required /></div>
               </div>
               <div className={styles.field}><label className={styles.label}>Colorway</label><input name="colorway" className={styles.input} placeholder="e.g. Varsity Red/Black/White" /></div>
-            </>
-          )}
-          {step === 1 && (
-            <>
+          </div>
+          <div style={{ display: step === 1 ? "block" : "none" }}>
               <div className={styles.row}>
                 <div className={styles.field}><label className={styles.label}>Purchase Price *</label><input name="purchasePrice" defaultValue={item?.purchasePrice ? Number(item.purchasePrice) : ''} className={styles.input} type="number" placeholder="170" required /></div>
                 <div className={styles.field}><label className={styles.label}>Purchase Date *</label><input name="purchaseDate" defaultValue={item?.purchaseDate ? new Date(item.purchaseDate).toISOString().split('T')[0] : ''} className={styles.input} type="date" required /></div>
@@ -47,17 +44,14 @@ export function AddItemModal({ className, onClose, item }: Props) {
                 <select name="condition" defaultValue={item?.condition || "DEADSTOCK"} className={styles.input}><option value="DEADSTOCK">Deadstock</option><option value="NEW_WITH_BOX">New with Box</option><option value="USED">Used</option></select>
               </div>
               <div className={styles.field}><label className={styles.label}>Notes</label><textarea name="notes" className={styles.input} rows={3} placeholder="Any additional notes..."></textarea></div>
-            </>
-          )}
-          {step === 2 && (
-            <>
+          </div>
+          <div style={{ display: step === 2 ? "block" : "none" }}>
               <div className={styles.field}>
                 <label className={styles.label}>Listing Marketplace</label>
                 <select className={styles.input}><option value="">Not listed</option><option>StockX</option><option>GOAT</option><option>eBay</option><option>Flight Club</option><option>Stadium Goods</option></select>
               </div>
               <div className={styles.field}><label className={styles.label}>Asking Price</label><input className={styles.input} type="number" placeholder="Optional" /></div>
-            </>
-          )}
+          </div>
           </div>
           <div className={styles.footer}>
             {step > 0 ? (
