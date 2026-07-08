@@ -1,0 +1,216 @@
+/* ==========================================================================
+   THEME CONFIGURATION (🌟 UPDATE 3: Using Project-Wide Global Variables)
+   ========================================================================== */
+
+/* Default configuration maps to global dark environment tokens */
+.showroomContainer {
+  --bg-primary: var(--color-bg-canvas, #0c0e12);
+  --bg-surface: var(--color-bg-surface-translucent, rgba(20, 24, 30, 0.4));
+  --bg-card: var(--color-bg-card, rgba(20, 24, 30, 0.3));
+  --bg-input: var(--color-bg-field, rgba(12, 14, 18, 0.6));
+  --border-subtle: var(--color-border-subtle, rgba(255, 255, 255, 0.04));
+  --border-interactive: var(--color-border-interactive, rgba(255, 255, 255, 0.06));
+  --text-main: var(--color-text-body, #e2e8f0);
+  --text-muted: var(--color-text-muted, #94a3b8);
+  --text-heading: var(--color-text-heading, #f1f5f9);
+  --accent-color: var(--color-accent-primary, #6366f1);
+}
+
+/* Listening to your layout theme toggle actions via global modifiers */
+:global(.light) .showroomContainer,
+:global(html.light) .showroomContainer,
+:global([data-theme="light"]) .showroomContainer,
+:global(html[data-theme="light"]) .showroomContainer {
+  --bg-primary: var(--color-bg-surface, #f8fafc);
+  --bg-surface: var(--color-bg-surface-muted, rgba(241, 245, 249, 0.8));
+  --bg-card: var(--color-bg-panel, #ffffff);
+  --bg-input: var(--color-bg-white, #ffffff);
+  --border-subtle: var(--color-border-light, rgba(0, 0, 0, 0.05));
+  --border-interactive: var(--color-border-base, rgba(0, 0, 0, 0.08));
+  --text-main: var(--color-text-dark, #334155);
+  --text-muted: var(--color-text-secondary, #64748b);
+  --text-heading: var(--color-text-main, #0f172a);
+  --accent-color: var(--color-accent-button, #4f46e5);
+}
+
+/* ==========================================================================
+   LAYOUT STRUCTURE & INTERACTIVE CORE
+   ========================================================================== */
+
+.showroomContainer {
+  min-height: 100vh;
+  background-color: var(--bg-primary);
+  padding: 1.5rem;
+  color: var(--text-main);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1400px;
+  margin: 0 auto 2.5rem auto;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.title {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--text-heading);
+}
+
+.title span {
+  color: var(--accent-color);
+}
+
+.headerActions {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.contactButton {
+  background: var(--bg-card);
+  color: var(--text-heading);
+  border: 1px solid var(--border-interactive);
+  padding: 0.6rem 1.2rem;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+}
+
+.contactButton:hover {
+  background: var(--accent-color);
+  color: #ffffff;
+  border-color: var(--accent-color);
+}
+
+.controlsBar {
+  display: flex;
+  gap: 1rem;
+  max-width: 1400px;
+  margin: 0 auto 2rem auto;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  padding: 0.75rem;
+  border-radius: 8px;
+}
+
+.searchInput {
+  flex-grow: 1;
+}
+
+.searchInput, .filterSelect {
+  background: var(--bg-input);
+  border: 1px solid var(--border-interactive);
+  color: var(--text-main);
+  padding: 0.6rem;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.searchInput:focus, .filterSelect:focus {
+  border-color: var(--accent-color);
+}
+
+.productGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.itemCard {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.itemCard:hover {
+  transform: translateY(-3px);
+  border-color: var(--accent-color);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+.imageWrapper {
+  position: relative;
+  width: 100%;
+  height: 220px;
+  background: rgba(0, 0, 0, 0.02);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.productImage {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 1rem;
+}
+
+.badge {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  background: var(--bg-primary);
+  color: var(--text-main);
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  border: 1px solid var(--border-interactive);
+  text-transform: uppercase;
+}
+
+.cardContent {
+  padding: 1.25rem;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.brand {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  margin-bottom: 0.3rem;
+  font-weight: 500;
+}
+
+.itemName {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 0.75rem 0;
+  color: var(--text-heading);
+  line-height: 1.4;
+}
+
+.detailsRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.size {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.price {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-heading);
+}

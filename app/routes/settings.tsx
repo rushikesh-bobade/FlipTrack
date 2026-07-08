@@ -67,6 +67,7 @@ export async function action({ request }: Route.ActionArgs) {
       where: { id: authUser.id },
       data: { currency: currency as any, theme: theme as any },
     });
+
   } else if (intent === "update-notifications") {
     const emailNotifications = formData.get("emailNotifications") === "on";
     const smsNotifications = formData.get("smsNotifications") === "on";
@@ -77,6 +78,7 @@ export async function action({ request }: Route.ActionArgs) {
       where: { id: authUser.id },
       data: { emailNotifications, smsNotifications, pushNotifications, weeklySummary, priceAlertTriggered },
     });
+
 
     return { ok: true, intent: "update-preferences", message: "Preferences updated successfully." };
   }

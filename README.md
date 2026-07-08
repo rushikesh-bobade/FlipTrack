@@ -29,6 +29,7 @@
   - [Prerequisites](#prerequisites)
   - [Local Installation](#local-installation)
   - [Database Setup](#database-setup)
+  - [Local Development (Docker)](#local-development-docker)
 - [Demo Credentials](#-demo-credentials)
 - [Project Structure](#-project-structure)
 - [Contributing](#-contributing)
@@ -118,15 +119,36 @@ You can set up your database using either a free cloud project or a local Postgr
    npx prisma generate
    ```
 
-**Option B: Local PostgreSQL (No Cloud Account Required)**
-1. Ensure you have PostgreSQL running locally (e.g., via Docker or Postgres.app).
-2. Update the `DATABASE_URL` and `DIRECT_URL` in your `.env` to point to your local instance (e.g., `postgresql://postgres:password@localhost:5432/fliptrack`).
-3. You can leave `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` blank or mock them if you are only testing UI/Prisma logic.
-4. Push the schema to your local database:
+<a id="local-development-docker"></a>
+### 🐳 Local Development (Docker)
+
+**Option B: Local PostgreSQL via Docker (No Cloud Account Required)**
+
+This is the recommended path for external contributors, since the project's live Supabase `DATABASE_URL` is kept private and cannot be shared. External contributors previously had no way to run `npx prisma migrate dev` locally, which meant maintainers had to generate migrations manually on their behalf. A `docker-compose.yml` is included at the repo root so anyone can spin up an isolated local Postgres instance with one command and generate migrations independently.
+
+1. Make sure [Docker](https://www.docker.com/) is installed and running.
+2. Start the local Postgres container:
+   ```bash
+   docker-compose up -d
+   ```
+   This starts a `postgres:15` container named `fliptrack_postgres`, exposed on `localhost:5432`, with a persistent volume so your data survives restarts.
+3. In your `.env`, set `DATABASE_URL` and `DIRECT_URL` to the local connection string (already provided, commented out, in `.env.example`):
+   ```bash
+   DATABASE_URL="postgresql://postgres:password@localhost:5432/fliptrack_dev"
+   DIRECT_URL="postgresql://postgres:password@localhost:5432/fliptrack_dev"
+   ```
+4. You can leave `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` blank or mock them if you are only testing UI/Prisma logic.
+5. Push the schema and generate migrations, all against your own local database:
    ```bash
    npx prisma db push
    npx prisma generate
+   npx prisma migrate dev --name your-migration-name
    ```
+6. To stop the container (data is preserved in the Docker volume):
+   ```bash
+   docker-compose down
+   ```
+   To wipe the local database completely, add `-v`: `docker-compose down -v`.
 
 ### Start Development Server
 
