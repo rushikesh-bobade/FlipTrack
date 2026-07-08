@@ -34,7 +34,7 @@ export function AppSidebar({ user }: Props) {
     { to: "/app/sales", label: "Sales Log", icon: <IconReceipt size={20} /> },
     { to: "/app/expenses", label: "Expenses", icon: <IconWallet size={20} /> },
     { to: "/app/ai-insights", label: "AI Insights", icon: <IconBrain size={20} /> },
-    { to: "/app/analytics", label: "Analytics", icon: <IconTrendingUp size={20} /> },
+    { to: "/app/analytics", label: "Analytics & Insights", icon: <IconTrendingUp size={20} /> },
     { to: "/app/settings", label: "Settings", icon: <IconSettings size={20} /> },
   ];
   return (
