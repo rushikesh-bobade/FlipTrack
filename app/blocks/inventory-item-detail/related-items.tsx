@@ -3,7 +3,7 @@ import styles from "./related-items.module.css";
 import { InventoryItem } from "@prisma/client";
 interface Props {
   className?: string;
-  items: items: InventoryItem[];
+  items: InventoryItem[];
 }
 
 export function RelatedItems({ className, items }: Props) {
@@ -21,7 +21,7 @@ export function RelatedItems({ className, items }: Props) {
             <div className={styles.image}>Image</div>
             <div className={styles.name}>{item.name}</div>
             <div className={styles.price}>
-              ${<item.askingPrice ?? "N/A"}
+             {<item.askingPrice ?? "N/A"}
             </div>
           </Link>
         ))}
