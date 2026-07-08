@@ -1,17 +1,14 @@
-type RateLimitEntry = {
-  count: number;
-  resetAt: number;
-};
+import { PrismaClient } from "@prisma/client";
 
-const store = new Map<string, RateLimitEntry>();
+const prisma = new PrismaClient();
 
-function getClientIp(request: Request): string {
-  const forwarded = request.headers
-    .get("x-forwarded-for")
-    ?.split(",")[0]
-    ?.trim();
-
-  return forwarded || request.headers.get("x-real-ip") || "unknown";
+export function getClientIp(request: Request): string {
+  return (
+    request.headers.get("x-vercel-forwarded-for") ||
+    request.headers.get("x-real-ip") ||
+    request.headers.get("x-forwarded-for")?.split(",")[0].trim() ||
+    "unknown_ip"
+  );
 }
 
 export async function rateLimit(
@@ -20,21 +17,35 @@ export async function rateLimit(
   windowMs = 60_000
 ) {
   const ip = getClientIp(request);
-  const now = Date.now();
+  const now = new Date();
 
-  const existing = store.get(ip);
+  const existing = await prisma.rateLimit.findUnique({
+    where: { ip },
+  });
 
-  if (!existing || existing.resetAt <= now) {
-    store.set(ip, {
-      count: 1,
-      resetAt: now + windowMs,
+  if (!existing) {
+    await prisma.rateLimit.create({
+      data: {
+        ip,
+        count: 1,
+        resetAt: new Date(now.getTime() + windowMs),
+      },
     });
     return;
   }
 
-  existing.count++;
+  if (existing.resetAt <= now) {
+    await prisma.rateLimit.update({
+      where: { ip },
+      data: {
+        count: 1,
+        resetAt: new Date(now.getTime() + windowMs),
+      },
+    });
+    return;
+  }
 
-  if (existing.count > limit) {
+  if (existing.count >= limit) {
     throw new Response(
       JSON.stringify({
         error: "Too many attempts. Please try again later.",
@@ -48,5 +59,12 @@ export async function rateLimit(
     );
   }
 
-  store.set(ip, existing);
+  await prisma.rateLimit.update({
+    where: { ip },
+    data: {
+      count: {
+        increment: 1,
+      },
+    },
+  });
 }
