@@ -83,7 +83,7 @@ export default function TaxReportExportPage() {
       <TaxReportHeader />
       <ReportGenerator taxYear={taxYear} />
       <ReportPreview sales={sales} expenses={expenses} taxYear={taxYear} />
-      <ExportOptions taxYear={taxYear} />
+      <ExportOptions taxYear={taxYear} sales={sales} expenses={expenses} />
       <ReportHistory />
     </div>
   );
