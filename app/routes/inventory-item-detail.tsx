@@ -104,7 +104,7 @@ export default function InventoryItemDetailPage() {
       </div>
 
       <MarketplaceComparison priceHistory={[]} />
-      <SalesHistory sale={null} />
+      <SalesHistory sale={item.sale} />
       <RelatedItems items={relatedItems} />
     </div>
   );

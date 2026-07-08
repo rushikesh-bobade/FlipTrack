@@ -8,7 +8,6 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-import type { MarketPrice } from "@prisma/client";
 import styles from "./price-history-chart.module.css";
 
 interface Props {
@@ -53,6 +52,7 @@ export function PriceHistoryChart({
     if (!groupedData[dateStr]) {
       groupedData[dateStr] = {
         date: dateStr,
+        _sortTime: d.getTime(),
       };
     }
 
@@ -64,7 +64,9 @@ export function PriceHistoryChart({
       record.bidPrice;
   });
 
-  const chartData = Object.values(groupedData);
+  const chartData = Object.values(groupedData).sort(
+  (a: any, b: any) => a._sortTime - b._sortTime
+);
 
   return (
     <div className={[styles.card, className].filter(Boolean).join(" ")}>
