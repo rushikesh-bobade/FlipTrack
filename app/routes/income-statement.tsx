@@ -78,7 +78,7 @@ export default function IncomeStatementPage() {
         <ExpenseCategoryBreakdown expenses={expenses} />
       </div>
       <DetailedStatementTable sales={sales} expenses={expenses} />
-      <ExportOptions />
+      <ExportOptions sales={sales} expenses={expenses} />
     </div>
   );
 }
