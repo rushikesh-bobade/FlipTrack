@@ -1,6 +1,6 @@
 import { Link } from "react-router";
 import styles from "./related-items.module.css";
-import { InventoryItem } from "@prisma/client";
+import type { InventoryItem } from "@prisma/client";
 interface Props {
   className?: string;
   items: InventoryItem[];
@@ -21,7 +21,7 @@ export function RelatedItems({ className, items }: Props) {
             <div className={styles.image}>Image</div>
             <div className={styles.name}>{item.name}</div>
             <div className={styles.price}>
-             {item.askingPrice ?? "N/A"}
+             {item.askingPrice ?? String(item.askingPrice) "N/A"}
             </div>
           </Link>
         ))}
