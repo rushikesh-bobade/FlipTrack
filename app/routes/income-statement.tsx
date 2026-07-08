@@ -95,11 +95,11 @@ export default function IncomeStatementPage() {
                 <ExpenseCategoryBreakdown expenses={expenses} />
               </div>
               <DetailedStatementTable sales={sales} expenses={expenses} />
+              <ExportOptions sales={sales} expenses={expenses} />
             </>
           )}
         </Await>
       </Suspense>
-      <ExportOptions />
     </div>
   );
 }
