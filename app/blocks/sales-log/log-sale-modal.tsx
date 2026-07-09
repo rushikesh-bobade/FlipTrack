@@ -10,7 +10,7 @@ interface Props {
   sale?: any;
 }
 
-export function LogSaleModal({
+export function LogSaleModal ({
   className,
   onClose,
   inventory = [],
@@ -68,7 +68,6 @@ export function LogSaleModal({
         .then((data) => setSearchResults(data.items || []))
         .catch(console.error);
     }, 300);
-
     return () => clearTimeout(delayDebounceFn);
   }, [search]);
 
@@ -76,20 +75,21 @@ export function LogSaleModal({
     ? sale.inventoryItem
     : selectedItem || inventory.find((i) => i.id === selectedItemId);
 
-  const purchasePrice = currentItem
-    ? Number(currentItem.purchasePrice)
-    : 0;
+  const purchasePrice = parseFloat(
+  String(currentItem?.purchasePrice ?? "0")
+);
 
-  const platformFeeValue = parseFloat(platformFee || "0");
-  const shippingCostValue = parseFloat(shippingCost || "0");
+const salePriceValue = parseFloat(salePrice || "0");
+const platformFeeValue = parseFloat(platformFee || "0");
+const shippingCostValue = parseFloat(shippingCost || "0");
 
-  const profit =
-    salePrice && currentItem
-      ? parseFloat(salePrice) -
-        purchasePrice -
-        platformFeeValue -
-        shippingCostValue
-      : null;
+const profit =
+  currentItem
+    ? salePriceValue -
+      purchasePrice -
+      platformFeeValue -
+      shippingCostValue
+    : null;
 
   return (
     <div className={styles.overlay} onClick={e => e.target === e.currentTarget && onClose()}>
@@ -98,7 +98,7 @@ export function LogSaleModal({
           <span className={styles.title}>{sale ? "Edit Sale" : "Log Sale"}</span>
           <button className={styles.closeBtn} onClick={onClose}><IconX size={18} /></button>
         </div>
-        <Form method="post" onSubmit={() => onClose()}>
+        <Form method="post">
           <input type="hidden" name="intent" value={sale ? "edit" : "create"} />  {sale && (<input type="hidden" name="saleId"value={sale.id}
   />
 )}
@@ -251,7 +251,11 @@ export function LogSaleModal({
             <div className={styles.row}>
               <div className={styles.field}>
                 <label className={styles.label}>Marketplace *</label>
-                <select name="marketplace" className={styles.input} required>
+                <select
+                 name="marketplace"
+                 className={styles.input}
+                  required
+                   defaultValue={sale?.marketplace ?? "EBAY"}>
                   <option value="EBAY">eBay</option>
                   <option value="AMAZON">Amazon</option>
                   <option value="MERCARI">Mercari</option>
@@ -271,7 +275,12 @@ export function LogSaleModal({
               </div>
               <div className={styles.field}>
                 <label className={styles.label}>Tracking Number</label>
-                <input name="trackingNumber" className={styles.input} placeholder="Optional" />
+               <input
+  name="trackingNumber"
+  className={styles.input}
+  placeholder="Optional"
+  defaultValue={sale?.trackingNumber ?? ""}
+/>
               </div>
             </div>
             {profit !== null && (

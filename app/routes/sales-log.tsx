@@ -9,7 +9,6 @@ import { SalesHeader } from "~/blocks/sales-log/sales-header";
 import { SalesSummaryCards } from "~/blocks/sales-log/sales-summary-cards";
 import { SalesTable } from "~/blocks/sales-log/sales-table";
 import { LogSaleModal } from "~/blocks/sales-log/log-sale-modal";
-//<HEAD
 import { DeleteSaleModal } from "~/blocks/sales-log/delete-sale-modal";
 import { Pagination } from "~/blocks/__global/pagination";
 import { CACHE_PRIVATE_NO_STORE } from "~/utils/cache-headers";
@@ -39,7 +38,7 @@ export async function loader({ request }: Route.LoaderArgs) {
   const page = Math.max(1, Number(url.searchParams.get("page")) || 1);
   const pageSize = Number(url.searchParams.get("pageSize")) || 10;
 
-  const [totalSales, sales,inventory, metricsResult] = await Promise.all([
+  const [totalSales, sales, inventory, metricsResult] = await Promise.all([
     prisma.sale.count({ where: { userId: user.id } }),
     prisma.sale.findMany({
       where: { userId: user.id },
@@ -49,9 +48,9 @@ export async function loader({ request }: Route.LoaderArgs) {
       take: pageSize,
     }),
       prisma.inventoryItem.findMany({
-  where: {
-    userId: user.id,
-    status: "IN_STOCK",
+       where: {
+        userId: user.id,
+        status: "IN_STOCK",
   },
   orderBy: {
     createdAt: "desc",
@@ -80,17 +79,23 @@ export async function loader({ request }: Route.LoaderArgs) {
 const totalRevenue = Number(metricsResult[0]?.totalRevenue || 0);
 const totalProfit = Number(metricsResult[0]?.totalProfit || 0);
 
-return {
+
+ return {
   sales: sales.map((sale) => ({
     ...sale,
     salePrice: Number(sale.salePrice),
+    platformFee: Number(sale.platformFee),
+    shippingCost: Number(sale.shippingCost),
+
     inventoryItem: {
       ...sale.inventoryItem,
       purchasePrice: Number(sale.inventoryItem.purchasePrice),
     },
   })),
+
   inventory,
   totalPages: Math.ceil(totalSales / pageSize),
+
   summary: {
     totalSalesCount: totalSales,
     totalRevenue,
@@ -113,7 +118,7 @@ export async function action({ request }: Route.ActionArgs) {
     const inventoryItemId = formData.get("inventoryItemId") as string;
     const salePrice = Number(formData.get("salePrice"));
 
-     const platformFee = Number(formData.get("platformFee") || 0);
+     const platformFee  =  Number(formData.get("platformFee") || 0);
      const shippingCost = Number(formData.get("shippingCost") || 0);
 
     const saleDate = new Date(formData.get("saleDate") as string);

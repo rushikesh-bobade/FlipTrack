@@ -27,3 +27,7 @@
 .deleteBtn {
   color: #2563eb;
 }
+.actionButtons {
+  display: flex;
+  gap: 8px;
+}
