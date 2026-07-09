@@ -18,3 +18,33 @@
 .checkbox { width: 14px; height: 14px; cursor: pointer; accent-color: var(--color-primary); }
 .actionBtn { padding: 4px 10px; border-radius: var(--radius-sm); font-size: 12px; font-weight: 500; border: 1px solid var(--color-border); background: none; color: var(--color-text-muted); cursor: pointer; }
 .actionBtn:hover { background: var(--color-bg-elevated); }
+
+/* ── Item Thumbnail ─────────────────────────────────────── */
+.thumbnail {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  display: block;
+  background: var(--color-bg-surface);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.thumbnail:hover {
+  transform: scale(1.08);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+}
+
+.thumbnailPlaceholder {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-sm);
+  border: 1px dashed var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-subtle);
+  background: var(--color-bg-surface);
+}
+

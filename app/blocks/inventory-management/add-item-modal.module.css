@@ -97,3 +97,123 @@
   color: var(--color-text-subtle);
   line-height: 1.4;
 }
+
+/* ── Image Upload ─────────────────────────────────────────── */
+
+/* Drag-and-drop / click-to-upload button */
+.imageUploadBtn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  width: 100%;
+  padding: var(--space-5) var(--space-4);
+  border-radius: var(--radius-md);
+  border: 1.5px dashed var(--color-border);
+  background: var(--color-bg-surface);
+  color: var(--color-text-muted);
+  font-size: 13px;
+  cursor: pointer;
+  transition: border-color var(--transition-base), background var(--transition-base), color var(--transition-base);
+  text-align: center;
+}
+
+.imageUploadBtn:hover {
+  border-color: var(--color-primary);
+  background: rgba(0, 255, 136, 0.05);
+  color: var(--color-text);
+}
+
+.imageUploadHint {
+  font-size: 11px;
+  color: var(--color-text-subtle);
+  margin-top: var(--space-1);
+}
+
+.imageUploadIcon {
+  color: var(--color-primary);
+  opacity: 0.7;
+}
+
+/* Preview wrapper */
+.imagePreviewWrapper {
+  position: relative;
+  width: 100%;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-surface);
+  max-height: 180px;
+}
+
+.imagePreview {
+  display: block;
+  width: 100%;
+  max-height: 180px;
+  object-fit: cover;
+}
+
+/* Overlay appears on hover */
+.imagePreviewOverlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: var(--space-2) var(--space-3);
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.55) 0%, transparent 60%);
+  opacity: 0;
+  transition: opacity var(--transition-base);
+}
+
+.imagePreviewWrapper:hover .imagePreviewOverlay {
+  opacity: 1;
+}
+
+/* Uploading badge */
+.imageUploadingBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+  font-size: 11px;
+  font-weight: 700;
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  backdrop-filter: blur(4px);
+}
+
+/* Uploaded / success badge */
+.imageUploadedBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+  font-size: 11px;
+  font-weight: 700;
+  background: var(--color-success-bg);
+  color: var(--color-success);
+}
+
+/* Remove button */
+.imageRemoveBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px;
+  border-radius: var(--radius-full);
+  border: none;
+  background: rgba(220, 38, 38, 0.85);
+  color: #fff;
+  cursor: pointer;
+  transition: background var(--transition-fast), transform var(--transition-fast);
+}
+
+.imageRemoveBtn:hover {
+  background: var(--color-danger);
+  transform: scale(1.1);
+}
+
