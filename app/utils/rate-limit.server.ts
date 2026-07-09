@@ -19,33 +19,35 @@ export async function rateLimit(
   const ip = getClientIp(request);
   const now = new Date();
 
-  const existing = await prisma.rateLimit.findUnique({
+  const resetAt = new Date(now.getTime() + windowMs);
+
+  const result = await prisma.rateLimit.upsert({
     where: { ip },
+    create: {
+      ip,
+      count: 1,
+      resetAt,
+    },
+    update: {
+      count: {
+        increment: 1,
+      },
+    },
   });
 
-  if (!existing) {
-    await prisma.rateLimit.create({
-      data: {
-        ip,
-        count: 1,
-        resetAt: new Date(now.getTime() + windowMs),
-      },
-    });
-    return;
-  }
-
-  if (existing.resetAt <= now) {
+  if (result.resetAt <= now) {
     await prisma.rateLimit.update({
       where: { ip },
       data: {
         count: 1,
-        resetAt: new Date(now.getTime() + windowMs),
+        resetAt,
       },
     });
+
     return;
   }
 
-  if (existing.count >= limit) {
+  if (result.count > limit) {
     throw new Response(
       JSON.stringify({
         error: "Too many attempts. Please try again later.",
@@ -58,13 +60,4 @@ export async function rateLimit(
       }
     );
   }
-
-  await prisma.rateLimit.update({
-    where: { ip },
-    data: {
-      count: {
-        increment: 1,
-      },
-    },
-  });
 }
