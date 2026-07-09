@@ -10,13 +10,16 @@ import {
 } from "recharts";
 import styles from "./price-history-chart.module.css";
 
-interface PriceHistoryItem {
-  marketplace: string;
-  fetchedAt: Date;
+import type { MarketPrice } from "@prisma/client";
+
+type PriceHistoryItem = Pick<
+  MarketPrice,
+  "marketplace" | "fetchedAt"
+> & {
   askPrice: number | null;
   bidPrice: number | null;
   lastSold: number | null;
-}
+};
 
 interface Props {
   className?: string;
@@ -73,7 +76,7 @@ export function PriceHistoryChart({
   });
 
   const chartData = Object.values(groupedData).sort(
-  (a: any, b: any) => a._sortTime - b._sortTime
+  (a,b) => a._sortTime - b._sortTime
 );
 
   return (
