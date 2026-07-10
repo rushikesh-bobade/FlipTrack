@@ -10,7 +10,7 @@ interface Props {
   sale?: any;
 }
 
-export function LogSaleModal ({
+export function LogSaleModal({
   className,
   onClose,
   inventory = [],
@@ -76,20 +76,20 @@ export function LogSaleModal ({
     : selectedItem || inventory.find((i) => i.id === selectedItemId);
 
   const purchasePrice = parseFloat(
-  String(currentItem?.purchasePrice ?? "0")
-);
+    String(currentItem?.purchasePrice ?? "0")
+  );
 
-const salePriceValue = parseFloat(salePrice || "0");
-const platformFeeValue = parseFloat(platformFee || "0");
-const shippingCostValue = parseFloat(shippingCost || "0");
+  const salePriceValue = parseFloat(salePrice || "0");
+  const platformFeeValue = parseFloat(platformFee || "0");
+  const shippingCostValue = parseFloat(shippingCost || "0");
 
-const profit =
-  currentItem
-    ? salePriceValue -
+  const profit =
+    currentItem
+      ? salePriceValue -
       purchasePrice -
       platformFeeValue -
       shippingCostValue
-    : null;
+      : null;
 
   return (
     <div className={styles.overlay} onClick={e => e.target === e.currentTarget && onClose()}>
@@ -99,163 +99,159 @@ const profit =
           <button className={styles.closeBtn} onClick={onClose}><IconX size={18} /></button>
         </div>
         <Form method="post">
-          <input type="hidden" name="intent" value={sale ? "edit" : "create"} />  {sale && (<input type="hidden" name="saleId"value={sale.id}
-  />
-)}
+          <input type="hidden" name="intent" value={sale ? "edit" : "create"} />  {sale && (<input type="hidden" name="saleId" value={sale.id}
+          />
+          )}
           <div className={styles.body}>
-<div className={styles.field} style={{ position: "relative" }}>
-  <label className={styles.label}>Inventory Item *</label>
+            <div className={styles.field} style={{ position: "relative" }}>
+              <label className={styles.label}>Inventory Item *</label>
 
-  {sale ? (
-    <select
-      name="inventoryItemId"
-      className={styles.input}
-      value={selectedItemId}
-      disabled
-    >
-      <option value={sale.inventoryItemId}>
-        {sale.inventoryItem.name} ({sale.inventoryItem.size}) - $
-        {Number(sale.inventoryItem.purchasePrice)}
-      </option>
-    </select>
-  ) : (
-    <>
-      <input
-        className={styles.input}
-        placeholder="Type SKU or name..."
-        value={search}
-        onChange={(e) => {
-          setSearch(e.target.value);
-          setSelectedItem(null);
-          setSelectedItemId("");
-        }}
-        required={!selectedItemId}
-      />
+              {sale ? (
+                <select
+                  name="inventoryItemId"
+                  className={styles.input}
+                  value={selectedItemId}
+                  disabled
+                >
+                  <option value={sale.inventoryItemId}>
+                    {sale.inventoryItem.name} ({sale.inventoryItem.size}) - $
+                    {Number(sale.inventoryItem.purchasePrice)}
+                  </option>
+                </select>
+              ) : (
+                <>
+                  <input
+                    className={styles.input}
+                    placeholder="Type SKU or name..."
+                    value={search}
+                    onChange={(e) => {
+                      setSearch(e.target.value);
+                      setSelectedItem(null);
+                      setSelectedItemId("");
+                    }}
+                    required={!selectedItemId}
+                  />
 
-      {searchResults.length > 0 && !selectedItem && (
-        <ul
-          className={styles.autocompleteList}
-          style={{
-            position: "absolute",
-            top: "100%",
-            left: 0,
-            right: 0,
-            zIndex: 10,
-            background: "#fff",
-            border: "1px solid #ccc",
-            maxHeight: "150px",
-            overflowY: "auto",
-            padding: 0,
-            listStyle: "none",
-          }}
-        >
-          {searchResults.map((item) => (
-            <li
-              key={item.id}
-              style={{
-                padding: "8px",
-                cursor: "pointer",
-                borderBottom: "1px solid #eee",
-                color: "#000",
-              }}
-              onClick={() => {
-                setSelectedItem(item);
-                setSelectedItemId(item.id);
-                setSearchResults([]);
-                setSearch(
-                  `${item.name} (${item.size}) - $${Number(
-                    item.purchasePrice
-                  )}`
-                );
-              }}
-            >
-              {item.name} ({item.size}) - ${Number(item.purchasePrice)}
-            </li>
-          ))}
-        </ul>
-      )}
+                  {searchResults.length > 0 && !selectedItem && (
+                    <ul
+                      className={styles.autocompleteList}
+                      style={{
+                        position: "absolute",
+                        top: "100%",
+                        left: 0,
+                        right: 0,
+                        zIndex: 10,
+                        background: "#fff",
+                        border: "1px solid #ccc",
+                        maxHeight: "150px",
+                        overflowY: "auto",
+                        padding: 0,
+                        listStyle: "none",
+                      }}
+                    >
+                      {searchResults.map((item) => (
+                        <li
+                          key={item.id}
+                          style={{
+                            padding: "8px",
+                            cursor: "pointer",
+                            borderBottom: "1px solid #eee",
+                            color: "#000",
+                          }}
+                          onClick={() => {
+                            setSelectedItem(item);
+                            setSelectedItemId(item.id);
+                            setSearchResults([]);
+                            setSearch(
+                              `${item.name} (${item.size}) - $${Number(
+                                item.purchasePrice
+                              )}`
+                            );
+                          }}
+                        >
+                          {item.name} ({item.size}) - ${Number(item.purchasePrice)}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
 
-      <input
-        type="hidden"
-        name="inventoryItemId"
-        value={selectedItemId}
-        required
-      />
-    </>
-  )}
-</div>
+                  <input
+                    type="hidden"
+                    name="inventoryItemId"
+                    value={selectedItemId}
+                    required
+                  />
+                </>
+              )}
             </div>
+
             <div className={styles.row}>
               <div className={styles.field}>
-                
-             <div className={styles.row}>
-  <div className={styles.field}>
-    <label className={styles.label}>Sale Price *</label>
-    <input
-      name="salePrice"
-      className={styles.input}
-      type="number"
-      step="0.01"
-      placeholder="450"
-      required
-      value={salePrice}
-      onChange={(e) => setSalePrice(e.target.value)}
-    />
-  </div>
+                <label className={styles.label}>Sale Price *</label>
+                <input
+                  name="salePrice"
+                  className={styles.input}
+                  type="number"
+                  step="0.01"
+                  placeholder="450"
+                  required
+                  value={salePrice}
+                  onChange={(e) => setSalePrice(e.target.value)}
+                />
+              </div>
 
-  <div className={styles.field}>
-    <label className={styles.label}>Sale Date *</label>
-    <input
-      name="saleDate"
-      className={styles.input}
-      type="date"
-      required
-      value={saleDate}
-      onChange={(e) => setSaleDate(e.target.value)}
-    />
-  </div>
-</div>
+              <div className={styles.field}>
+                <label className={styles.label}>Sale Date *</label>
+                <input
+                  name="saleDate"
+                  className={styles.input}
+                  type="date"
+                  required
+                  value={saleDate}
+                  onChange={(e) => setSaleDate(e.target.value)}
+                />
+              </div>
+            </div>
 
-<div className={styles.row}>
-  <div className={styles.field}>
-    <label className={styles.label}>Platform / Seller Fees</label>
-    <input
-      name="platformFee"
-      type="number"
-      step="0.01"
-      min="0"
-      inputMode="decimal"
-      className={styles.input}
-      placeholder="0.00"
-      value={platformFee}
-      onChange={(e) => setPlatformFee(e.target.value)}
-    />
-  </div>
+            <div className={styles.row}>
+              <div className={styles.field}>
+                <label className={styles.label}>Platform / Seller Fees</label>
+                <input
+                  name="platformFee"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  inputMode="decimal"
+                  className={styles.input}
+                  placeholder="0.00"
+                  value={platformFee}
+                  onChange={(e) => setPlatformFee(e.target.value)}
+                />
+              </div>
 
-  <div className={styles.field}>
-    <label className={styles.label}>Shipping Cost</label>
-    <input
-      name="shippingCost"
-      type="number"
-      step="0.01"
-      min="0"
-      inputMode="decimal"
-      className={styles.input}
-      placeholder="0.00"
-      value={shippingCost}
-      onChange={(e) => setShippingCost(e.target.value)}
-    />
-  </div>
-</div>
+              <div className={styles.field}>
+                <label className={styles.label}>Shipping Cost</label>
+                <input
+                  name="shippingCost"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  inputMode="decimal"
+                  className={styles.input}
+                  placeholder="0.00"
+                  value={shippingCost}
+                  onChange={(e) => setShippingCost(e.target.value)}
+                />
+              </div>
             </div>
             <div className={styles.row}>
               <div className={styles.field}>
                 <label className={styles.label}>Marketplace *</label>
                 <select
-                 name="marketplace"
-                 className={styles.input}
+                  name="marketplace"
+                  className={styles.input}
                   required
-                   defaultValue={sale?.marketplace ?? "EBAY"}>
+                  defaultValue={sale?.marketplace ?? "EBAY"}>
                   <option value="EBAY">eBay</option>
                   <option value="AMAZON">Amazon</option>
                   <option value="MERCARI">Mercari</option>
@@ -275,12 +271,12 @@ const profit =
               </div>
               <div className={styles.field}>
                 <label className={styles.label}>Tracking Number</label>
-               <input
-  name="trackingNumber"
-  className={styles.input}
-  placeholder="Optional"
-  defaultValue={sale?.trackingNumber ?? ""}
-/>
+                <input
+                  name="trackingNumber"
+                  className={styles.input}
+                  placeholder="Optional"
+                  defaultValue={sale?.trackingNumber ?? ""}
+                />
               </div>
             </div>
             {profit !== null && (
@@ -293,12 +289,12 @@ const profit =
           <div className={styles.footer}>
             <button type="button" className={styles.cancelBtn} onClick={onClose}>Cancel</button>
             <button
-            type="submit"
-           className={styles.saveBtn}
-           disabled={!selectedItemId || !salePrice}
-             >
-          {sale ? "Save Changes" : "Log Sale"}
-          </button>
+              type="submit"
+              className={styles.saveBtn}
+              disabled={!selectedItemId || !salePrice}
+            >
+              {sale ? "Save Changes" : "Log Sale"}
+            </button>
           </div>
         </Form>
       </div >
