@@ -6,4 +6,7 @@ export default defineConfig({
   resolve: {
     tsconfigPaths: true,
   },
+  ssr: {
+    noExternal: ['@tabler/icons-react'],
+  },
 });
