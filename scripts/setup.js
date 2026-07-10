@@ -11,6 +11,10 @@ const rl = readline.createInterface({
 const NPX = process.platform === "win32" ? "npx.cmd" : "npx";
 const NPM = process.platform === "win32" ? "npm.cmd" : "npm";
 
+const REQUIRED_FILES = ["package.json", ".env.example"];
+const POSTGRES_CONTAINER = "fliptrack_postgres";
+const DOCKER_COMPOSE_FILE = "docker-compose.yml";
+
 /* ------------------------------------------------------- */
 /* Console Helpers                                         */
 /* ------------------------------------------------------- */
@@ -29,6 +33,14 @@ function info(message) {
 
 function error(message) {
     console.error(`\n❌ ${message}`);
+}
+
+function clearConsole() {
+    try {
+        console.clear();
+    } catch {
+        process.stdout.write("\x1B[2J\x1B[0f");
+    }
 }
 
 /* ------------------------------------------------------- */
@@ -97,6 +109,18 @@ function commandExists(command) {
     return result.status === 0;
 }
 
+function validateDockerPrerequisites() {
+    if (!fs.existsSync(DOCKER_COMPOSE_FILE)) {
+        error(`${DOCKER_COMPOSE_FILE} not found.
+
+The Docker setup requires a docker-compose.yml file in the project root.
+If you're using Supabase, you can skip Docker setup in the next step.`);
+        return false;
+    }
+
+    return true;
+}
+
 /* ------------------------------------------------------- */
 /* Check Node.js Version                                   */
 /* ------------------------------------------------------- */
@@ -123,17 +147,11 @@ Please upgrade Node.js from: https://nodejs.org/`
 /* ------------------------------------------------------- */
 
 function ensureProjectFiles() {
-    const required = [
-        "package.json",
-        ".env.example",
-    ];
-
-    for (const file of required) {
+    for (const file of REQUIRED_FILES) {
         if (!fs.existsSync(file)) {
             error(`${file} not found.
 
 Run this script from the project root.`);
-
             process.exit(1);
         }
     }
@@ -141,14 +159,8 @@ Run this script from the project root.`);
     if (!fs.existsSync("node_modules")) {
         error(`Dependencies are not installed.
 
-Run:
-
-npm install
-
-Then run:
-
-npm run setup`);
-
+Run: npm install
+Then: npm run setup`);
         process.exit(1);
     }
 }
@@ -386,37 +398,42 @@ function waitForContainerHealth(containerName, retries = 12) {
     info("Waiting for PostgreSQL to become healthy...");
 
     for (let i = 0; i < retries; i++) {
-        const result = spawnSync(
-            "docker",
-            [
-                "inspect",
-                "--format={{.State.Health.Status}}",
-                containerName,
-            ],
-            {
-                encoding: "utf8",
-                shell: process.platform === "win32",
-            }
-        );
+        try {
+            const result = spawnSync(
+                "docker",
+                [
+                    "inspect",
+                    "--format={{.State.Health.Status}}",
+                    containerName,
+                ],
+                {
+                    encoding: "utf8",
+                    shell: process.platform === "win32",
+                }
+            );
 
-        if (result.stdout.trim() === "healthy") {
-            success("PostgreSQL is healthy.");
-            return;
+            if (result.stdout?.trim() === "healthy") {
+                success("PostgreSQL is healthy.");
+                return;
+            }
+        } catch (err) {
+            console.log(`Health check error: ${err.message}`);
         }
 
         console.log(`Waiting... (${i + 1}/${retries})`);
-
-        spawnSync(
-            process.platform === "win32" ? "timeout" : "sleep",
-            process.platform === "win32"
-                ? ["/T", "5", "/NOBREAK"]
-                : ["5"],
-            { stdio: "ignore" }
-        );
+        sleep(5);
     }
 
-    throw new Error(
-        "PostgreSQL did not become healthy in time."
+    throw new Error("PostgreSQL did not become healthy in time.");
+}
+
+function sleep(seconds) {
+    spawnSync(
+        process.platform === "win32" ? "timeout" : "sleep",
+        process.platform === "win32"
+            ? ["/T", seconds.toString(), "/NOBREAK"]
+            : [seconds.toString()],
+        { stdio: "ignore" }
     );
 }
 
@@ -501,6 +518,10 @@ If using Docker:
 async function dockerSetup() {
     info("Preparing Docker environment...");
 
+    if (!validateDockerPrerequisites()) {
+        return supabaseSetup();
+    }
+
     const installed = await ensureDockerInstalled();
 
     if (!installed) {
@@ -514,72 +535,54 @@ async function dockerSetup() {
     }
 
     configureDockerEnv();
-
-    if (!fs.existsSync("docker-compose.yml")) {
-        throw new Error(
-            "docker-compose.yml not found."
-        );
-    }
-
     info("Starting PostgreSQL...");
 
-    let composeStarted = false;
-
     try {
-        run("docker", [
-            "compose",
-            "up",
-            "-d",
-            "--wait",
-        ]);
-
-        composeStarted = true;
-    } catch {
-        warning(
-            "Your Docker version doesn't support '--wait'. Falling back..."
-        );
-
-        try {
-            run("docker", [
-                "compose",
-                "up",
-                "-d",
-            ]);
-
-            composeStarted = true;
-        } catch {
-            try {
-                run("docker-compose", [
-                    "up",
-                    "-d",
-                ]);
-
-                composeStarted = true;
-            } catch {
-                throw new Error(
-                    "Unable to start Docker Compose."
-                );
-            }
-        }
-    }
-
-    if (!composeStarted) {
-        throw new Error(
-            "Failed to start PostgreSQL."
-        );
+        startDockerCompose();
+    } catch (err) {
+        error("Failed to start Docker Compose.");
+        throw err;
     }
 
     try {
-        waitForContainerHealth("fliptrack_postgres");
+        waitForContainerHealth(POSTGRES_CONTAINER);
     } catch {
-        warning(
-            "Health check unavailable. Continuing..."
-        );
+        warning("Health check unavailable. Continuing...");
     }
 
     success("Docker PostgreSQL is ready.");
-
     runPrismaSetup();
+}
+
+function startDockerCompose() {
+    const commands = [
+        {
+            cmd: "docker",
+            args: ["compose", "up", "-d", "--wait"],
+            description: "Docker Compose with --wait"
+        },
+        {
+            cmd: "docker",
+            args: ["compose", "up", "-d"],
+            description: "Docker Compose (fallback)"
+        },
+        {
+            cmd: "docker-compose",
+            args: ["up", "-d"],
+            description: "Legacy docker-compose command"
+        }
+    ];
+
+    for (const { cmd, args, description } of commands) {
+        try {
+            run(cmd, args);
+            return;
+        } catch (err) {
+            warning(`${description} failed. Trying next method...`);
+        }
+    }
+
+    throw new Error("Unable to start Docker Compose with any available method.");
 }
 /* ------------------------------------------------------- */
 /* Supabase Setup                                          */
@@ -620,7 +623,7 @@ npm run dev
 /* ------------------------------------------------------- */
 
 async function main() {
-  console.clear();
+  clearConsole();
 
   console.log(`
 =========================================================
@@ -646,9 +649,29 @@ This wizard will:
 
   checkNodeVersion();
   ensureProjectFiles();
-
   createEnvFile();
 
+  const choice = await getDatabaseChoice();
+
+  try {
+    if (choice === "docker") {
+      await dockerSetup();
+    } else if (choice === "supabase") {
+      await supabaseSetup();
+    }
+  } catch (err) {
+    error("Database setup failed.");
+    throw err;
+  }
+
+  await startDevelopmentServer();
+  success("FlipTrack setup completed successfully.");
+  displayFinalMessage();
+
+  rl.close();
+}
+
+async function getDatabaseChoice() {
   console.log(`
 Choose your database
 
@@ -658,34 +681,31 @@ Choose your database
 
 `);
 
-  const choice = (
-    await ask(
-      "Enter your choice (1 / 2 / docker / supabase): "
-    )
+  const input = (
+    await ask("Enter your choice (1 / 2 / docker / supabase): ")
   )
     .trim()
     .toLowerCase();
 
-  if (
-    choice === "1" ||
-    choice === "docker" ||
-    choice === "d"
-  ) {
-    await dockerSetup();
-  } else if (
-    choice === "2" ||
-    choice === "supabase" ||
-    choice === "s"
-  ) {
-    await supabaseSetup();
-  } else {
-    throw new Error("Invalid choice.");
+  const choiceMap = {
+    "1": "docker",
+    "docker": "docker",
+    "d": "docker",
+    "2": "supabase",
+    "supabase": "supabase",
+    "s": "supabase"
+  };
+
+  const choice = choiceMap[input];
+
+  if (!choice) {
+    throw new Error(`Invalid choice: "${input}". Please use "1" or "2".`);
   }
 
-  await startDevelopmentServer();
+  return choice;
+}
 
-  success("FlipTrack setup completed successfully.");
-
+function displayFinalMessage() {
   console.log(`
 =========================================================
 
@@ -713,8 +733,6 @@ Happy Coding ❤️
 
 =========================================================
 `);
-
-  rl.close();
 }
 
 /* ------------------------------------------------------- */
