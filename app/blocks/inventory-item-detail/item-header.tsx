@@ -45,7 +45,7 @@ export function ItemHeader({ className, item }: Props) {
             <>
             <span>·</span>
             <span>{item.size}</span>
-        g </>
+          </>
   )}
 
   <span>·</span>
