@@ -42,6 +42,10 @@ export async function action({ request }: Route.ActionArgs) {
   });
 
   if (error) {
+    if (error.message === "fetch failed") {
+      console.error("Supabase connection failed (fetch failed):", error);
+      return { error: "Unable to connect to the authentication server. Please try again later." };
+    }
     return { error: error.message };
   }
 
