@@ -1,12 +1,15 @@
 import type { Route } from "./+types/api.export.tax";
 import { getSupabaseServerClient } from "~/utils/supabase.server";
+import { sanitizeCsvField } from "~/utils/csv.server";
 import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
 export async function loader({ request }: Route.LoaderArgs) {
   const { supabase } = getSupabaseServerClient(request);
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   if (!user) {
     return new Response("Unauthorized", { status: 401 });
@@ -28,28 +31,28 @@ export async function loader({ request }: Route.LoaderArgs) {
         const sales = await prisma.sale.findMany({
           where: {
             userId: user.id,
-            saleDate: { gte: startDate, lte: endDate }
+            saleDate: { gte: startDate, lte: endDate },
           },
           include: { inventoryItem: true },
-          orderBy: { saleDate: 'asc' },
+          orderBy: { saleDate: "asc" },
           skip: skipSales,
-          take
+          take,
         });
         if (sales.length === 0) break;
 
         let chunk = "";
-        sales.forEach(s => {
+        sales.forEach((s) => {
           const revenue = Number(s.salePrice);
-          const cogs =
-            Number(s.inventoryItem.purchasePrice) +
-            Number(s.platformFee) +
-            Number(s.shippingCost);
+          const cogs = Number(s.inventoryItem.purchasePrice) + Number(s.platformFee) + Number(s.shippingCost);
 
           const net = revenue - cogs;
 
-          chunk += `Sale,${s.saleDate.toISOString().split("T")[0]},"${s.inventoryItem.name} (${s.inventoryItem.sku})",${s.marketplace},${revenue},${cogs},${net}\n`;
+          const itemName = sanitizeCsvField(s.inventoryItem.name);
+          const sku = sanitizeCsvField(s.inventoryItem.sku);
+
+          chunk += `Sale,${s.saleDate.toISOString().split("T")[0]},"${itemName} (${sku})",${s.marketplace},${revenue},${cogs},${net}\n`;
         });
-        
+
         controller.enqueue(new TextEncoder().encode(chunk));
         skipSales += take;
       }
@@ -59,31 +62,33 @@ export async function loader({ request }: Route.LoaderArgs) {
         const expenses = await prisma.expense.findMany({
           where: {
             userId: user.id,
-            date: { gte: startDate, lte: endDate }
+            date: { gte: startDate, lte: endDate },
           },
-          orderBy: { date: 'asc' },
+          orderBy: { date: "asc" },
           skip: skipExpenses,
-          take
+          take,
         });
         if (expenses.length === 0) break;
 
         let chunk = "";
-        expenses.forEach(e => {
+        expenses.forEach((e) => {
           const amount = Number(e.amount);
-          chunk += `Expense,${e.date.toISOString().split('T')[0]},"${e.description || ''}",${e.type},0,0,-${amount}\n`;
+          const description = sanitizeCsvField(e.description);
+
+          chunk += `Expense,${e.date.toISOString().split("T")[0]},"${description}",${e.type},0,0,-${amount}\n`;
         });
         controller.enqueue(new TextEncoder().encode(chunk));
         skipExpenses += take;
       }
 
       controller.close();
-    }
+    },
   });
 
   return new Response(stream, {
     headers: {
       "Content-Type": "text/csv",
       "Content-Disposition": `attachment; filename="fliptrack_tax_report_${year}.csv"`,
-    }
+    },
   });
 }
