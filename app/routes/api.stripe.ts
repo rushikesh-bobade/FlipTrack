@@ -22,7 +22,11 @@ export async function action({ request }: Route.ActionArgs) {
     return new Response(`Webhook Error: ${err.message}`, { status: 400 });
   }
 
-  if (event.type === "customer.subscription.created" || event.type === "customer.subscription.updated") {
+  if (
+    event.type === "customer.subscription.created" ||
+    event.type === "customer.subscription.updated" ||
+    event.type === "customer.subscription.deleted"
+  ) {
     const subscription = event.data.object as Stripe.Subscription;
     const customerId = subscription.customer as string;
     
@@ -31,13 +35,19 @@ export async function action({ request }: Route.ActionArgs) {
     
     if (user) {
       let plan = "FREE";
-      const priceId = subscription.items.data[0].price.id;
-      if (priceId === process.env.STRIPE_PRO_PRICE_ID) plan = "PRO";
-      if (priceId === process.env.STRIPE_BUSINESS_PRICE_ID) plan = "BUSINESS";
+      let stripeSubId: string | null = subscription.id;
+      
+      if (event.type === "customer.subscription.deleted") {
+        stripeSubId = null;
+      } else if (subscription.status === "active" || subscription.status === "trialing") {
+        const priceId = subscription.items.data[0].price.id;
+        if (priceId === process.env.STRIPE_PRO_PRICE_ID) plan = "PRO";
+        if (priceId === process.env.STRIPE_BUSINESS_PRICE_ID) plan = "BUSINESS";
+      }
 
       await prisma.user.update({
         where: { id: user.id },
-        data: { plan: plan as any, stripeSubId: subscription.id },
+        data: { plan: plan as any, stripeSubId },
       });
     }
   }
