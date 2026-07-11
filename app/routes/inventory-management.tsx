@@ -203,7 +203,7 @@ export async function action({ request }: Route.ActionArgs) {
         purchasePrice,
         purchaseDate: new Date(purchaseDate),
         condition,
-        colorway,
+        color: colorway,
         notes,
         status: "IN_STOCK",
       },
@@ -230,7 +230,7 @@ export async function action({ request }: Route.ActionArgs) {
         purchasePrice,
         purchaseDate: new Date(purchaseDate),
         condition,
-        colorway,
+        color: colorway,
         notes,
       },
     });

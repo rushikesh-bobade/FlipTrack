@@ -3,10 +3,11 @@ import { PrismaClient } from "@prisma/client";
 import "dotenv/config";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!; // We'll try with ANON key if service role is missing
+const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+const supabaseKey = serviceRoleKey || anonKey;
 const supabase = createClient(supabaseUrl, supabaseKey);
 const prisma = new PrismaClient();
-
 async function main() {
   console.log("Creating demo user...");
 
@@ -15,16 +16,29 @@ async function main() {
   const password = process.env.DEMO_USER_PASSWORD ?? "password123";
   const name = "Demo User";
 
-  const { data, error } = await supabase.auth.signUp({
-    email,
-    password,
-    options: {
-      data: { name },
-    },
-  });
+  let error;
+  
+  if (serviceRoleKey) {
+    const res = await supabase.auth.admin.createUser({
+      email,
+      password,
+      user_metadata: { name },
+      email_confirm: true,
+    });
+    error = res.error;
+  } else {
+    const res = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: { name },
+      }
+    });
+    error = res.error;
+  }
 
   if (error) {
-    if (error.message.includes("User already registered")) {
+    if (error.message.includes("already registered") || error.message.includes("already exists") || error.message.includes("already been registered")) {
       console.log("Demo user already exists in Supabase Auth.");
     } else {
       console.error("Failed to create demo user in Auth:", error.message);
