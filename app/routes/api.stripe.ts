@@ -40,9 +40,11 @@ export async function action({ request }: Route.ActionArgs) {
       if (event.type === "customer.subscription.deleted") {
         stripeSubId = null;
       } else if (subscription.status === "active" || subscription.status === "trialing") {
-        const priceId = subscription.items.data[0].price.id;
-        if (priceId === process.env.STRIPE_PRO_PRICE_ID) plan = "PRO";
-        if (priceId === process.env.STRIPE_BUSINESS_PRICE_ID) plan = "BUSINESS";
+        const priceId = subscription.items?.data?.[0]?.price?.id;
+        if (priceId) {
+          if (priceId === process.env.STRIPE_PRO_PRICE_ID) plan = "PRO";
+          if (priceId === process.env.STRIPE_BUSINESS_PRICE_ID) plan = "BUSINESS";
+        }
       }
 
       await prisma.user.update({
