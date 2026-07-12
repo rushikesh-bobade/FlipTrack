@@ -366,4 +366,4 @@ Example:
 await rateLimit(request, 5, 60_000);
 ```
 
-This implementation currently uses an in-memory store. Because FlipTrack is deployed on Vercel, the in-memory cache is per serverless invocation and is not shared across instances. For production deployments requiring distributed rate limiting, consider using a shared backend such as Upstash Redis or Vercel KV.
+This implementation uses a Prisma-backed PostgreSQL database for rate limiting. Expired records are periodically cleaned up using lightweight probabilistic cleanup to prevent unbounded table growth. For larger distributed deployments, a dedicated rate-limiting backend such as Upstash Redis may still be preferable.

@@ -19,6 +19,15 @@ export async function rateLimit(
   const ip = getClientIp(request);
   const now = new Date();
 
+  await prisma.rateLimit.deleteMany({
+    where: {
+      ip,
+      resetAt: {
+        lte: now,
+      },
+    },
+  });
+
   const resetAt = new Date(now.getTime() + windowMs);
 
   const result = await prisma.rateLimit.upsert({
@@ -26,7 +35,7 @@ export async function rateLimit(
     create: {
       ip,
       count: 1,
-      resetAt,
+      resetAt: new Date(now.getTime() + windowMs),
     },
     update: {
       count: {
@@ -35,17 +44,7 @@ export async function rateLimit(
     },
   });
 
-  if (result.resetAt <= now) {
-    await prisma.rateLimit.update({
-      where: { ip },
-      data: {
-        count: 1,
-        resetAt,
-      },
-    });
-
-    return;
-  }
+  
 
   if (result.count > limit) {
     throw new Response(
@@ -59,5 +58,16 @@ export async function rateLimit(
         },
       }
     );
+  }
+  if (Math.random() < 0.01) {
+    prisma.rateLimit
+      .deleteMany({
+        where: {
+          resetAt: {
+            lte: now,
+          },
+        },
+      })
+      .catch(console.error);
   }
 }
