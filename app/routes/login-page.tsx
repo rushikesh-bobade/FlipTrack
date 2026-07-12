@@ -23,6 +23,10 @@ export async function action({ request }: Route.ActionArgs) {
   const { data, error } = await supabase.auth.signInWithPassword({ email, password });
   
   if (error) {
+    if (error.message === "fetch failed") {
+      console.error("Supabase connection failed (fetch failed):", error);
+      return { error: "Unable to connect to the authentication server. Please try again later." };
+    }
     return { error: error.message };
   }
 
