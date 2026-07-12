@@ -1,7 +1,7 @@
-import { useState } from "react";
-import { useLoaderData } from "react-router";
+import { useState, Suspense } from "react";
+import { useLoaderData, Await } from "react-router";
 import type { Route } from "./+types/settings";
-import { getSupabaseServerClient } from "~/utils/supabase.server";
+import { getSupabaseServerClient, getUserFromRequest } from "~/utils/supabase.server";
 import { PrismaClient, Currency, Theme } from "@prisma/client";
 import { z } from "zod";
 import crypto from "crypto";
@@ -14,6 +14,7 @@ import { BillingSection } from "~/blocks/settings/billing-section";
 import { TeamSection } from "~/blocks/settings/team-section";
 import { SecuritySection } from "~/blocks/settings/security-section";
 import { CACHE_PRIVATE_NO_STORE } from "~/utils/cache-headers";
+import { IconLoader2 } from "@tabler/icons-react";
 
 export function headers(_: Route.HeadersArgs) {
   return {
@@ -27,23 +28,23 @@ export async function loader({ request }: Route.LoaderArgs) {
   const { supabase } = getSupabaseServerClient(request);
   const {
     data: { user: authUser },
-  } = await supabase.auth.getUser();
+  } = await getUserFromRequest(request, supabase);
 
-  if (!authUser) return { user: null };
+  if (!authUser) return { deferredData: Promise.resolve({ user: null }) };
 
-  const dbUser = await prisma.user.findUnique({
+  const deferredData = prisma.user.findUnique({
     where: { id: authUser.id },
     include: { team: { include: { members: true } } },
-  });
+  }).then((dbUser) => ({ user: dbUser }));
 
-  return { user: dbUser };
+  return { deferredData };
 }
 
 export async function action({ request }: Route.ActionArgs) {
   const { supabase } = getSupabaseServerClient(request);
   const {
     data: { user: authUser },
-  } = await supabase.auth.getUser();
+  } = await getUserFromRequest(request, supabase);
   if (!authUser) return new Response("Unauthorized", { status: 401 });
 
   const formData = await request.formData();
@@ -67,6 +68,7 @@ export async function action({ request }: Route.ActionArgs) {
       where: { id: authUser.id },
       data: { currency: currency as any, theme: theme as any },
     });
+
   } else if (intent === "update-notifications") {
     const emailNotifications = formData.get("emailNotifications") === "on";
     const smsNotifications = formData.get("smsNotifications") === "on";
@@ -77,6 +79,7 @@ export async function action({ request }: Route.ActionArgs) {
       where: { id: authUser.id },
       data: { emailNotifications, smsNotifications, pushNotifications, weeklySummary, priceAlertTriggered },
     });
+
 
     return { ok: true, intent: "update-preferences", message: "Preferences updated successfully." };
   }
@@ -226,16 +229,29 @@ const sectionMap: Record<Section, React.ComponentType<any>> = {
 };
 
 export default function SettingsPage() {
-  const { user } = useLoaderData<typeof loader>();
+  const { deferredData } = useLoaderData<typeof loader>();
   const [section, setSection] = useState<Section>("account");
   const SectionComponent = sectionMap[section];
 
   return (
     <div className={styles.page}>
       <SettingsNavigation active={section} onChange={(s) => setSection(s as Section)} />
-      <div>
-        <SectionComponent user={user} />
-      </div>
+      <Suspense
+        fallback={
+          <div className={styles.loadingContainer}>
+            <IconLoader2 size={32} className={styles.spin} />
+            <span>Loading settings...</span>
+          </div>
+        }
+      >
+        <Await resolve={deferredData}>
+          {({ user }) => (
+            <div>
+              <SectionComponent user={user} />
+            </div>
+          )}
+        </Await>
+      </Suspense>
     </div>
   );
 }

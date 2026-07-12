@@ -1,6 +1,6 @@
 import { redirect } from "react-router";
 import type { Route } from "./+types/signup-page";
-import { getSupabaseServerClient } from "~/utils/supabase.server";
+import { getSupabaseServerClient, authSessionStorage } from "~/utils/supabase.server";
 import { PrismaClient } from "@prisma/client";
 import styles from "./signup-page.module.css";
 import { SignupForm } from "~/blocks/signup-page/signup-form";
@@ -42,6 +42,10 @@ export async function action({ request }: Route.ActionArgs) {
   });
 
   if (error) {
+    if (error.message === "fetch failed") {
+      console.error("Supabase connection failed (fetch failed):", error);
+      return { error: "Unable to connect to the authentication server. Please try again later." };
+    }
     return { error: error.message };
   }
 
@@ -69,6 +73,13 @@ export async function action({ request }: Route.ActionArgs) {
     return {
       error: "Something went wrong creating your account database profile. Please try again or contact support.",
     };
+  }
+
+  if (data.user) {
+    const session = await authSessionStorage.getSession(request.headers.get("Cookie"));
+    session.set("userId", data.user.id);
+    session.set("email", data.user.email);
+    headers.append("Set-Cookie", await authSessionStorage.commitSession(session));
   }
 
   return redirect("/app/dashboard", { headers });

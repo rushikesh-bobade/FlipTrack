@@ -1,10 +1,11 @@
-import { useState, useEffect } from "react";
-import { useLoaderData, useActionData, useSearchParams } from "react-router";
+import { useState, useEffect, Suspense } from "react";
+import { useLoaderData, useActionData, useSearchParams, Await } from "react-router";
 import type { Route } from "./+types/inventory-management";
 import { toast } from "sonner";
-import { getSupabaseServerClient } from "~/utils/supabase.server";
+import { getSupabaseServerClient, getUserFromRequest } from "~/utils/supabase.server";
 import { Prisma, PrismaClient, type Currency, type ItemCondition } from "@prisma/client";
 import styles from "./inventory-management.module.css";
+import { IconLoader2 } from "@tabler/icons-react";
 import { InventoryHeader } from "~/blocks/inventory-management/inventory-header";
 import { InventoryTable } from "~/blocks/inventory-management/inventory-table";
 import { BulkActionsBar } from "~/blocks/inventory-management/bulk-actions-bar";
@@ -125,9 +126,13 @@ export async function loader({ request }: Route.LoaderArgs) {
   const { supabase } = getSupabaseServerClient(request);
   const {
     data: { user },
-  } = await supabase.auth.getUser();
+  } = await getUserFromRequest(request, supabase);
 
-  if (!user) return { items: [], totalPages: 0 };
+  if (!user) {
+    return {
+      deferredData: Promise.resolve({ items: [] as any[], totalPages: 0 }),
+    };
+  }
 
   const url = new URL(request.url);
   const page = Math.max(1, Number(url.searchParams.get("page")) || 1);
@@ -147,36 +152,39 @@ export async function loader({ request }: Route.LoaderArgs) {
       : {}),
   };
 
-  const [totalItems, items] = await Promise.all([
-    prisma.inventoryItem.count({ where: whereClause }),
-    prisma.inventoryItem.findMany({
-      where: whereClause,
-      orderBy: { createdAt: "desc" },
-      skip: (page - 1) * pageSize,
-      take: pageSize,
-      include: {
-        priceHistory: {
-          orderBy: { fetchedAt: "desc" },
-          take: 1,
-        },
+  const countPromise = prisma.inventoryItem.count({ where: whereClause });
+  const itemsPromise = prisma.inventoryItem.findMany({
+    where: whereClause,
+    orderBy: { createdAt: "desc" },
+    skip: (page - 1) * pageSize,
+    take: pageSize,
+    include: {
+      priceHistory: {
+        orderBy: { fetchedAt: "desc" },
+        take: 1,
       },
-    }),
-  ]);
+    },
+  }).then((items) =>
+    items.map((item) => ({
+      ...item,
+      purchasePrice: Number(item.purchasePrice),
+      marketValue: item.priceHistory[0]?.askPrice ? Number(item.priceHistory[0].askPrice) : null,
+    }))
+  );
 
-  const formattedItems = items.map((item) => ({
-    ...item,
-    purchasePrice: Number(item.purchasePrice),
-    marketValue: item.priceHistory[0]?.askPrice ? Number(item.priceHistory[0].askPrice) : null,
+  const deferredData = Promise.all([countPromise, itemsPromise]).then(([totalItems, formattedItems]) => ({
+    items: formattedItems,
+    totalPages: Math.ceil(totalItems / pageSize),
   }));
 
-  return { items: formattedItems, totalPages: Math.ceil(totalItems / pageSize) };
+  return { deferredData };
 }
 
 export async function action({ request }: Route.ActionArgs) {
   const { supabase } = getSupabaseServerClient(request);
   const {
     data: { user },
-  } = await supabase.auth.getUser();
+  } = await getUserFromRequest(request, supabase);
   if (!user) return new Response("Unauthorized", { status: 401 });
 
   const formData = await request.formData();
@@ -203,7 +211,7 @@ export async function action({ request }: Route.ActionArgs) {
         purchasePrice,
         purchaseDate: new Date(purchaseDate),
         condition,
-        colorway,
+        color: colorway,
         notes,
         status: "IN_STOCK",
       },
@@ -230,7 +238,7 @@ export async function action({ request }: Route.ActionArgs) {
         purchasePrice,
         purchaseDate: new Date(purchaseDate),
         condition,
-        colorway,
+        color: colorway,
         notes,
       },
     });
@@ -341,7 +349,7 @@ export async function action({ request }: Route.ActionArgs) {
 }
 
 export default function InventoryManagementPage() {
-  const { items, totalPages } = useLoaderData<typeof loader>();
+  const { deferredData } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   const [showAddItem, setShowAddItem] = useState(false);
   const [showImport, setShowImport] = useState(false);
@@ -401,17 +409,32 @@ export default function InventoryManagementPage() {
         searchQuery={searchQuery}
         onSearch={setSearchQuery}
       />
-      {selected.length > 0 && (
-        <BulkActionsBar count={selected.length} onClear={() => setSelected([])} selectedIds={selected} items={items} />
-      )}
-      <InventoryTable
-        selected={selected}
-        onSelectChange={setSelected}
-        items={items}
-        onEdit={setEditingItem}
-        onDuplicate={(item) => setDuplicatingItem({ ...item, id: undefined, sku: "" })}
-      />
-      <Pagination totalPages={totalPages} />
+      <Suspense
+        fallback={
+          <div className={styles.loadingContainer}>
+            <IconLoader2 size={32} className={styles.spin} />
+            <span>Loading inventory items...</span>
+          </div>
+        }
+      >
+        <Await resolve={deferredData}>
+          {({ items, totalPages }) => (
+            <>
+              {selected.length > 0 && (
+                <BulkActionsBar count={selected.length} onClear={() => setSelected([])} selectedIds={selected} items={items} />
+              )}
+              <InventoryTable
+                selected={selected}
+                onSelectChange={setSelected}
+                items={items}
+                onEdit={setEditingItem}
+                onDuplicate={(item) => setDuplicatingItem({ ...item, id: undefined, sku: "" })}
+              />
+              <Pagination totalPages={totalPages} />
+            </>
+          )}
+        </Await>
+      </Suspense>
       {showAddItem && <AddItemModal onClose={() => setShowAddItem(false)} />}
       {editingItem && <AddItemModal item={editingItem} onClose={() => setEditingItem(null)} />}
       {duplicatingItem && <AddItemModal item={duplicatingItem} isDuplicate={true} onClose={() => setDuplicatingItem(null)} />}

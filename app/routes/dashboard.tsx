@@ -1,6 +1,7 @@
-import { useLoaderData } from "react-router";
+import { Suspense } from "react";
+import { useLoaderData, Await } from "react-router";
 import type { Route } from "./+types/dashboard";
-import { getSupabaseServerClient } from "~/utils/supabase.server";
+import { getSupabaseServerClient, getUserFromRequest } from "~/utils/supabase.server";
 import { PrismaClient, Prisma } from "@prisma/client";
 import styles from "./dashboard.module.css";
 import { DashboardHeader } from "~/blocks/dashboard/dashboard-header";
@@ -11,9 +12,9 @@ import { SalesByMarketplacePie } from "~/blocks/dashboard/sales-by-marketplace-p
 import { TopSellingItemsTable } from "~/blocks/dashboard/top-selling-items-table";
 import { RecentSales } from "~/blocks/dashboard/recent-sales";
 import { ExpenseCategoriesChart } from "~/blocks/dashboard/expense-categories-chart";
-
 import { AIInsightsPanel } from "~/blocks/dashboard/ai-insights-panel";
 import { CACHE_PRIVATE_NO_STORE } from "~/utils/cache-headers";
+import { IconLoader2 } from "@tabler/icons-react";
 
 export function headers(_: Route.HeadersArgs) {
   return {
@@ -27,10 +28,16 @@ export async function loader({ request }: Route.LoaderArgs) {
   const { supabase } = getSupabaseServerClient(request);
   const {
     data: { user },
-  } = await supabase.auth.getUser();
+  } = await getUserFromRequest(request, supabase);
 
   if (!user) {
-    return { inventoryStats: null, salesData: [], expensesData: [] };
+    return {
+      deferredData: Promise.resolve({
+        inventoryStats: { _count: 0, _sum: { purchasePrice: 0 } },
+        salesData: [] as any[],
+        expensesData: [] as any[],
+      }),
+    };
   }
 
   const url = new URL(request.url);
@@ -90,68 +97,90 @@ export async function loader({ request }: Route.LoaderArgs) {
       : {}),
   };
 
-  const [inventoryStats, salesData, expensesData] = await Promise.all([
-    prisma.inventoryItem.aggregate({
-      where: { userId: user.id, status: "IN_STOCK" },
-      _sum: { purchasePrice: true },
-      _count: true,
-    }),
-    prisma.sale.findMany({
-      where: saleWhereClause,
-      include: { expenses: true, inventoryItem: true },
-      orderBy: { saleDate: "desc" },
-    }),
-    prisma.expense.findMany({
-      where: expenseWhereClause,
-    }),
-  ]);
-
-  const serializedStats = {
-    _count: inventoryStats?._count || 0,
-    _sum: { purchasePrice: Number(inventoryStats?._sum?.purchasePrice || 0) },
-  };
-
-  const serializedSales = salesData.map((s) => ({
-    ...s,
-    salePrice: Number(s.salePrice),
-    platformFee: Number(s.platformFee),
-    shippingCost: Number(s.shippingCost),
-    inventoryItem: {
-      ...s.inventoryItem,
-      purchasePrice: Number(s.inventoryItem.purchasePrice),
-    },
+  const statsPromise = prisma.inventoryItem.aggregate({
+    where: { userId: user.id, status: "IN_STOCK" },
+    _sum: { purchasePrice: true },
+    _count: true,
+  }).then((stats) => ({
+    _count: stats?._count || 0,
+    _sum: { purchasePrice: Number(stats?._sum?.purchasePrice || 0) },
   }));
 
-  const serializedExpenses = expensesData.map((e) => ({
-    ...e,
-    amount: Number(e.amount),
-  }));
+  const salesPromise = prisma.sale.findMany({
+    where: saleWhereClause,
+    include: { expenses: true, inventoryItem: true },
+    orderBy: { saleDate: "desc" },
+  }).then((sales) =>
+    sales.map((s) => ({
+      ...s,
+      salePrice: Number(s.salePrice),
+      platformFee: Number(s.platformFee),
+      shippingCost: Number(s.shippingCost),
+      inventoryItem: {
+        ...s.inventoryItem,
+        purchasePrice: Number(s.inventoryItem.purchasePrice),
+      },
+    }))
+  );
 
-  return { inventoryStats: serializedStats, salesData: serializedSales, expensesData: serializedExpenses };
+  const expensesPromise = prisma.expense.findMany({
+    where: expenseWhereClause,
+  }).then((expenses) =>
+    expenses.map((e) => ({
+      ...e,
+      amount: Number(e.amount),
+    }))
+  );
+
+  const deferredData = Promise.all([statsPromise, salesPromise, expensesPromise]).then(
+    ([inventoryStats, salesData, expensesData]) => ({
+      inventoryStats,
+      salesData,
+      expensesData,
+    })
+  );
+
+  return { deferredData };
 }
 
 export default function DashboardPage() {
-  const { inventoryStats, salesData, expensesData } = useLoaderData<typeof loader>();
+  const { deferredData } = useLoaderData<typeof loader>();
   return (
     <div className={styles.page}>
       <DashboardHeader />
       <AIInsightsPanel />
-      <StatsCardsRow stats={inventoryStats} sales={salesData} expenses={expensesData} />
-      <CashFlowChart sales={salesData} expenses={expensesData} />
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr 1fr",
-          gap: "var(--space-6)",
-          marginBottom: "var(--space-6)",
-        }}
+      <Suspense
+        fallback={
+          <div className={styles.loadingContainer}>
+            <IconLoader2 size={32} className={styles.spin} />
+            <span>Loading dashboard data...</span>
+          </div>
+        }
       >
-        <TopBrandsChart sales={salesData} />
-        <SalesByMarketplacePie sales={salesData} />
-        <ExpenseCategoriesChart expenses={expensesData} />
-      </div>
-      <TopSellingItemsTable sales={salesData} />
-      <RecentSales sales={salesData} />
+        <Await resolve={deferredData}>
+          {({ inventoryStats, salesData, expensesData }) => (
+            <>
+              <StatsCardsRow stats={inventoryStats} sales={salesData} expenses={expensesData} />
+              <CashFlowChart sales={salesData} expenses={expensesData} />
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr 1fr",
+                  gap: "var(--space-6)",
+                  marginBottom: "var(--space-6)",
+                }}
+              >
+                <TopBrandsChart sales={salesData} />
+                <SalesByMarketplacePie sales={salesData} />
+                <ExpenseCategoriesChart expenses={expensesData} />
+              </div>
+              <TopSellingItemsTable sales={salesData} />
+              <RecentSales sales={salesData} />
+            </>
+          )}
+        </Await>
+      </Suspense>
     </div>
   );
 }
+

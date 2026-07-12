@@ -1,5 +1,5 @@
 import { Outlet, redirect, useLoaderData } from "react-router";
-import { getSupabaseServerClient } from "~/utils/supabase.server";
+import { getSupabaseServerClient, getUserFromRequest } from "~/utils/supabase.server";
 import { PrismaClient } from "@prisma/client";
 import type { Route } from "./+types/app-layout";
 import { AppSidebar } from "~/blocks/__global/app-sidebar";
@@ -13,13 +13,17 @@ export function headers(_: Route.HeadersArgs) {
   };
 }
 
+export function shouldRevalidate({ formMethod }: { formMethod: string }) {
+  return formMethod !== "GET";
+}
+
 const prisma = new PrismaClient();
 
 export async function loader({ request }: Route.LoaderArgs) {
   const { supabase, headers } = getSupabaseServerClient(request);
   const {
     data: { user },
-  } = await supabase.auth.getUser();
+  } = await getUserFromRequest(request, supabase);
 
   if (!user) {
     throw redirect("/auth/login", { headers });
