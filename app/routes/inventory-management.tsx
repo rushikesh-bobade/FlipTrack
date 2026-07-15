@@ -31,16 +31,20 @@ function parseSkippedRows(value: FormDataEntryValue | null) {
       return [] as number[];
     }
 
-    return parsed
-      .map((row) => Number(row))
-      .filter((rowNumber) => Number.isInteger(rowNumber) && rowNumber > 0);
+    return parsed.map((row) => Number(row)).filter((rowNumber) => Number.isInteger(rowNumber) && rowNumber > 0);
   } catch {
     return [] as number[];
   }
 }
 
 function normalizeImportedCondition(value: unknown): ItemCondition {
-  const normalized = typeof value === "string" ? value.trim().toLowerCase().replace(/[^a-z0-9]+/g, "") : "";
+  const normalized =
+    typeof value === "string"
+      ? value
+          .trim()
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "")
+      : "";
 
   switch (normalized) {
     case "new":
@@ -153,24 +157,26 @@ export async function loader({ request }: Route.LoaderArgs) {
   };
 
   const countPromise = prisma.inventoryItem.count({ where: whereClause });
-  const itemsPromise = prisma.inventoryItem.findMany({
-    where: whereClause,
-    orderBy: { createdAt: "desc" },
-    skip: (page - 1) * pageSize,
-    take: pageSize,
-    include: {
-      priceHistory: {
-        orderBy: { fetchedAt: "desc" },
-        take: 1,
+  const itemsPromise = prisma.inventoryItem
+    .findMany({
+      where: whereClause,
+      orderBy: { createdAt: "desc" },
+      skip: (page - 1) * pageSize,
+      take: pageSize,
+      include: {
+        priceHistory: {
+          orderBy: { fetchedAt: "desc" },
+          take: 1,
+        },
       },
-    },
-  }).then((items) =>
-    items.map((item) => ({
-      ...item,
-      purchasePrice: Number(item.purchasePrice),
-      marketValue: item.priceHistory[0]?.askPrice ? Number(item.priceHistory[0].askPrice) : null,
-    }))
-  );
+    })
+    .then((items) =>
+      items.map((item) => ({
+        ...item,
+        purchasePrice: Number(item.purchasePrice),
+        marketValue: item.priceHistory[0]?.askPrice ? Number(item.priceHistory[0].askPrice) : null,
+      })),
+    );
 
   const deferredData = Promise.all([countPromise, itemsPromise]).then(([totalItems, formattedItems]) => ({
     items: formattedItems,
@@ -359,17 +365,30 @@ export default function InventoryManagementPage() {
 
   const [searchParams, setSearchParams] = useSearchParams();
   const searchQuery = searchParams.get("q") || "";
+  const [localSearch, setLocalSearch] = useState(searchQuery);
 
-  const setSearchQuery = (query: string) => {
-    const nextParams = new URLSearchParams(searchParams);
-    if (query) {
-      nextParams.set("q", query);
-    } else {
-      nextParams.delete("q");
-    }
-    nextParams.set("page", "1");
-    setSearchParams(nextParams, { replace: true });
-  };
+  // Sync URL search param changes to local state (e.g. back/forward navigation or initial mount)
+  useEffect(() => {
+    setLocalSearch(searchQuery);
+  }, [searchQuery]);
+
+  // Debounce syncing localSearch state to the URL search parameter
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (localSearch !== searchQuery) {
+        const nextParams = new URLSearchParams(searchParams);
+        if (localSearch) {
+          nextParams.set("q", localSearch);
+        } else {
+          nextParams.delete("q");
+        }
+        nextParams.set("page", "1");
+        setSearchParams(nextParams, { replace: true });
+      }
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [localSearch, searchQuery, searchParams, setSearchParams]);
 
   useEffect(() => {
     if (actionData?.ok) {
@@ -406,8 +425,8 @@ export default function InventoryManagementPage() {
       <InventoryHeader
         onAddItem={() => setShowAddItem(true)}
         onImport={() => setShowImport(true)}
-        searchQuery={searchQuery}
-        onSearch={setSearchQuery}
+        searchQuery={localSearch}
+        onSearch={setLocalSearch}
       />
       <Suspense
         fallback={
@@ -421,7 +440,12 @@ export default function InventoryManagementPage() {
           {({ items, totalPages }) => (
             <>
               {selected.length > 0 && (
-                <BulkActionsBar count={selected.length} onClear={() => setSelected([])} selectedIds={selected} items={items} />
+                <BulkActionsBar
+                  count={selected.length}
+                  onClear={() => setSelected([])}
+                  selectedIds={selected}
+                  items={items}
+                />
               )}
               <InventoryTable
                 selected={selected}
@@ -437,7 +461,9 @@ export default function InventoryManagementPage() {
       </Suspense>
       {showAddItem && <AddItemModal onClose={() => setShowAddItem(false)} />}
       {editingItem && <AddItemModal item={editingItem} onClose={() => setEditingItem(null)} />}
-      {duplicatingItem && <AddItemModal item={duplicatingItem} isDuplicate={true} onClose={() => setDuplicatingItem(null)} />}
+      {duplicatingItem && (
+        <AddItemModal item={duplicatingItem} isDuplicate={true} onClose={() => setDuplicatingItem(null)} />
+      )}
       {showImport && <ImportExcelModal onClose={() => setShowImport(false)} />}
     </div>
   );
