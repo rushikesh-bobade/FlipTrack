@@ -1,7 +1,7 @@
 import { useState, useEffect, Suspense } from "react";
 import { useLoaderData, useFetcher, Await } from "react-router";
 import type { Route } from "./+types/ai-insights";
-import { PrismaClient } from "@prisma/client";
+
 import { getSupabaseServerClient, getUserFromRequest } from "~/utils/supabase.server";
 import styles from "./ai-insights.module.css";
 import { AiInsightsHeader } from "~/blocks/ai-insights/ai-insights-header";
@@ -10,6 +10,7 @@ import { BatchAnalysisStatus } from "~/blocks/ai-insights/batch-analysis-status"
 import { ItemAnalysisCards } from "~/blocks/ai-insights/item-analysis-cards";
 import { DetailedAnalysisModal } from "~/blocks/ai-insights/detailed-analysis-modal";
 import { IconLoader2 } from "@tabler/icons-react";
+import { prisma } from "~/utils/db.server";
 
 export interface AiInsightItem {
   id: string;
@@ -21,8 +22,6 @@ export interface AiInsightItem {
   targetPrice: number;
   purchasePrice: number;
 }
-
-const prisma = new PrismaClient();
 
 export async function loader({ request }: Route.LoaderArgs) {
   try {

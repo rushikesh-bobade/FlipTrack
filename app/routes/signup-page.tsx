@@ -1,15 +1,14 @@
 import { redirect } from "react-router";
 import type { Route } from "./+types/signup-page";
 import { getSupabaseServerClient, authSessionStorage } from "~/utils/supabase.server";
-import { PrismaClient } from "@prisma/client";
+
 import styles from "./signup-page.module.css";
 import { SignupForm } from "~/blocks/signup-page/signup-form";
 import { OAuthSignup } from "~/blocks/signup-page/o-auth-signup";
 import { LoginLink } from "~/blocks/signup-page/login-link";
 import { TermsAcceptance } from "~/blocks/signup-page/terms-acceptance";
 import { rateLimit } from "~/utils/rate-limit.server";
-
-const prisma = new PrismaClient();
+import { prisma } from "~/utils/db.server";
 
 export async function loader({ request }: Route.LoaderArgs) {
   const { supabase, headers } = getSupabaseServerClient(request);

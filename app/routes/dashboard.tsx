@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import { useLoaderData, Await } from "react-router";
 import type { Route } from "./+types/dashboard";
 import { getSupabaseServerClient, getUserFromRequest } from "~/utils/supabase.server";
-import { PrismaClient, Prisma } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import styles from "./dashboard.module.css";
 import { DashboardHeader } from "~/blocks/dashboard/dashboard-header";
 import { StatsCardsRow } from "~/blocks/dashboard/stats-cards-row";
@@ -15,14 +15,13 @@ import { ExpenseCategoriesChart } from "~/blocks/dashboard/expense-categories-ch
 import { AIInsightsPanel } from "~/blocks/dashboard/ai-insights-panel";
 import { CACHE_PRIVATE_NO_STORE } from "~/utils/cache-headers";
 import { IconLoader2 } from "@tabler/icons-react";
+import { prisma } from "~/utils/db.server";
 
 export function headers(_: Route.HeadersArgs) {
   return {
     "Cache-Control": CACHE_PRIVATE_NO_STORE,
   };
 }
-
-const prisma = new PrismaClient();
 
 export async function loader({ request }: Route.LoaderArgs) {
   const { supabase } = getSupabaseServerClient(request);

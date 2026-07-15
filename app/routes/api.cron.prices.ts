@@ -1,9 +1,8 @@
 import type { Route } from "./+types/api.cron.prices";
-import { PrismaClient } from "@prisma/client";
+
 import { runAllScrapers } from "~/services/scrapers";
 import { waitUntil } from "@vercel/functions";
-
-const prisma = new PrismaClient();
+import { prisma } from "~/utils/db.server";
 
 export async function loader({ request }: Route.LoaderArgs) {
   // Protect with cron secret
