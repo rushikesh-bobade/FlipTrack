@@ -1,9 +1,8 @@
 import type { Route } from "./+types/api.integrations";
 import { getSupabaseServerClient } from "~/utils/supabase.server";
-import { PrismaClient } from "@prisma/client";
-import { encrypt, decrypt } from "~/utils/encryption.server";
 
-const prisma = new PrismaClient();
+import { encrypt, decrypt } from "~/utils/encryption.server";
+import { prisma } from "~/utils/db.server";
 
 // Helper to decrypt integration credentials for returning in API response
 function decryptIntegration(integration: any) {

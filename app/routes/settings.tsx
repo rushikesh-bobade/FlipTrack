@@ -2,7 +2,7 @@ import { useState, Suspense } from "react";
 import { useLoaderData, Await } from "react-router";
 import type { Route } from "./+types/settings";
 import { getSupabaseServerClient, getUserFromRequest } from "~/utils/supabase.server";
-import { PrismaClient, Currency, Theme } from "@prisma/client";
+import { Currency, Theme } from "@prisma/client";
 import { z } from "zod";
 import crypto from "crypto";
 import styles from "./settings.module.css";
@@ -15,14 +15,13 @@ import { TeamSection } from "~/blocks/settings/team-section";
 import { SecuritySection } from "~/blocks/settings/security-section";
 import { CACHE_PRIVATE_NO_STORE } from "~/utils/cache-headers";
 import { IconLoader2 } from "@tabler/icons-react";
+import { prisma } from "~/utils/db.server";
 
 export function headers(_: Route.HeadersArgs) {
   return {
     "Cache-Control": CACHE_PRIVATE_NO_STORE,
   };
 }
-
-const prisma = new PrismaClient();
 
 export async function loader({ request }: Route.LoaderArgs) {
   const { supabase } = getSupabaseServerClient(request);

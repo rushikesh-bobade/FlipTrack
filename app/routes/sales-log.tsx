@@ -3,7 +3,7 @@ import { useLoaderData, useActionData, useSearchParams, Await } from "react-rout
 import type { Route } from "./+types/sales-log";
 import { toast } from "sonner";
 import { getSupabaseServerClient, getUserFromRequest } from "~/utils/supabase.server";
-import { PrismaClient } from "@prisma/client";
+
 import styles from "./sales-log.module.css";
 import { SalesHeader } from "~/blocks/sales-log/sales-header";
 import { SalesSummaryCards } from "~/blocks/sales-log/sales-summary-cards";
@@ -12,8 +12,7 @@ import { LogSaleModal } from "~/blocks/sales-log/log-sale-modal";
 import type { SortField, SortDirection } from "~/blocks/sales-log/sales-table";
 import { CACHE_PRIVATE_NO_STORE } from "~/utils/cache-headers";
 import { IconLoader2 } from "@tabler/icons-react";
-
-const prisma = new PrismaClient();
+import { prisma } from "~/utils/db.server";
 
 export function headers(_: Route.HeadersArgs) {
   return {

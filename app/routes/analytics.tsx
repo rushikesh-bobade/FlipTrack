@@ -1,11 +1,12 @@
 import { useLoaderData } from "react-router";
 import type { Route } from "./+types/analytics";
 import { getSupabaseServerClient } from "~/utils/supabase.server";
-import { PrismaClient } from "@prisma/client";
+
 import styles from "./analytics.module.css";
 import { StaleInventoryCard } from "~/blocks/analytics/StaleInventoryCard";
 import { ProfitForecast } from "~/blocks/analytics/ProfitForecast";
 import { CACHE_PRIVATE_NO_STORE } from "~/utils/cache-headers";
+import { prisma } from "~/utils/db.server";
 
 export function headers(_: Route.HeadersArgs) {
   return {
@@ -13,7 +14,6 @@ export function headers(_: Route.HeadersArgs) {
   };
 }
 
-const prisma = new PrismaClient();
 const STALE_THRESHOLD_DAYS = 60;
 
 export async function loader({ request }: Route.LoaderArgs) {

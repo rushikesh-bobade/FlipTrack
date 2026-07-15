@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import { useLoaderData, Await } from "react-router";
 import type { Route } from "./+types/income-statement";
 import { getSupabaseServerClient, getUserFromRequest } from "~/utils/supabase.server";
-import { PrismaClient } from "@prisma/client";
+
 import styles from "./income-statement.module.css";
 import { StatementHeader } from "~/blocks/income-statement/statement-header";
 import { SummaryCards } from "~/blocks/income-statement/summary-cards";
@@ -12,14 +12,13 @@ import { DetailedStatementTable } from "~/blocks/income-statement/detailed-state
 import { ExportOptions } from "~/blocks/income-statement/export-options";
 import { CACHE_PRIVATE_NO_STORE } from "~/utils/cache-headers";
 import { IconLoader2 } from "@tabler/icons-react";
+import { prisma } from "~/utils/db.server";
 
 export function headers(_: Route.HeadersArgs) {
   return {
     "Cache-Control": CACHE_PRIVATE_NO_STORE,
   };
 }
-
-const prisma = new PrismaClient();
 
 export async function loader({ request }: Route.LoaderArgs) {
   const { supabase } = getSupabaseServerClient(request);

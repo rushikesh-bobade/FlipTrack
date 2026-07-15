@@ -1,7 +1,7 @@
 import { useState, Suspense } from "react";
 import type { Route } from "./+types/price-alerts";
 import { getSupabaseServerClient, getUserFromRequest } from "~/utils/supabase.server";
-import { PrismaClient, Marketplace, AlertDirection, NotificationChannel } from "@prisma/client";
+import { Marketplace, AlertDirection, NotificationChannel } from "@prisma/client";
 import { useLoaderData, useSubmit, Await } from "react-router";
 import styles from "./price-alerts.module.css";
 import { AlertsHeader } from "~/blocks/price-alerts/alerts-header";
@@ -11,14 +11,13 @@ import { ActiveAlertsTable } from "~/blocks/price-alerts/active-alerts-table";
 import { AlertHistory } from "~/blocks/price-alerts/alert-history";
 import { CACHE_PRIVATE_NO_STORE } from "~/utils/cache-headers";
 import { IconLoader2 } from "@tabler/icons-react";
+import { prisma } from "~/utils/db.server";
 
 export function headers(_: Route.HeadersArgs) {
   return {
     "Cache-Control": CACHE_PRIVATE_NO_STORE,
   };
 }
-
-const prisma = new PrismaClient();
 
 export async function loader({ request }: Route.LoaderArgs) {
   const { supabase } = getSupabaseServerClient(request);

@@ -1,11 +1,12 @@
 import { Outlet, redirect, useLoaderData } from "react-router";
 import { getSupabaseServerClient, getUserFromRequest } from "~/utils/supabase.server";
-import { PrismaClient } from "@prisma/client";
+
 import type { Route } from "./+types/app-layout";
 import { AppSidebar } from "~/blocks/__global/app-sidebar";
 import { BreadcrumbNavigation } from "~/blocks/__global/breadcrumb-navigation";
 import styles from "./app-layout.module.css";
 import { CACHE_PRIVATE_NO_STORE } from "~/utils/cache-headers";
+import { prisma } from "~/utils/db.server";
 
 export function headers(_: Route.HeadersArgs) {
   return {
@@ -16,8 +17,6 @@ export function headers(_: Route.HeadersArgs) {
 export function shouldRevalidate({ formMethod }: { formMethod: string }) {
   return formMethod !== "GET";
 }
-
-const prisma = new PrismaClient();
 
 export async function loader({ request }: Route.LoaderArgs) {
   const { supabase, headers } = getSupabaseServerClient(request);
