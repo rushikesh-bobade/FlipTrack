@@ -1,7 +1,5 @@
-import { PrismaClient, Marketplace } from "@prisma/client";
-
-const prisma = new PrismaClient();
-
+import { Marketplace } from "@prisma/client";
+import { prisma } from "~/utils/db.server";
 export interface PriceResult {
   marketplace: Marketplace;
   sku: string;

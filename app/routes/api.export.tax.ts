@@ -1,9 +1,7 @@
 import type { Route } from "./+types/api.export.tax";
 import { getSupabaseServerClient } from "~/utils/supabase.server";
 import { sanitizeCsvField } from "~/utils/csv.server";
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import { prisma } from "~/utils/db.server";
 
 export async function loader({ request }: Route.LoaderArgs) {
   const { supabase } = getSupabaseServerClient(request);

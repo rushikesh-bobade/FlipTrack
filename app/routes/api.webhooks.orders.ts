@@ -24,12 +24,11 @@
  */
 
 import type { Route } from "./+types/api.webhooks.orders";
-import { PrismaClient } from "@prisma/client";
+
 import { z } from "zod";
 import crypto from "crypto";
 import { decrypt } from "~/utils/encryption.server";
-
-const prisma = new PrismaClient();
+import { prisma } from "~/utils/db.server";
 
 // ─── Constants mirroring Prisma enums ─────────────────────────────────────────
 

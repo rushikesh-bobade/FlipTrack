@@ -3,7 +3,7 @@ import { useLoaderData, useActionData, useSearchParams, Await } from "react-rout
 import type { Route } from "./+types/inventory-management";
 import { toast } from "sonner";
 import { getSupabaseServerClient, getUserFromRequest } from "~/utils/supabase.server";
-import { Prisma, PrismaClient, type Currency, type ItemCondition } from "@prisma/client";
+import { Prisma, type Currency, type ItemCondition } from "@prisma/client";
 import styles from "./inventory-management.module.css";
 import { IconLoader2 } from "@tabler/icons-react";
 import { InventoryHeader } from "~/blocks/inventory-management/inventory-header";
@@ -12,13 +12,12 @@ import { BulkActionsBar } from "~/blocks/inventory-management/bulk-actions-bar";
 import { AddItemModal } from "~/blocks/inventory-management/add-item-modal";
 import { ImportExcelModal } from "~/blocks/inventory-management/import-excel-modal";
 import { Pagination } from "~/blocks/__global/pagination";
+import { prisma } from "~/utils/db.server";
 export function headers(_: Route.HeadersArgs) {
   return {
     "Cache-Control": "private, no-store",
   };
 }
-
-const prisma = new PrismaClient();
 
 function parseSkippedRows(value: FormDataEntryValue | null) {
   if (typeof value !== "string") {

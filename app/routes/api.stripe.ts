@@ -1,8 +1,8 @@
 import type { Route } from "./+types/api.stripe";
-import { PrismaClient } from "@prisma/client";
-import Stripe from "stripe";
 
-const prisma = new PrismaClient();
+import Stripe from "stripe";
+import { prisma } from "~/utils/db.server";
+
 const stripeKey = process.env.STRIPE_SECRET_KEY || "sk_test_placeholder";
 const stripe = new Stripe(stripeKey, { apiVersion: "2024-06-20" as any });
 
