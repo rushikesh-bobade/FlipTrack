@@ -1,4 +1,4 @@
-import { Form, Link, useActionData, useSubmit } from "react-router";
+import { Form, Link, useActionData, useNavigation } from "react-router";
 import styles from "./login-form.module.css";
 import { useRef } from "react";
 
@@ -6,16 +6,18 @@ interface Props { className?: string; }
 
 export function LoginForm({ className }: Props) {
   const actionData = useActionData<{ error?: string }>();
-  const submit = useSubmit();
+  const navigation = useNavigation();
+  const isSubmitting = navigation.state === "submitting";
   const formRef = useRef<HTMLFormElement>(null);
 
   const handleDemoLogin = () => {
-    if (formRef.current) {
-      const formData = new FormData(formRef.current);
-      formData.set("email", "demo@fliptrack.app");
-      formData.set("password", "password123");
-      submit(formData, { method: "post" });
-    }
+    const form = formRef.current;
+    if (!form) return;
+
+    (form.elements.namedItem("email") as HTMLInputElement).value = "demo@fliptrack.app";
+    (form.elements.namedItem("password") as HTMLInputElement).value = "password123";
+
+    form.requestSubmit();
   };
 
   return (
@@ -39,13 +41,15 @@ export function LoginForm({ className }: Props) {
         <Link to="/auth/forgot-password" className={styles.forgotLink}>Forgot password?</Link>
       </div>
       <button type="submit" className={styles.submitBtn}>Sign In</button>
-      <button 
-        type="button" 
-        className={styles.submitBtn} 
+      <button
+        type="button"
+        className={styles.submitBtn}
         style={{ background: "transparent", border: "1px solid var(--color-border-strong)", marginTop: "var(--space-2)", color: "var(--color-text)" }}
         onClick={handleDemoLogin}
+        disabled={isSubmitting}
+
       >
-        Use Demo Credentials
+        {isSubmitting ? "Signing in..." : "Use Demo Credentials"}
       </button>
     </Form>
   );

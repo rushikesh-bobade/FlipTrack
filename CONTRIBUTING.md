@@ -103,6 +103,9 @@ DIRECT_URL="postgresql://postgres:password@db.your-project.supabase.co:5432/post
 
 # ── Groq AI (optional) ───────────────────────
 GROQ_API_KEY="gsk_your_groq_api_key"
+
+# ── Supabase Service Role (for local auth setup) ──
+SUPABASE_SERVICE_ROLE_KEY="your_supabase_service_role_key"
 ```
 
 > **⚠️ Important:** Never commit your `.env` file. It is already in `.gitignore`.
@@ -116,13 +119,20 @@ npx prisma db push
 npx prisma generate
 ```
 
-### 5. Seed Demo Data
+### 5. Setup Local Authentication & Seed Demo Data
 
-Populate your database with realistic sneaker inventory, sales, expenses, price alerts, and market prices:
+FlipTrack uses Supabase Auth, which requires registering the demo user in Supabase before seeding the database:
 
-```bash
-npx tsx prisma/seed.ts
-```
+1. **Create the demo user in Supabase Auth and sync to database:**
+   ```bash
+   npx tsx scripts/create-demo-user.ts
+   ```
+   *(Note: This uses the service role key to automatically confirm the user's email. If you did not configure it, you may need to confirm the email manually in the Supabase dashboard).*
+
+2. **Seed the database with sample items, sales, and expenses:**
+   ```bash
+   npx tsx prisma/seed.ts
+   ```
 
 ### 6. Start the Dev Server
 

@@ -1,26 +1,27 @@
 import { PrismaClient, ItemStatus, ItemCondition, Marketplace, ExpenseType, Currency, Plan, Theme } from '@prisma/client';
+import "dotenv/config";
 
 const prisma = new PrismaClient();
 
 async function main() {
   console.log("Starting seed...");
 
-  let user = await prisma.user.findFirst();
+  const demoEmail = process.env.DEMO_USER_EMAIL || "demo@fliptrack.app";
+
+  let user = await prisma.user.findUnique({
+    where: { email: demoEmail }
+  });
 
   if (!user) {
-    user = await prisma.user.create({
-      data: {
-        email: "demo@fliptrack.io",
-        name: "Demo User",
-        plan: Plan.PRO,
-        currency: Currency.USD,
-        theme: Theme.LIGHT
-      }
-    });
-    console.log("Created demo user:", user.email);
-  } else {
-    console.log("Using existing user:", user.email);
+    console.error(`\n❌ Error: Demo user with email "${demoEmail}" not found in the database.`);
+    console.error("To set up local authentication and seed the database correctly, you must run the user creation script first:");
+    console.error("  npx tsx scripts/create-demo-user.ts");
+    console.error("This will register the user in Supabase Auth and sync it to the database.");
+    console.error("Then, run this seed script again to populate the database with demo inventory data.\n");
+    process.exit(1);
   }
+
+  console.log("Using existing user for seeding:", user.email);
 
   // Clear existing data for this user to avoid unique constraint errors during re-seeds
   await prisma.expense.deleteMany({ where: { userId: user.id } });
