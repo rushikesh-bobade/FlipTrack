@@ -1,5 +1,12 @@
 -- CreateEnum
-CREATE TYPE "ListingStatus" AS ENUM ('ACTIVE', 'SOLD', 'ENDED', 'DRAFT');
+CREATE TYPE "ListingStatus" AS ENUM (
+    'ACTIVE',
+    'SOLD',
+    'ENDED',
+    'DRAFT',
+    'DELISTED',
+    'DELIST_FAILED'
+);
 
 -- CreateTable
 CREATE TABLE "Listing" (
@@ -7,6 +14,7 @@ CREATE TABLE "Listing" (
     "inventoryItemId" TEXT NOT NULL,
     "marketplace" "Marketplace" NOT NULL,
     "listingUrl" TEXT,
+    "externalListingId" TEXT,
     "askingPrice" DECIMAL(10,2),
     "status" "ListingStatus" NOT NULL DEFAULT 'ACTIVE',
     "listedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,

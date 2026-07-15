@@ -101,10 +101,6 @@ enum ListingStatus {
   DRAFT
 }
 
-
-
-// ─── CORE MODELS ──────────────────────────────────────────────────────────────
-
 model User {
   id                  String   @id @default(uuid())
   email               String   @unique
