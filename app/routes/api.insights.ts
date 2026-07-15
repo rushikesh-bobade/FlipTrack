@@ -1,5 +1,6 @@
 import type { Route } from "./+types/api.insights";
 import { getSupabaseServerClient } from "~/utils/supabase.server";
+import { rateLimit } from "~/utils/rate-limit.server";
 import { PrismaClient } from "@prisma/client";
 import { generateText } from "ai";
 import { createGroq } from "@ai-sdk/groq";
@@ -7,6 +8,8 @@ import { createGroq } from "@ai-sdk/groq";
 const prisma = new PrismaClient();
 
 export async function action({ request }: Route.ActionArgs) {
+  await rateLimit(request, 10, 60_000);
+
   const groq = createGroq({ apiKey: process.env.GROQ_API_KEY });
   const { supabase } = getSupabaseServerClient(request);
   const { data: { user } } = await supabase.auth.getUser();
