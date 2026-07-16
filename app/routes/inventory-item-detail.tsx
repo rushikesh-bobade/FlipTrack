@@ -44,6 +44,17 @@ export async function loader({ request, params }: Route.LoaderArgs) {
     throw new Response("Not Found", { status: 404 });
   }
 
+  const relatedItems = await prisma.inventoryItem.findMany({
+    where: {
+      userId: user.id,
+      brand: item.brand,
+      id: {
+        not: item.id,
+      },
+    },
+    take: 4,
+  });
+
   return {
     item: {
       ...item,
@@ -51,11 +62,11 @@ export async function loader({ request, params }: Route.LoaderArgs) {
       askingPrice: item.askingPrice ? Number(item.askingPrice) : null,
       sale: item.sale
         ? {
-          ...item.sale,
-          salePrice: Number(item.sale.salePrice),
-          platformFee: Number(item.sale.platformFee),
-          shippingCost: Number(item.sale.shippingCost),
-        }
+            ...item.sale,
+            salePrice: Number(item.sale.salePrice),
+            platformFee: Number(item.sale.platformFee),
+            shippingCost: Number(item.sale.shippingCost),
+          }
         : null,
       priceHistory: item.priceHistory.map((ph) => ({
         ...ph,
@@ -64,14 +75,22 @@ export async function loader({ request, params }: Route.LoaderArgs) {
         lastSold: ph.lastSold ? Number(ph.lastSold) : null,
       })),
     },
+    relatedItems,
   };
 }
 
+
 export default function InventoryItemDetailPage() {
-  const { item } = useLoaderData<typeof loader>();
+  const { item, relatedItems } = useLoaderData<typeof loader>();
+
+  if (!item) {
+    return <div>Item not found</div>;
+  }
+
   return (
     <div className={styles.page}>
       <ItemHeader item={item} />
+
       <div
         style={{
           display: "grid",
@@ -83,9 +102,10 @@ export default function InventoryItemDetailPage() {
         <ItemInfoCard item={item} />
         <PriceHistoryChart priceHistory={item.priceHistory} />
       </div>
-      <MarketplaceComparison priceHistory={item.priceHistory} />
+
+      <MarketplaceComparison priceHistory={item.priceHistory}  />
       <SalesHistory sale={item.sale} />
-      <RelatedItems />
+      <RelatedItems items={relatedItems} />
     </div>
   );
 }

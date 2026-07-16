@@ -6,6 +6,7 @@
     "build": "prisma generate && react-router build",
     "dev": "react-router dev",
     "start": "react-router-serve ./build/server/index.js",
+    "test:e2e": "playwright test",
     "typecheck": "react-router typegen && tsc",
     "postinstall": "prisma generate"
   },
@@ -34,6 +35,7 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@playwright/test": "^1.61.1",
     "@react-router/dev": "^7.16.0",
     "@types/node": "^24.12.4",
     "@types/react": "^19.2.16",
