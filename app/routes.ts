@@ -43,6 +43,8 @@ export default [
   route("/api/insights", "routes/api.insights.ts"),
   route("/api/export/tax", "routes/api.export.tax.ts"),
   route("/api/inventory/search", "routes/api.inventory.search.ts"),
-  route("/:username", "routes/$username.tsx"),
   route("/api/integrations", "routes/api.integrations.ts"),
+
+  // Public showroom — scoped under /u/ to prevent collisions with static app routes
+  route("/u/:username", "routes/u.$username.tsx"),
 ] satisfies RouteConfig;
