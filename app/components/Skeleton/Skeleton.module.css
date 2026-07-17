@@ -1,0 +1,63 @@
+.skeleton {
+  display: block;
+  position: relative;
+  overflow: hidden;
+  background-color: var(--skeleton-base, rgba(15, 23, 42, 0.08));
+  border-radius: var(--radius-sm, 6px);
+}
+
+.skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--skeleton-sheen, rgba(255, 255, 255, 0.45)),
+    transparent
+  );
+  animation: skeleton-shimmer 1.4s ease-in-out infinite;
+}
+
+.text { border-radius: var(--radius-sm, 6px); }
+.rect { border-radius: var(--radius-md, 10px); }
+.circle { border-radius: 50%; }
+
+@keyframes skeleton-shimmer {
+  100% { transform: translateX(100%); }
+}
+
+:global([data-theme="dark"]) .skeleton {
+  background-color: var(--skeleton-base-dark, rgba(255, 255, 255, 0.09));
+}
+:global([data-theme="dark"]) .skeleton::after {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--skeleton-sheen-dark, rgba(255, 255, 255, 0.13)),
+    transparent
+  );
+}
+
+@media (prefers-color-scheme: dark) {
+  :global(:root:not([data-theme="light"])) .skeleton {
+    background-color: var(--skeleton-base-dark, rgba(255, 255, 255, 0.09));
+  }
+  :global(:root:not([data-theme="light"])) .skeleton::after {
+    background: linear-gradient(
+      90deg, transparent,
+      var(--skeleton-sheen-dark, rgba(255, 255, 255, 0.13)), transparent
+    );
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton::after { animation: none; }
+  .skeleton { animation: skeleton-pulse 1.6s ease-in-out infinite; }
+}
+
+@keyframes skeleton-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}
