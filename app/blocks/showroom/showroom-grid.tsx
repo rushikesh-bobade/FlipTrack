@@ -24,19 +24,19 @@ export function ShowroomGrid({ username, inventory }: ShowroomGridProps) {
           FLIPTRACK / <span>@{username || "seller"}</span>
         </h1>
         <div className={styles.headerActions}>
-          <button className={styles.contactButton}>Request Contact</button>
+          <button className={styles.contactButton} aria-label={`Contact ${username}`}>Request Contact</button>
         </div>
       </header>
 
       <div className={styles.controlsBar}>
-        <input type="search" placeholder="Search inventory..." className={styles.searchInput} />
-        <select className={styles.filterSelect}>
+        <input type="search" placeholder="Search inventory..." className={styles.searchInput} aria-label="Search inventory" />
+        <select className={styles.filterSelect} aria-label="Filter by brand">
           <option>All Brands</option>
           <option>Jordan</option>
           <option>Adidas</option>
           <option>Supreme</option>
         </select>
-        <select className={styles.filterSelect}>
+        <select className={styles.filterSelect} aria-label="Filter by size">
           <option>All Sizes</option>
         </select>
       </div>
@@ -45,7 +45,7 @@ export function ShowroomGrid({ username, inventory }: ShowroomGridProps) {
         {inventory.map((item) => {
           const isSold = item.status === "SOLD";
           return (
-            <article key={item.id} className={`${styles.itemCard}${isSold ? ` ${styles.sold}` : ""}`}>
+            <article key={item.id} className={`${styles.itemCard}${isSold ? ` ${styles.sold}` : ""}`} aria-label={`${item.name}${isSold ? ", sold" : ""}`}>
               <div className={styles.imageWrapper}>
                 <img src={item.imageUrl || ""} alt={item.name} className={styles.productImage} />
                 {isSold ? (

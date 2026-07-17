@@ -3,12 +3,16 @@ import { PrismaClient } from "@prisma/client";
 import type { Route } from "./+types/u.$username";
 import { ShowroomGrid } from "~/blocks/showroom/showroom-grid";
 
-const prisma = new PrismaClient();
+function getPrisma() {
+  return new PrismaClient();
+}
 
 export async function loader({ params }: Route.LoaderArgs) {
+  const prisma = getPrisma();
+
   const user = await prisma.user.findUnique({
     where: { username: params.username },
-    select: { username: true },
+    select: { id: true, username: true },
   });
 
   if (!user) {
@@ -17,7 +21,7 @@ export async function loader({ params }: Route.LoaderArgs) {
 
   const inventory = await prisma.inventoryItem.findMany({
     where: {
-      user: { username: params.username },
+      userId: user.id,
       isPublic: true,
       status: { in: ["IN_STOCK", "LISTED", "SOLD"] },
     },
