@@ -7,7 +7,7 @@ interface Props { className?: string; }
 const faqs = [
   { q: "How accurate is price tracking?", a: "Prices are fetched directly from marketplace APIs and product pages every 15 minutes. Accuracy matches what you'd see if you checked manually." },
   { q: "How fast do price alerts trigger?", a: "Within 15 minutes of a price change meeting your criteria. Alert notifications are sent immediately once the condition is detected." },
-  { q: "Which marketplaces are supported?", a: "StockX, GOAT, eBay, Flight Club, and Stadium Goods. More marketplaces are on the roadmap." },
+  { q: "Which marketplaces are supported?", a: "eBay, Amazon, Mercari, Poshmark, Facebook Marketplace, Shopify, StockX, and more." },
   { q: "How does bulk Excel import work?", a: "Go to Inventory > Import Excel. Drag and drop your .xlsx or .csv file. FlipTrack validates each row and shows any errors before importing." },
   { q: "Is there an API?", a: "API access is available on the Business plan. Documentation is available at fliptrack.io/docs/api." },
   { q: "Is there a mobile app?", a: "FlipTrack is fully responsive on mobile browsers. A native app is planned for Q3 2025." },

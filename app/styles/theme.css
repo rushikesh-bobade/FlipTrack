@@ -17,6 +17,8 @@
   --color-bg-hover: #1e1e2a;
   --color-bg-border: rgba(255,255,255,0.08);
   --color-nav-bg: rgba(10, 10, 15, 0.85);
+  --body-bg: var(--color-bg);
+  --hero-bg: none;
 
   /* Text */
   --color-text: #F0F0F8;
@@ -86,22 +88,33 @@
   --color-bg-surface: #FFFFFF;
   --color-bg-elevated: #FFFFFF;
   --color-bg-card: #FFFFFF;
-  --color-bg-hover: #F1F5F9;
-  --color-bg-border: rgba(0,0,0,0.08);
-  --color-nav-bg: rgba(255, 255, 255, 0.85);
+  --color-bg-hover: #D9E5FF;
+  --color-section-alt: #F1F6FF;
+  --color-section-alt-secondary: #E6EEFF;
+  --color-bg-border: rgba(42, 74, 150, .12);
+  --color-nav-bg: rgba(236, 243, 255, .96);
   --color-text: #0F172A;
-  --color-text-muted: #64748B;
-  --color-text-subtle: #94A3B8;
+  --color-text-muted: #445A8F;
+  --color-text-subtle: #6178A5;
   --color-text-inverse: #FFFFFF;
-  --color-border: rgba(0, 0, 0, 0.08);
-  --color-border-strong: rgba(0, 0, 0, 0.16);
-  --color-primary: #10B981;
-  --color-primary-dark: #059669;
-  --color-primary-glow: rgba(16, 185, 129, 0.25);
-  --color-accent: #6366F1;
-  --color-accent-light: rgba(99, 102, 241, 0.2);
-  --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
-  --shadow-md: 0 4px 16px rgba(0,0,0,0.08);
-  --shadow-lg: 0 8px 32px rgba(0,0,0,0.12);
-  --shadow-glow: 0 0 32px rgba(16, 185, 129, 0.25);
+  --color-border: rgba(42, 74, 150, .16);
+  --color-border-strong: rgba(42, 74, 150, .22);
+  --color-primary: #22C55E;
+  --color-primary-dark: #16A34A;
+  --color-primary-glow: rgba(34,197,94,.18);
+  --color-accent: #3B82F6;
+  --color-accent-light: rgba(59,130,246,.22);
+  --shadow-sm: 0 2px 8px rgba(30, 60, 110, .08);
+  --shadow-md: 0 8px 24px rgba(30, 60, 110, .12);
+  --shadow-lg: 0 20px 50px rgba(30, 60, 110, .16);
+  --shadow-glow: 0 0 35px rgba(59,130,246,.20);
+  --body-bg: radial-gradient(circle at top left, rgba(220, 255, 232, 0.45), rgba(235, 245, 255, 0.96) 24%, transparent 54%),
+              radial-gradient(circle at top right, rgba(214, 229, 255, 0.55), rgba(238, 245, 255, 0.72) 26%, transparent 54%),
+              radial-gradient(circle at 85% 30%, rgba(59, 130, 246, 0.08), transparent 32%),
+              var(--color-bg);
+  --hero-bg: linear-gradient(180deg, rgba(237, 255, 244, 0.72), transparent 55%),
+              radial-gradient(ellipse 60% 45% at 14% 22%, rgba(34, 197, 94, 0.18), transparent 52%),
+              radial-gradient(ellipse 90% 70% at 50% -5%, var(--color-primary-glow) 0%, transparent 70%),
+              radial-gradient(ellipse 70% 55% at 82% 98%, rgba(59,130,246,0.08) 0%, transparent 58%),
+              radial-gradient(circle at 75% 30%, rgba(59, 130, 246, 0.08), transparent 28%);
 }

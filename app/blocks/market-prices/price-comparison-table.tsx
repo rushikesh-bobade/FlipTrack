@@ -3,7 +3,7 @@ import styles from "./price-comparison-table.module.css";
 
 interface Props { className?: string; prices?: any[]; }
 
-const mpNames = ["STOCKX", "GOAT", "EBAY", "FLIGHTCLUB", "STADIUMGOODS"];
+const mpNames = ["STOCKX", "GOAT", "EBAY", "FLIGHTCLUB", "STADIUMGOODS", "AMAZON", "MERCARI", "POSHMARK", "FACEBOOK", "SHOPIFY", "GRAILED", "DEPOP", "OFFERUP", "IN_PERSON", "OTHER"];
 
 export function PriceComparisonTable({ className, prices = [] }: Props) {
   // Group by SKU

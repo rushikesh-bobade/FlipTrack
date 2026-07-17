@@ -1,11 +1,16 @@
 import { IconX } from "@tabler/icons-react";
-import { mockAiInsights } from "~/data/mock-data";
 import styles from "./detailed-analysis-modal.module.css";
+import type { AiInsightItem } from "~/routes/ai-insights";
 
-interface Props { className?: string; itemId: string; onClose: () => void; }
+interface Props { 
+  className?: string; 
+  itemId: string; 
+  data: AiInsightItem[];
+  onClose: () => void; 
+}
 
-export function DetailedAnalysisModal({ className, itemId, onClose }: Props) {
-  const item = mockAiInsights.find(i => i.id === itemId);
+export function DetailedAnalysisModal({ className, itemId, data, onClose }: Props) {
+  const item = data?.find(i => i.id === itemId);
   if (!item) return null;
 
   return (

@@ -353,3 +353,17 @@ All contributors will be recognized in the project. We value every contribution 
   <br />
   <sub>Built with ❤️ by the FlipTrack community</sub>
 </div>
+
+---
+
+## Rate Limiting
+
+A reusable `rateLimit(request, limit, windowMs)` utility is available in `app/utils/rate-limit.server.ts`.
+
+Example:
+
+```ts
+await rateLimit(request, 5, 60_000);
+```
+
+This implementation uses a Prisma-backed PostgreSQL database for rate limiting. Expired records are periodically cleaned up using lightweight probabilistic cleanup to prevent unbounded table growth. For larger distributed deployments, a dedicated rate-limiting backend such as Upstash Redis may still be preferable.
