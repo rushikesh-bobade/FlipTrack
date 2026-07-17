@@ -96,26 +96,27 @@ enum Theme {
 // ─── CORE MODELS ──────────────────────────────────────────────────────────────
 
 model User {
-  id                  String   @id @default(uuid())
-  email               String   @unique
-  name                String?
-  avatarUrl           String?
-  plan                Plan     @default(FREE)
-  stripeCustomerId    String?  @unique
-  stripeSubId         String?  @unique
-  currency            Currency @default(USD)
-  theme               Theme    @default(LIGHT)
-  phone               String?
-  pushEndpoint        String? // Web push subscription JSON
-  emailNotifications  Boolean  @default(true)
-  smsNotifications    Boolean  @default(false)
-  pushNotifications   Boolean  @default(false)
-  weeklySummary       Boolean  @default(true)
-  priceAlertTriggered Boolean  @default(true)
-  teamId              String?
-  role                String   @default("owner") // owner | member (team)
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
+  id                String         @id @default(uuid())
+  email             String         @unique
+  username          String?        @unique
+  name              String?
+  avatarUrl         String?
+  plan              Plan           @default(FREE)
+  stripeCustomerId  String?        @unique
+  stripeSubId       String?        @unique
+  currency          Currency       @default(USD)
+  theme             Theme          @default(LIGHT)
+  phone             String?
+  pushEndpoint      String?        // Web push subscription JSON
+  emailNotifications  Boolean       @default(true)
+  smsNotifications    Boolean       @default(false)
+  pushNotifications   Boolean       @default(false)
+  weeklySummary       Boolean       @default(true)
+  priceAlertTriggered Boolean       @default(true)
+  teamId            String?
+  role              String         @default("owner") // owner | member (team)
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
 
   inventory         InventoryItem[]
   sales             Sale[]
@@ -168,6 +169,7 @@ model InventoryItem {
   askingPrice   Decimal?      @db.Decimal(10, 2)
   notes         String?
   imageUrl      String?
+  isPublic      Boolean       @default(false)
   currency      Currency      @default(USD)
   tags          String[] // flexible tags
   createdAt     DateTime      @default(now())

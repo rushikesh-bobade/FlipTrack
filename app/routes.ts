@@ -49,6 +49,6 @@ export default [
   route("/api/inventory/search", "routes/api.inventory.search.ts"),
   route("/api/integrations", "routes/api.integrations.ts"),
 
-  // 🌟 Your dynamic showroom route (Must stay at the very end as a catch-all)
-  route("/:username", "routes/$username.tsx"),
+  // Public showroom — scoped under /u/ to prevent collisions with static app routes
+  route("/u/:username", "routes/u.$username.tsx"),
 ] satisfies RouteConfig;
