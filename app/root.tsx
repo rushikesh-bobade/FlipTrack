@@ -1,4 +1,4 @@
-﻿import { useEffect } from "react";
+import { useEffect } from "react";
 
 import { Links, Meta, Outlet, Scripts, ScrollRestoration } from "react-router";
 import type { Route } from "./+types/root";
@@ -13,7 +13,7 @@ import { FooterLinksSection } from "./blocks/__global/footer-links-section";
 import { FooterBottomBar } from "./blocks/__global/footer-bottom-bar";
 import { useLocation } from "react-router";
 import { Toaster } from "sonner";
-
+import { ScrollToTop } from "./blocks/__global/scroll-to-top";
 export const links: Route.LinksFunction = () => [
   { rel: "icon", href: favicon, type: "image/svg+xml" },
   { rel: "manifest", href: "/manifest.json" },
@@ -88,8 +88,8 @@ function RootLayout({ children }: { children: React.ReactNode }) {
         </footer>
       )}
       <Toaster position="top-right" richColors theme="system" />
-      
-   
+      <ScrollToTop />
+    </>
   );
 }
 
