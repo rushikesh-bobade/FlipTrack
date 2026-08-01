@@ -93,7 +93,13 @@ enum Theme {
   UNICORN
 }
 
-// ─── CORE MODELS ──────────────────────────────────────────────────────────────
+enum ListingStatus {
+  ACTIVE
+  SOLD
+  DELISTED
+  DELIST_FAILED
+  DRAFT
+}
 
 model User {
   id                  String   @id @default(uuid())
@@ -164,8 +170,8 @@ model InventoryItem {
   purchaseDate  DateTime
   condition     ItemCondition @default(NEW)
   status        ItemStatus    @default(IN_STOCK)
-  marketplace   Marketplace? // where listed
-  askingPrice   Decimal?      @db.Decimal(10, 2)
+  marketplace   Marketplace? // @deprecated use `listings` instead — dropped in a follow-up migration once data is verified migrated (see #157)
+  askingPrice   Decimal?      @db.Decimal(10, 2) // @deprecated use `listings.askingPrice` instead — dropped alongside `marketplace`
   notes         String?
   imageUrl      String?
   currency      Currency      @default(USD)
@@ -177,10 +183,30 @@ model InventoryItem {
   sale         Sale?
   expenses     Expense[]
   priceHistory MarketPrice[]
+  listings     Listing[]
 
   @@unique([userId, sku, size])
   @@index([userId, sku])
   @@index([userId, status])
+}
+
+model Listing {
+  id              String        @id @default(uuid())
+  inventoryItemId String
+  marketplace     Marketplace
+  listingUrl      String?
+  externalListingId String?
+  askingPrice     Decimal?      @db.Decimal(10, 2)
+  status          ListingStatus @default(ACTIVE)
+  listedAt        DateTime      @default(now())
+  delistedAt      DateTime?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  inventoryItem InventoryItem @relation(fields: [inventoryItemId], references: [id], onDelete: Cascade)
+
+  @@index([inventoryItemId])
+  @@index([marketplace])
 }
 
 model MarketPrice {
