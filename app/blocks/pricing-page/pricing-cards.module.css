@@ -7,8 +7,8 @@
 .thumb { width: 18px; height: 18px; background: var(--color-text); border-radius: 50%; position: absolute; top: 2px; left: 2px; transition: left var(--transition-base); }
 .toggleBtn.active .thumb { left: 22px; background: var(--color-text-inverse); }
 .saveBadge { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: var(--radius-full); background: var(--color-primary-glow); color: var(--color-primary); border: 1px solid rgba(0,255,136,0.2); }
-.grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-6); align-items: start; }
-.card { background: var(--color-bg-card); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--space-8); position: relative; transition: transform 250ms cubic-bezier(.2,.8,.2,1), box-shadow 250ms cubic-bezier(.2,.8,.2,1); animation: floatCard 6s ease-in-out infinite; will-change: transform, translate; }
+.grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-6); align-items: stretch; }
+.card { display: flex; flex-direction: column; height: 100%; background: var(--color-bg-card); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--space-8); position: relative; transition: transform 250ms cubic-bezier(.2,.8,.2,1), box-shadow 250ms cubic-bezier(.2,.8,.2,1); animation: floatCard 6s ease-in-out infinite; will-change: transform, translate; }
 .card:nth-child(2) { animation-delay: -2s; }
 .card:nth-child(3) { animation-delay: -4s; }
 @keyframes floatCard { 0%, 100% { translate: 0 0; } 50% { translate: 0 -6px; } }
@@ -24,7 +24,7 @@
 .features { display: flex; flex-direction: column; gap: var(--space-3); margin-bottom: var(--space-8); }
 .feature { display: flex; align-items: flex-start; gap: var(--space-3); font-size: 13px; color: var(--color-text-muted); }
 .check { color: var(--color-primary); flex-shrink: 0; margin-top: 1px; }
-.btn { display: block; width: 100%; padding: 12px; border-radius: var(--radius-md); font-size: 14px; font-weight: 600; text-align: center; text-decoration: none; cursor: pointer; border: none; transition: background var(--transition-fast), box-shadow var(--transition-fast); }
+.btn { display: block; width: 100%; padding: 12px; border-radius: var(--radius-md); font-size: 14px; font-weight: 600; text-align: center; text-decoration: none; cursor: pointer; border: none; transition: background var(--transition-fast), box-shadow var(--transition-fast); margin-top: auto; }
 .btnOutline { background: transparent; border: 1px solid var(--color-border-strong); color: var(--color-text); }
 .btnOutline:hover { background: var(--color-bg-elevated); }
 .btnPrimary { background: var(--color-primary); color: var(--color-text-inverse); }
