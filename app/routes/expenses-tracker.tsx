@@ -3,7 +3,7 @@ import { useLoaderData, useActionData, Await } from "react-router";
 import type { Route } from "./+types/expenses-tracker";
 import { toast } from "sonner";
 import { getSupabaseServerClient, getUserFromRequest } from "~/utils/supabase.server";
-import { PrismaClient } from "@prisma/client";
+
 import styles from "./expenses-tracker.module.css";
 import { ExpensesHeader } from "~/blocks/expenses-tracker/expenses-header";
 import { RecurringExpensesSection } from "~/blocks/expenses-tracker/recurring-expenses-section";
@@ -13,14 +13,13 @@ import { AddExpenseModal } from "~/blocks/expenses-tracker/add-expense-modal";
 import { Pagination } from "~/blocks/__global/pagination";
 import { CACHE_PRIVATE_NO_STORE } from "~/utils/cache-headers";
 import { IconLoader2 } from "@tabler/icons-react";
+import { prisma } from "~/utils/db.server";
 
 export function headers(_: Route.HeadersArgs) {
   return {
     "Cache-Control": CACHE_PRIVATE_NO_STORE,
   };
 }
-
-const prisma = new PrismaClient();
 
 export async function loader({ request }: Route.LoaderArgs) {
   const { supabase } = getSupabaseServerClient(request);
