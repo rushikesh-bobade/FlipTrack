@@ -133,6 +133,8 @@ export async function action({ request }: Route.ActionArgs) {
         },
       });
     }
+
+    return { ok: true, intent: "create" };
   }
 
   if (intent === "update") {
