@@ -222,7 +222,7 @@ model MarketPrice {
 
   inventoryItem InventoryItem? @relation(fields: [inventoryItemId], references: [id])
 
-  @@index([sku, size, marketplace])
+  @@unique([sku, size, marketplace])
   @@index([fetchedAt])
 }
 
