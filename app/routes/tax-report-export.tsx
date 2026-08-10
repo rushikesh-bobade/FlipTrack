@@ -1,7 +1,7 @@
 import { useLoaderData } from "react-router";
 import type { Route } from "./+types/tax-report-export";
 import { getSupabaseServerClient } from "~/utils/supabase.server";
-import { PrismaClient } from "@prisma/client";
+
 import { CACHE_PRIVATE_NO_STORE } from "~/utils/cache-headers";
 import styles from "./tax-report-export.module.css";
 import { TaxReportHeader } from "~/blocks/tax-report-export/tax-report-header";
@@ -9,14 +9,13 @@ import { ReportGenerator } from "~/blocks/tax-report-export/report-generator";
 import { ReportPreview } from "~/blocks/tax-report-export/report-preview";
 import { ExportOptions } from "~/blocks/tax-report-export/export-options";
 import { ReportHistory } from "~/blocks/tax-report-export/report-history";
+import { prisma } from "~/utils/db.server";
 
 export function headers(_: Route.HeadersArgs) {
   return {
     "Cache-Control": CACHE_PRIVATE_NO_STORE,
   };
 }
-
-const prisma = new PrismaClient();
 
 export async function loader({ request }: Route.LoaderArgs) {
   const { supabase } = getSupabaseServerClient(request);

@@ -1,7 +1,7 @@
 import { useLoaderData } from "react-router";
 import type { Route } from "./+types/inventory-item-detail";
 import { getSupabaseServerClient } from "~/utils/supabase.server";
-import { PrismaClient } from "@prisma/client";
+
 import styles from "./inventory-item-detail.module.css";
 import { ItemHeader } from "~/blocks/inventory-item-detail/item-header";
 import { ItemInfoCard } from "~/blocks/inventory-item-detail/item-info-card";
@@ -9,8 +9,7 @@ import { PriceHistoryChart } from "~/blocks/inventory-item-detail/price-history-
 import { MarketplaceComparison } from "~/blocks/inventory-item-detail/marketplace-comparison";
 import { SalesHistory } from "~/blocks/inventory-item-detail/sales-history";
 import { RelatedItems } from "~/blocks/inventory-item-detail/related-items";
-
-const prisma = new PrismaClient();
+import { prisma } from "~/utils/db.server";
 
 export async function loader({ request, params }: Route.LoaderArgs) {
   const { supabase } = getSupabaseServerClient(request);

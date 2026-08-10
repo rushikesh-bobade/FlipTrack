@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import { useLoaderData, Await } from "react-router";
 import type { Route } from "./+types/market-prices";
 import { getSupabaseServerClient, getUserFromRequest } from "~/utils/supabase.server";
-import { PrismaClient } from "@prisma/client";
+
 import styles from "./market-prices.module.css";
 import { MarketPricesHeader } from "~/blocks/market-prices/market-prices-header";
 import { PriceComparisonTable } from "~/blocks/market-prices/price-comparison-table";
@@ -10,14 +10,13 @@ import { PriceUpdateStatus } from "~/blocks/market-prices/price-update-status";
 import { PriceAlertsQuickAdd } from "~/blocks/market-prices/price-alerts-quick-add";
 import { CACHE_PRIVATE_SHARED_DATA } from "~/utils/cache-headers";
 import { IconLoader2 } from "@tabler/icons-react";
+import { prisma } from "~/utils/db.server";
 
 export function headers(_: Route.HeadersArgs) {
   return {
     "Cache-Control": CACHE_PRIVATE_SHARED_DATA,
   };
 }
-
-const prisma = new PrismaClient();
 
 export async function loader({ request }: Route.LoaderArgs) {
   const { supabase } = getSupabaseServerClient(request);
