@@ -8,7 +8,10 @@
     "start": "react-router-serve ./build/server/index.js",
     "test:e2e": "playwright test",
     "typecheck": "react-router typegen && tsc",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
     "@ai-sdk/groq": "^3.0.39",
@@ -37,14 +40,21 @@
   "devDependencies": {
     "@playwright/test": "^1.61.1",
     "@react-router/dev": "^7.16.0",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
     "@types/node": "^24.12.4",
     "@types/react": "^19.2.16",
     "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.3",
     "dotenv": "^17.4.2",
+    "jsdom": "^29.1.1",
     "prettier": "^3.8.3",
     "prisma": "^5.22.0",
+    "react-is": "^19.2.7",
     "typescript": "~6.0.3",
-    "vite": "^8.0.16"
+    "vite": "^8.0.16",
+    "vite-tsconfig-paths": "^6.1.1",
+    "vitest": "^4.1.9"
   },
   "prettier": {
     "printWidth": 120,

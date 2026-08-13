@@ -253,6 +253,16 @@ We welcome test contributions! While the project doesn't yet have full test cove
 - **Component tests** for complex interactive UI (modals, forms).
 - Place test files alongside the code they test, named `*.test.ts` or `*.test.tsx`.
 
+To run the test suite locally:
+```bash
+npm run test
+```
+
+To run tests in watch mode during development:
+```bash
+npm run test:watch
+```
+
 ---
 
 ## 📬 Submitting a Pull Request
