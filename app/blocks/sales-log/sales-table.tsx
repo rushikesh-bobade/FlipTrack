@@ -1,5 +1,6 @@
 import { Pagination } from "~/blocks/__global/pagination";
 import styles from "./sales-table.module.css";
+import { IconEdit, IconTrash } from "@tabler/icons-react";
 
 // Removed 'margin' and 'profit' from SortField type
 export type SortField = 'item' | 'marketplace' | 'salePrice' | 'saleDate';
@@ -13,6 +14,8 @@ interface Props {
   onSort: (field: SortField) => void;
   totalCount: number;
   pageSize: number;
+  onEdit?: (sale: any) => void;
+  onDelete?: (sale: any) => void;
 }
 
 export function SalesTable({ 
@@ -22,7 +25,9 @@ export function SalesTable({
   sortDirection,
   onSort,
   totalCount,
-  pageSize
+  pageSize,
+  onEdit,
+  onDelete
 }: Props) {
   
   const getSortIndicator = (field: SortField) => {
@@ -81,6 +86,7 @@ export function SalesTable({
               {/* Margin and Profit columns are NOT sortable */}
               <th className={styles.thNonSortable}>Margin</th>
               <th className={styles.thNonSortable}>Profit</th>
+              <th className={styles.thNonSortable}>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -104,6 +110,25 @@ export function SalesTable({
                     <span className={[styles.profitBadge, profit >= 0 ? styles.positive : styles.negative].join(" ")}>
                       {profit >= 0 ? "+" : ""}${profit.toFixed(2)}
                     </span>
+                  </td>
+                  <td className={styles.td}>
+                    <button
+                      type="button"
+                      className={styles.editBtn}
+                      onClick={() => onEdit?.(s)}
+                    >
+                      <IconEdit size={16} />
+                      Edit
+                    </button>
+
+                    <button
+                      type="button"
+                      className={styles.deleteBtn}
+                      onClick={() => onDelete?.(s)}
+                    >
+                      <IconTrash size={16} />
+                      Delete
+                    </button>
                   </td>
                 </tr>
               );

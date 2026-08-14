@@ -1,5 +1,6 @@
 import { useState, useEffect, Suspense } from "react";
 import { useLoaderData, useActionData, useSearchParams, Await } from "react-router";
+import { DeleteSaleModal } from "~/blocks/sales-log/delete-sale-modal";
 import type { Route } from "./+types/sales-log";
 import { toast } from "sonner";
 import { getSupabaseServerClient, getUserFromRequest } from "~/utils/supabase.server";
@@ -203,6 +204,72 @@ export async function action({ request }: Route.ActionArgs) {
       }),
     ]);
   }
+  
+  if (intent === "edit") {
+    const saleId = formData.get("saleId") as string;
+    const salePrice = Number(formData.get("salePrice"));
+    const saleDate = new Date(formData.get("saleDate") as string);
+    const marketplace = formData.get("marketplace") as any;
+    const trackingNumber = formData.get("trackingNumber") as string;
+    const platformFee = Number(formData.get("platformFee") || 0);
+    const shippingCost = Number(formData.get("shippingCost") || 0);
+
+    const sale = await prisma.sale.findFirst({
+      where: {
+        id: saleId,
+        userId: user.id,
+      },
+    });
+
+    if (!sale) {
+      return { ok: false };
+    }
+
+    await prisma.sale.update({
+      where: {
+        id: saleId,
+      },
+      data: {
+        platformFee,
+        shippingCost,
+        salePrice,
+        saleDate,
+        marketplace,
+        trackingNumber,
+      },
+    });
+
+    return { ok: true, intent: "edit" };
+  }
+
+  if (intent === "delete") {
+    const saleId = formData.get("saleId") as string;
+
+    const sale = await prisma.sale.findFirst({
+      where: { 
+        id: saleId,
+        userId: user.id,
+      },
+    });
+
+    if (!sale) {
+      return { ok: false };
+    }
+
+    await prisma.$transaction([
+      prisma.sale.delete({
+        where: { id: saleId },
+      }),
+      prisma.inventoryItem.update({
+        where: { id: sale.inventoryItemId },
+        data: {
+          status: "IN_STOCK",
+        },
+      }),
+    ]);
+
+    return { ok: true, intent: "delete" };
+  }
 
   return { ok: true, intent };
 }
@@ -212,12 +279,23 @@ export default function SalesLogPage() {
   const actionData = useActionData<typeof action>();
   const [searchParams, setSearchParams] = useSearchParams();
   const [showLogSale, setShowLogSale] = useState(false);
+  const [selectedSale, setSelectedSale] = useState<any>(null);
+  const [showDelete, setShowDelete] = useState(false);
+  const [showEdit, setShowEdit] = useState(false);
 
   useEffect(() => {
     if (actionData?.ok) {
       if (actionData.intent === "create") {
         toast.success("Sale logged successfully");
         setShowLogSale(false);
+      }
+      if (actionData.intent === "edit") {
+        toast.success("Sale updated successfully");
+        setShowEdit(false);
+      }
+      if (actionData.intent === "delete") {
+        toast.success("Sale deleted successfully");
+        setShowDelete(false);
       }
     }
   }, [actionData]);
@@ -263,12 +341,40 @@ export default function SalesLogPage() {
                 onSort={handleSort}
                 totalCount={totalCount}
                 pageSize={pageSize}
+                onEdit={(sale) => {
+                  setSelectedSale(sale);
+                  setShowEdit(true);
+                }}
+                onDelete={(sale) => {
+                  setSelectedSale(sale);
+                  setShowDelete(true);
+                }}
               />
             </>
           )}
         </Await>
       </Suspense>
       {showLogSale && <LogSaleModal onClose={() => setShowLogSale(false)} />}
+      
+      {showEdit && selectedSale && (
+        <LogSaleModal 
+          sale={selectedSale} 
+          onClose={() => {
+            setShowEdit(false);
+            setSelectedSale(null);
+          }} 
+        />
+      )}
+      
+      {showDelete && selectedSale && (
+        <DeleteSaleModal 
+          saleId={selectedSale.id} 
+          onClose={() => {
+            setShowDelete(false);
+            setSelectedSale(null);
+          }} 
+        />
+      )}
     </div>
   );
 }
