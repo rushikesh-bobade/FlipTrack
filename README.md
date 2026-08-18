@@ -3,37 +3,44 @@
   <p><strong>Your Universal Reselling Empire, Tracked in Real Time.</strong></p>
   
   <p>
+
     <a href="https://github.com/rushikesh-bobade/FlipTrack/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT"></a>
     <a href="https://github.com/rushikesh-bobade/FlipTrack/pulls"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs Welcome"></a>
     <a href="https://reactrouter.com/"><img src="https://img.shields.io/badge/React_Router-v7-ca4245?logo=reactrouter" alt="React Router v7"></a>
     <a href="https://supabase.com/"><img src="https://img.shields.io/badge/Database-Supabase-3ECF8E?logo=supabase" alt="Supabase"></a>
     <a href="https://www.typescriptlang.org/"><img src="https://img.shields.io/badge/Language-TypeScript-3178C6?logo=typescript" alt="TypeScript"></a>
+
   </p>
 
   <p>
+
     An open-source SaaS platform designed for resellers of <strong>any</strong> physical goods (electronics, vintage clothing, collectibles, streetwear, etc.) to manage their inventory, track market prices, and analyze their business using AI. Built to be a world-class, production-grade platform driven by the open-source community.
+
   </p>
   
   <p>
+
     ⭐ <strong>If you find FlipTrack useful or are participating in a hackathon, please consider giving this repository a star! It helps our open-source community grow.</strong> ⭐
+
   </p>
 </div>
 
 <br />
 
 ## 📖 Table of Contents
-- [Vision](#-vision)
-- [Key Features](#-key-features)
-- [Tech Stack Architecture](#-tech-stack-architecture)
-- [Getting Started](#-getting-started)
-  - [Prerequisites](#prerequisites)
-  - [Local Installation](#local-installation)
-  - [Database Setup](#database-setup)
-  - [Local Development (Docker)](#local-development-docker)
-- [Demo Credentials](#-demo-credentials)
-- [Project Structure](#-project-structure)
-- [Contributing](#-contributing)
-- [License](#-license)
+
+* [Vision](#-vision)
+* [Key Features](#-key-features)
+* [Tech Stack Architecture](#-tech-stack-architecture)
+* [Getting Started](#-getting-started)
+  + [Prerequisites](#prerequisites)
+  + [Local Installation](#local-installation)
+  + [Database Setup](#database-setup)
+  + [Local Development (Docker)](#local-development-docker)
+* [Demo Credentials](#-demo-credentials)
+* [Project Structure](#-project-structure)
+* [Contributing](#-contributing)
+* [License](#-license)
 
 ---
 
@@ -48,15 +55,20 @@ Whether you are flipping 10 pairs a month or running a massive consignment opera
 ## 🌟 Key Features
 
 *   📦 **Comprehensive Inventory Management**
-    Track every item with granular details including SKU, size, condition, purchase price, purchase date, and real-time status (`IN_STOCK`, `LISTED`, `SOLD`).
+    Track every item with granular details including SKU, size, condition, purchase price, purchase date, and real-time status ( `IN_STOCK` , `LISTED` , `SOLD` ).
+
 *   📈 **Market Price Intelligence**
     Automated background scraping (via API cron jobs) of real-time market prices across secondary platforms to keep your portfolio valuation accurate.
+
 *   🧠 **Generative AI Insights**
     Powered by the Vercel AI SDK and Groq (Llama 3), FlipTrack analyzes your inventory and provides actionable, data-driven advice on *when* to hold and *when* to sell.
+
 *   💰 **Sales & Expense Tracking**
     Log sales, track platform/shipping fees, and generate detailed P&L (Profit & Loss) statements instantly.
+
 *   🔒 **Enterprise-Grade Authentication**
     Secure login flows utilizing Supabase Auth with strict Server-Side Rendering (SSR) cookie validation.
+
 *   ✨ **Premium Glassmorphic UI**
     A sleek, responsive, and blazing-fast interface built entirely from scratch utilizing raw CSS variables and CSS Modules, guaranteeing zero bloat from heavy UI frameworks.
 
@@ -93,18 +105,27 @@ Ensure you have the following installed and configured on your machine:
 ### Local Installation
 
 1. **Clone the repository**
-   ```bash
+   
+
+```bash
    git clone https://github.com/rushikesh-bobade/FlipTrack.git
    cd FlipTrack
    ```
 
 2. **Install NPM dependencies**
-   ```bash
+   
+
+```bash
    npm install
    ```
 
 3. **Configure Environment Variables**
-   Create a `.env` file in the root directory by copying `.env.example`.
+   Create a `.env` file in the root directory by copying `.env.example` .
+
+
+```bash
+cp .env.example .env
+```
 
 ### Database Setup
 
@@ -114,12 +135,15 @@ You can set up your database using either a free cloud project or a local Postgr
 1. Create a free project on [Supabase](https://supabase.com).
 2. Copy your Project URL, Anon Key, and Database Connection Strings into your `.env` file.
 3. Push the Prisma schema to your cloud database:
-   ```bash
+   
+
+```bash
    npx prisma db push
    npx prisma generate
    ```
 
 <a id="local-development-docker"></a>
+
 ### 🐳 Local Development (Docker)
 
 **Option B: Local PostgreSQL via Docker (No Cloud Account Required)**
@@ -128,49 +152,103 @@ This is the recommended path for external contributors, since the project's live
 
 1. Make sure [Docker](https://www.docker.com/) is installed and running.
 2. Start the local Postgres container:
-   ```bash
+   
+
+```bash
    docker-compose up -d
    ```
-   This starts a `postgres:15` container named `fliptrack_postgres`, exposed on `localhost:5432`, with a persistent volume so your data survives restarts.
+
+   This starts a `postgres:15` container named `fliptrack_postgres` , exposed on `localhost:5432` , with a persistent volume so your data survives restarts.
 3. In your `.env`, set `DATABASE_URL` and `DIRECT_URL` to the local connection string (already provided, commented out, in `.env.example`):
-   ```bash
+   
+
+```bash
    DATABASE_URL="postgresql://postgres:password@localhost:5432/fliptrack_dev"
    DIRECT_URL="postgresql://postgres:password@localhost:5432/fliptrack_dev"
    ```
+
 4. You can leave `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` blank or mock them if you are only testing UI/Prisma logic.
 5. Push the schema and generate migrations, all against your own local database:
-   ```bash
+   
+
+```bash
    npx prisma db push
    npx prisma generate
    npx prisma migrate dev --name your-migration-name
    ```
+
 6. To stop the container (data is preserved in the Docker volume):
-   ```bash
+   
+
+```bash
    docker-compose down
    ```
-   To wipe the local database completely, add `-v`: `docker-compose down -v`.
+
+   To wipe the local database completely, add `-v` : `docker-compose down -v` .
 
 ### Start Development Server
 
 Start the Vite development server:
+
 ```bash
 npm run dev
 ```
-The application will be running locally at `http://localhost:5173`.
+
+The application will be running locally at `http://localhost:5173` .
+
+---
+
+## 🔐 Local Authentication
+
+FlipTrack uses **Supabase Auth** for authentication, while the dashboard data is stored in Prisma-managed tables. 
+
+To link the two systems, the application relies on the `User` table in the database having a record where `id` matches the Supabase Auth user ID (UUID) of the logged-in user.
+
+The local setup involves two separate scripts that must be run in the **exact order** below:
+
+1. `scripts/create-demo-user.ts`:
+   * Creates/registers the demo user (defaults to `demo@fliptrack.app`) in your Supabase Auth project.
+   * Retrieves the generated Supabase User ID (UUID) and creates/upserts a matching user record in the local database's `User` table using Prisma.
+2. `prisma/seed.ts`:
+   * Queries the database for the demo user using the configured email.
+   * Populates the database with demo inventory items, sales, expenses, and other mock dashboard data under that user's ID.
+
+> [!IMPORTANT]
+> You **must** run the scripts in this order. If you run the seed script first, the data will be seeded under a temporary ID, and the subsequent user creation script will fail with unique email constraint errors or cause the logged-in user to see an empty dashboard.
 
 ---
 
 ## 💡 Demo Credentials
 
-Want to test FlipTrack's UI and features without manually creating data? We have included an automated seed script that provisions a test user and sample inventory items.
+Want to test FlipTrack's UI and features without manually creating data? We have included automated scripts to provision the demo user and sample inventory items.
 
-1. Ensure your development server is running (`npm run dev`).
-2. Execute the demo creation script:
+### Environment Variable Requirements
+Before running the scripts, ensure your `.env` file has:
+* `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+* `DATABASE_URL` and `DIRECT_URL`
+* `SUPABASE_SERVICE_ROLE_KEY` (Highly Recommended)
+  > [!NOTE]
+  > If `SUPABASE_SERVICE_ROLE_KEY` is provided, the script will automatically create a pre-confirmed user in Supabase Auth using admin privileges. If not, it falls back to the public sign-up API. If email confirmation is enabled in your Supabase project (default), you will need to manually confirm the user in your Supabase Dashboard (under Authentication → Users) to sign in.
+
+### Setup Steps
+1. Make sure your local PostgreSQL database (via Docker or local service) is running and your Prisma schema has been pushed:
    ```bash
-   npx tsx scripts/create-demo-user.ts
+   npx prisma db push
+   npx prisma generate
    ```
-3. Navigate to `http://localhost:5173/auth/login`.
-4. Click the **"Use Demo Credentials"** button on the login form to instantly authenticate and view the populated dashboard.
+2. Run the demo setup scripts in the correct order:
+   ```bash
+   # 1. Create the user in Supabase and sync to database first
+   npx tsx scripts/create-demo-user.ts
+
+   # 2. Seed the inventory data under that user
+   npx tsx prisma/seed.ts
+   ```
+3. Start the development server:
+   ```bash
+   npm run dev
+   ```
+4. Navigate to `http://localhost:5173/auth/login` and click the **"Use Demo Credentials"** button on the login form to instantly authenticate (using `demo@fliptrack.app` / `password123`) and view the populated dashboard.
 
 ---
 
