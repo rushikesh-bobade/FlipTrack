@@ -133,7 +133,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 
   if (!user) {
     return {
-      deferredData: Promise.resolve({ items: [] as any[], totalPages: 0 }),
+      deferredData: Promise.resolve({ items: [] as any[], totalPages: 0, sortField: "createdAt", sortDirection: "desc" }),
     };
   }
 
@@ -141,6 +141,8 @@ export async function loader({ request }: Route.LoaderArgs) {
   const page = Math.max(1, Number(url.searchParams.get("page")) || 1);
   const pageSize = Number(url.searchParams.get("pageSize")) || 10;
   const q = url.searchParams.get("q") || "";
+  const sortField = url.searchParams.get("sort") || "createdAt";
+  const sortDirection = url.searchParams.get("dir") === "asc" ? "asc" : "desc";
 
   const whereClause = {
     userId: user.id,
@@ -159,7 +161,7 @@ export async function loader({ request }: Route.LoaderArgs) {
   const itemsPromise = prisma.inventoryItem
     .findMany({
       where: whereClause,
-      orderBy: { createdAt: "desc" },
+      orderBy: { [sortField]: sortDirection },
       skip: (page - 1) * pageSize,
       take: pageSize,
       include: {
@@ -180,6 +182,8 @@ export async function loader({ request }: Route.LoaderArgs) {
   const deferredData = Promise.all([countPromise, itemsPromise]).then(([totalItems, formattedItems]) => ({
     items: formattedItems,
     totalPages: Math.ceil(totalItems / pageSize),
+    sortField,
+    sortDirection,
   }));
 
   return { deferredData };
@@ -366,6 +370,22 @@ export default function InventoryManagementPage() {
   const searchQuery = searchParams.get("q") || "";
   const [localSearch, setLocalSearch] = useState(searchQuery);
 
+  const handleSort = (field: string) => {
+    const currentField = searchParams.get('sort') || 'createdAt';
+    const currentDir = searchParams.get('dir') || 'desc';
+    
+    let newDirection = 'desc';
+    if (field === currentField) {
+      newDirection = currentDir === 'asc' ? 'desc' : 'asc';
+    }
+    
+    const params = new URLSearchParams(searchParams);
+    params.set('sort', field);
+    params.set('dir', newDirection);
+    params.set('page', '1');
+    setSearchParams(params);
+  };
+
   // Sync URL search param changes to local state (e.g. back/forward navigation or initial mount)
   useEffect(() => {
     // Only sync if they diverge completely (e.g. back/forward navigation)
@@ -440,7 +460,7 @@ export default function InventoryManagementPage() {
         }
       >
         <Await resolve={deferredData}>
-          {({ items, totalPages }) => (
+          {({ items, totalPages, sortField, sortDirection }) => (
             <>
               {selected.length > 0 && (
                 <BulkActionsBar
@@ -454,6 +474,9 @@ export default function InventoryManagementPage() {
                 selected={selected}
                 onSelectChange={setSelected}
                 items={items}
+                sortField={sortField as any}
+                sortDirection={sortDirection as any}
+                onSort={handleSort}
                 onEdit={setEditingItem}
                 onDuplicate={(item) => setDuplicatingItem({ ...item, id: undefined, sku: "" })}
               />

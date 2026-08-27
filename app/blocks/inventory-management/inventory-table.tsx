@@ -7,6 +7,9 @@ interface Props {
   selected: string[];
   onSelectChange: (ids: string[]) => void;
   items: any[];
+  sortField?: string;
+  sortDirection?: "asc" | "desc";
+  onSort?: (field: string) => void;
   onEdit: (item: any) => void;
   onDuplicate: (item: any) => void;
 }
@@ -14,10 +17,28 @@ interface Props {
 const statusClass: Record<string, string> = { IN_STOCK: styles.inStock, LISTED: styles.listed, SOLD: styles.sold };
 const statusLabel: Record<string, string> = { IN_STOCK: "In Stock", LISTED: "Listed", SOLD: "Sold" };
 
-export function InventoryTable({ className, selected, onSelectChange, items, onEdit, onDuplicate }: Props) {
+export function InventoryTable({ className, selected, onSelectChange, items, sortField = "createdAt", sortDirection = "desc", onSort, onEdit, onDuplicate }: Props) {
   const toggle = (id: string) =>
     onSelectChange(selected.includes(id) ? selected.filter((s) => s !== id) : [...selected, id]);
   const toggleAll = () => onSelectChange(selected.length === items.length ? [] : items.map((i) => i.id));
+
+  const renderSortableHeader = (label: string, field: string) => {
+    if (!onSort) return label;
+    const isSorted = sortField === field;
+    return (
+      <button 
+        type="button" 
+        onClick={() => onSort(field)} 
+        className={styles.sortBtn}
+        style={{ background: 'none', border: 'none', padding: 0, margin: 0, font: 'inherit', color: 'inherit', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+      >
+        {label}
+        {isSorted && (
+          <span style={{ fontSize: '0.8em', opacity: 0.7 }}>{sortDirection === 'asc' ? '↑' : '↓'}</span>
+        )}
+      </button>
+    );
+  };
 
   return (
     <div className={[styles.wrap, className].filter(Boolean).join(" ")}>
@@ -33,13 +54,13 @@ export function InventoryTable({ className, selected, onSelectChange, items, onE
                   onChange={toggleAll}
                 />
               </th>
-              <th className={styles.th}>Item</th>
-              <th className={styles.th}>SKU</th>
-              <th className={styles.th}>Size</th>
-              <th className={styles.th}>Buy Price</th>
+              <th className={styles.th}>{renderSortableHeader("Item", "name")}</th>
+              <th className={styles.th}>{renderSortableHeader("SKU", "sku")}</th>
+              <th className={styles.th}>{renderSortableHeader("Size", "size")}</th>
+              <th className={styles.th}>{renderSortableHeader("Buy Price", "purchasePrice")}</th>
               <th className={styles.th}>Market Value</th>
               <th className={styles.th}>P/L</th>
-              <th className={styles.th}>Status</th>
+              <th className={styles.th}>{renderSortableHeader("Status", "status")}</th>
               <th className={styles.th}>Actions</th>
             </tr>
           </thead>
