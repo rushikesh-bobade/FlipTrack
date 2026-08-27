@@ -32,7 +32,19 @@ export async function loader({ request }: Route.LoaderArgs) {
 
   const salesPromise = prisma.sale.findMany({
     where: { userId: user.id },
-    include: { inventoryItem: true },
+    select: {
+      id: true,
+      saleDate: true,
+      salePrice: true,
+      platformFee: true,
+      shippingCost: true,
+      inventoryItem: {
+        select: {
+          name: true,
+          purchasePrice: true
+        }
+      }
+    },
     orderBy: { saleDate: "asc" },
   }).then((sales) =>
     sales.map((s) => ({

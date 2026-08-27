@@ -1,27 +1,13 @@
 import { Link } from "react-router";
 import styles from "./top-selling-items-table.module.css";
 
-interface Props { className?: string; sales?: any[]; }
+interface Props { 
+  className?: string; 
+  items: { id: string; name: string; sold: number; profit: number; revenue: number }[];
+}
 
-export function TopSellingItemsTable({ className, sales = [] }: Props) {
-  const itemStats: Record<string, { id: string, name: string, sold: number, profit: number, revenue: number }> = {};
-
-  sales.forEach(s => {
-    const sku = s.inventoryItem.sku;
-    const profit = Number(s.salePrice) - Number(s.inventoryItem.purchasePrice) - Number(s.platformFee) - Number(s.shippingCost);
-    if (!itemStats[sku]) {
-      itemStats[sku] = { id: s.inventoryItem.id, name: s.inventoryItem.name, sold: 0, profit: 0, revenue: 0 };
-    }
-    itemStats[sku].sold++;
-    itemStats[sku].profit += profit;
-    itemStats[sku].revenue += Number(s.salePrice);
-  });
-
-  const chartData = Object.values(itemStats)
-    .sort((a, b) => b.profit - a.profit)
-    .slice(0, 5);
-
-  if (chartData.length === 0) {
+export function TopSellingItemsTable({ className, items = [] }: Props) {
+  if (items.length === 0) {
     return <div className={[styles.card, className].filter(Boolean).join(" ")}><div className={styles.header}><span className={styles.title}>Top Selling Items</span></div><p style={{ padding: '1rem', color: 'var(--color-text-subtle)' }}>No sales logged yet.</p></div>;
   }
 
@@ -38,7 +24,7 @@ export function TopSellingItemsTable({ className, sales = [] }: Props) {
           </tr>
         </thead>
         <tbody>
-          {chartData.map((item, i) => (
+          {items.map((item, i) => (
             <tr key={i}>
               <td className={styles.td}><Link to={`/app/inventory/${item.id}`} className={styles.link}>{item.name}</Link></td>
               <td className={[styles.td, styles.right].join(" ")}>{item.sold}</td>

@@ -1,5 +1,5 @@
 import { useState, useEffect, Suspense } from "react";
-import { useLoaderData, useActionData, Await } from "react-router";
+import { useLoaderData, useActionData, useSearchParams, Await } from "react-router";
 import type { Route } from "./+types/expenses-tracker";
 import { toast } from "sonner";
 import { getSupabaseServerClient, getUserFromRequest } from "~/utils/supabase.server";
@@ -33,17 +33,22 @@ export async function loader({ request }: Route.LoaderArgs) {
       recurring: [] as any[],
       totalPages: 0,
       oneTimeTotal: 0,
+      sortField: "date",
+      sortDirection: "desc",
     }),
   };
 
   const url = new URL(request.url);
   const page = Math.max(1, Number(url.searchParams.get("page")) || 1);
   const pageSize = Number(url.searchParams.get("pageSize")) || 10;
+  
+  const sortField = url.searchParams.get("sort") || "date";
+  const sortDirection = url.searchParams.get("dir") === "asc" ? "asc" : "desc";
 
   const countPromise = prisma.expense.count({ where: { userId: user.id } });
   const expensesPromise = prisma.expense.findMany({
     where: { userId: user.id },
-    orderBy: { date: "desc" },
+    orderBy: { [sortField]: sortDirection },
     skip: (page - 1) * pageSize,
     take: pageSize,
   }).then((expenses) =>
@@ -68,6 +73,8 @@ export async function loader({ request }: Route.LoaderArgs) {
       recurring: formattedRecurring,
       totalPages: Math.ceil(totalExpenses / pageSize),
       oneTimeTotal: Number(sumResult._sum.amount || 0),
+      sortField,
+      sortDirection,
     })
   );
 
@@ -164,8 +171,25 @@ export async function action({ request }: Route.ActionArgs) {
 export default function ExpensesTrackerPage() {
   const { deferredData } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [showAddExpense, setShowAddExpense] = useState(false);
   const [editingExpense, setEditingExpense] = useState<any>(null);
+
+  const handleSort = (field: string) => {
+    const currentField = searchParams.get('sort') || 'date';
+    const currentDir = searchParams.get('dir') || 'desc';
+    
+    let newDirection = 'desc';
+    if (field === currentField) {
+      newDirection = currentDir === 'asc' ? 'desc' : 'asc';
+    }
+    
+    const params = new URLSearchParams(searchParams);
+    params.set('sort', field);
+    params.set('dir', newDirection);
+    params.set('page', '1');
+    setSearchParams(params);
+  };
 
   useEffect(() => {
     if (actionData?.ok) {
@@ -195,12 +219,15 @@ export default function ExpensesTrackerPage() {
         }
       >
         <Await resolve={deferredData}>
-          {({ expenses, recurring, totalPages, oneTimeTotal }) => (
+          {({ expenses, recurring, totalPages, oneTimeTotal, sortField, sortDirection }) => (
             <>
               <ExpensesSummary expenses={expenses} recurring={recurring} oneTimeTotal={oneTimeTotal} />
               <RecurringExpensesSection recurring={recurring} />
               <OneTimeExpensesTable
                 expenses={expenses}
+                sortField={sortField as any}
+                sortDirection={sortDirection as any}
+                onSort={handleSort}
                 onEdit={(expense) => setEditingExpense(expense)}
               />
               <Pagination totalPages={totalPages} />

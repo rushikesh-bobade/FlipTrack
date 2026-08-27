@@ -1,22 +1,12 @@
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
 import styles from "./top-brands-chart.module.css";
 
-interface Props { className?: string; sales?: any[]; }
+interface Props { 
+  className?: string; 
+  chartData: { brand: string; profit: number }[];
+}
 
-export function TopBrandsChart({ className, sales = [] }: Props) {
-  const brandProfit: Record<string, number> = {};
-
-  sales.forEach(s => {
-    const brand = s.inventoryItem.brand;
-    const profit = Number(s.salePrice) - Number(s.inventoryItem.purchasePrice) - Number(s.platformFee) - Number(s.shippingCost);
-    if (!brandProfit[brand]) brandProfit[brand] = 0;
-    brandProfit[brand] += profit;
-  });
-
-  const chartData = Object.keys(brandProfit)
-    .map(brand => ({ brand, profit: brandProfit[brand] }))
-    .sort((a, b) => b.profit - a.profit)
-    .slice(0, 5); // top 5
+export function TopBrandsChart({ className, chartData = [] }: Props) {
 
   return (
     <div className={[styles.card, className].filter(Boolean).join(" ")}>

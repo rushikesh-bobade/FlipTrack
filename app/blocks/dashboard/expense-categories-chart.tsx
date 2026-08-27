@@ -2,9 +2,10 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from "recha
 import styles from "./expense-categories-chart.module.css";
 
 interface Props {
-  expenses: {
-    type: string;
-    amount: number;
+  chartData: {
+    name: string;
+    value: number;
+    color?: string;
   }[];
 }
 
@@ -22,18 +23,8 @@ const COLORS = {
   CUSTOM: "var(--color-foreground-muted)",
 };
 
-export function ExpenseCategoriesChart({ expenses }: Props) {
-  // Aggregate expenses by type
-  const aggregated = expenses.reduce((acc, curr) => {
-    acc[curr.type] = (acc[curr.type] || 0) + curr.amount;
-    return acc;
-  }, {} as Record<string, number>);
-
-  const data = Object.entries(aggregated)
-    .map(([name, value]) => ({ name, value }))
-    .sort((a, b) => b.value - a.value);
-
-  if (data.length === 0) {
+export function ExpenseCategoriesChart({ chartData = [] }: Props) {
+  if (chartData.length === 0) {
     return (
       <div className={styles.card}>
         <div className={styles.cardHeader}>
@@ -53,7 +44,7 @@ export function ExpenseCategoriesChart({ expenses }: Props) {
         <ResponsiveContainer>
           <PieChart>
             <Pie
-              data={data}
+              data={chartData}
               cx="50%"
               cy="50%"
               innerRadius={60}
@@ -61,10 +52,10 @@ export function ExpenseCategoriesChart({ expenses }: Props) {
               paddingAngle={5}
               dataKey="value"
             >
-              {data.map((entry, index) => (
+              {chartData.map((entry, index) => (
                 <Cell 
                   key={`cell-${index}`} 
-                  fill={COLORS[entry.name as keyof typeof COLORS] || COLORS.OTHER} 
+                  fill={COLORS[entry.name.toUpperCase().replace(/ /g, "_") as keyof typeof COLORS] || COLORS.OTHER} 
                   stroke="transparent"
                 />
               ))}

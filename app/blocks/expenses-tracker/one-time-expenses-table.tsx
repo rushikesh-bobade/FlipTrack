@@ -2,13 +2,19 @@ import styles from "./one-time-expenses-table.module.css";
 import { useFetcher } from "react-router";
 import { IconPencil, IconTrash } from "@tabler/icons-react";
 
+export type SortField = 'date' | 'type' | 'amount';
+export type SortDirection = 'asc' | 'desc';
+
 interface Props {
   className?: string;
   expenses?: any[];
+  sortField?: SortField;
+  sortDirection?: SortDirection;
+  onSort?: (field: SortField) => void;
   onEdit?: (expense: any) => void;
 }
 
-export function OneTimeExpensesTable({ className, expenses = [], onEdit }: Props) {
+export function OneTimeExpensesTable({ className, expenses = [], sortField = 'date', sortDirection = 'desc', onSort, onEdit }: Props) {
   const fetcher = useFetcher();
 
   if (expenses.length === 0) {
@@ -20,15 +26,45 @@ export function OneTimeExpensesTable({ className, expenses = [], onEdit }: Props
     fetcher.submit({ intent: "delete", id }, { method: "post" });
   };
 
+  const getSortIndicator = (field: SortField) => {
+    if (sortField !== field) return '↕';
+    return sortDirection === 'asc' ? '↑' : '↓';
+  };
+
+  const isActive = (field: SortField) => sortField === field;
+
+  const renderSortableHeader = (field: SortField, label: string) => (
+    <th 
+      className={styles.th}
+      onClick={() => onSort?.(field)}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onSort?.(field);
+        }
+      }}
+      role="button"
+      tabIndex={0}
+      aria-sort={isActive(field) ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
+    >
+      <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+        {label}
+        <span aria-hidden="true" style={{ opacity: isActive(field) ? 1 : 0.3, fontSize: '0.8em' }}>
+          {getSortIndicator(field)}
+        </span>
+      </span>
+    </th>
+  );
+
   return (
     <div className={[styles.wrap, className].filter(Boolean).join(" ")}>
       <table className={styles.table}>
         <thead>
           <tr>
-            <th className={styles.th}>Date</th>
+            {renderSortableHeader('date', 'Date')}
             <th className={styles.th}>Description</th>
-            <th className={styles.th}>Category</th>
-            <th className={styles.th}>Amount</th>
+            {renderSortableHeader('type', 'Category')}
+            {renderSortableHeader('amount', 'Amount')}
             <th className={styles.th}>Actions</th>
           </tr>
         </thead>

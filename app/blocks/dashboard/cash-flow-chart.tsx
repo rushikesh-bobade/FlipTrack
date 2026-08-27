@@ -1,42 +1,12 @@
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import styles from "./cash-flow-chart.module.css";
 
-interface Props { className?: string; sales?: any[]; expenses?: any[]; }
+interface Props { 
+  className?: string; 
+  chartData: { month: string; revenue: number; expenses: number }[];
+}
 
-export function CashFlowChart({ className, sales = [], expenses = [] }: Props) {
-  // Group by month
-  const grouped: Record<string, { revenue: number, expenses: number }> = {};
-  
-  // Last 6 months
-  for (let i = 5; i >= 0; i--) {
-    const d = new Date();
-    d.setMonth(d.getMonth() - i);
-    const label = d.toLocaleString('default', { month: 'short' });
-    grouped[label] = { revenue: 0, expenses: 0 };
-  }
-  
-  sales.forEach(s => {
-    const d = new Date(s.saleDate);
-    const label = d.toLocaleString('default', { month: 'short' });
-    if (grouped[label]) {
-      grouped[label].revenue += Number(s.salePrice);
-      grouped[label].expenses += Number(s.inventoryItem.purchasePrice) + Number(s.platformFee) + Number(s.shippingCost);
-    }
-  });
-  
-  expenses.forEach(e => {
-    const d = new Date(e.date);
-    const label = d.toLocaleString('default', { month: 'short' });
-    if (grouped[label]) {
-      grouped[label].expenses += Number(e.amount);
-    }
-  });
-  
-  const chartData = Object.keys(grouped).map(month => ({
-    month,
-    revenue: grouped[month].revenue,
-    expenses: grouped[month].expenses
-  }));
+export function CashFlowChart({ className, chartData = [] }: Props) {
 
   return (
     <div className={[styles.card, className].filter(Boolean).join(" ")}>

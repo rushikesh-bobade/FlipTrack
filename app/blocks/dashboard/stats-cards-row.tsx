@@ -1,26 +1,22 @@
 import { IconTrendingUp, IconTrendingDown } from "@tabler/icons-react";
 import styles from "./stats-cards-row.module.css";
 
-interface Props { className?: string; stats?: any; sales?: any[]; expenses?: any[]; }
+interface Props { 
+  className?: string; 
+  activeInventoryCount: number;
+  activeInventoryCost: number;
+  totalRevenue: number;
+  totalGrossProfit: number;
+  totalExpenses: number;
+  roi: number;
+}
 
-export function StatsCardsRow({ className, stats, sales = [], expenses = [] }: Props) {
-  const portfolioValue = stats?._sum?.purchasePrice ? Number(stats._sum.purchasePrice) : 0;
-  
-  let totalRevenue = 0;
-  let totalCostOfSold = 0;
-  sales.forEach(s => {
-    totalRevenue += Number(s.salePrice);
-    totalCostOfSold += Number(s.inventoryItem.purchasePrice) + Number(s.platformFee) + Number(s.shippingCost);
-  });
-  
-  let totalExpenses = 0;
-  expenses.forEach(e => totalExpenses += Number(e.amount));
-  
-  const netProfit = totalRevenue - totalCostOfSold - totalExpenses;
+export function StatsCardsRow({ className, activeInventoryCount, activeInventoryCost, totalRevenue, totalGrossProfit, totalExpenses, roi }: Props) {
+  const netProfit = totalGrossProfit - totalExpenses;
 
   const displayStats = [
-    { label: "Portfolio Value", value: `$${portfolioValue.toLocaleString()}`, change: "+0%", positive: true, bars: [60,70,55,80,65,90,75] },
-    { label: "Inventory Count", value: `${stats?._count || 0} items`, change: "+0%", positive: true, bars: [40,55,45,70,60,80,75] },
+    { label: "Portfolio Value", value: `$${activeInventoryCost.toLocaleString()}`, change: "+0%", positive: true, bars: [60,70,55,80,65,90,75] },
+    { label: "Inventory Count", value: `${activeInventoryCount} items`, change: "+0%", positive: true, bars: [40,55,45,70,60,80,75] },
     { label: "Total Sales", value: `$${totalRevenue.toLocaleString()}`, change: "+0%", positive: true, bars: [50,60,70,55,80,75,90] },
     { label: "Net Profit", value: `$${netProfit.toLocaleString()}`, change: "+0%", positive: netProfit >= 0, bars: [45,60,50,75,65,80,85] },
   ];
