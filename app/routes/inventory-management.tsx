@@ -368,8 +368,12 @@ export default function InventoryManagementPage() {
 
   // Sync URL search param changes to local state (e.g. back/forward navigation or initial mount)
   useEffect(() => {
-    setLocalSearch(searchQuery);
-  }, [searchQuery]);
+    // Only sync if they diverge completely (e.g. back/forward navigation)
+    // This prevents wiping out active typing when a delayed network request completes
+    if (!localSearch.startsWith(searchQuery) && !searchQuery.startsWith(localSearch)) {
+      setLocalSearch(searchQuery);
+    }
+  }, [searchQuery, localSearch]);
 
   // Debounce syncing localSearch state to the URL search parameter
   useEffect(() => {
