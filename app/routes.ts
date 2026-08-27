@@ -12,6 +12,8 @@ export default [
   route("/changelog", "routes/changelog-page.tsx"),
   route("/privacy", "routes/privacy-policy.tsx"),
   route("/terms", "routes/terms-of-service.tsx"),
+  route("/settings", "routes/settings-public.tsx"),
+  route("/settings/billing", "routes/billing-management.tsx"),
 
   ...prefix("/app", [
     layout("routes/app-layout.tsx", [

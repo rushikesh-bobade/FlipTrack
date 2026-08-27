@@ -12,7 +12,7 @@ export function PlanGateMessage({ className }: Props) {
         Upgrade to Pro to get AI-powered price analysis and buy/sell recommendations for every item in your inventory.
         Powered by GPT-4o mini with confidence scores and target prices.
       </p>
-      <Link to="/app/settings/billing" className={styles.btn}>Upgrade to Pro &mdash; $12/mo</Link>
+      <Link to="/settings/billing" className={styles.btn}>Upgrade to Pro &mdash; $12/mo</Link>
     </div>
   );
 }

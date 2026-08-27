@@ -61,7 +61,7 @@ export function ExpenseCategoriesChart({ chartData = [] }: Props) {
               ))}
             </Pie>
             <Tooltip
-              formatter={(value: any) => [`$${Number(value).toFixed(2)}`, "Amount"]}
+              formatter={(value: any) => [`$${Number(value).toFixed(2)}`, "Amount"]}  //changed the code to avoid merge conflicts
               contentStyle={{
                 backgroundColor: "var(--color-surface)",
                 borderColor: "var(--color-surface-border)",
