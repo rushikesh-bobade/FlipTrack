@@ -1,3 +1,4 @@
+import { InventoryTableSkeleton } from "~/blocks/inventory-management/inventory-table-skeleton";
 import { useState, useEffect, Suspense } from "react";
 import { useLoaderData, useActionData, useSearchParams, Await } from "react-router";
 import type { Route } from "./+types/inventory-management";
@@ -452,12 +453,7 @@ export default function InventoryManagementPage() {
         onSearch={setLocalSearch}
       />
       <Suspense
-        fallback={
-          <div className={styles.loadingContainer}>
-            <IconLoader2 size={32} className={styles.spin} />
-            <span>Loading inventory items...</span>
-          </div>
-        }
+        fallback={<InventoryTableSkeleton />}
       >
         <Await resolve={deferredData}>
           {({ items, totalPages, sortField, sortDirection }) => (

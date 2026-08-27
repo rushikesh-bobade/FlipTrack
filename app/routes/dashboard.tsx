@@ -1,3 +1,4 @@
+import { DashboardSkeleton } from "~/blocks/dashboard/dashboard-skeleton";
 import { Suspense } from "react";
 import { useLoaderData, Await } from "react-router";
 import type { Route } from "./+types/dashboard";
@@ -281,12 +282,7 @@ export default function DashboardPage() {
       <DashboardHeader />
       <AIInsightsPanel />
       <Suspense
-        fallback={
-          <div className={styles.loadingContainer}>
-            <IconLoader2 size={32} className={styles.spin} />
-            <span>Loading dashboard data...</span>
-          </div>
-        }
+        fallback={<DashboardSkeleton />}
       >
         <Await resolve={deferredData}>
           {({ 

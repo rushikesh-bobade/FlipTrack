@@ -1,3 +1,4 @@
+import { SalesTableSkeleton } from "~/blocks/sales-log/sales-log-skeleton";
 import { useState, useEffect, Suspense } from "react";
 import { useLoaderData, useActionData, useSearchParams, Await } from "react-router";
 import { DeleteSaleModal } from "~/blocks/sales-log/delete-sale-modal";
@@ -323,12 +324,7 @@ export default function SalesLogPage() {
     <div className={styles.page}>
       <SalesHeader onLogSale={() => setShowLogSale(true)} />
       <Suspense
-        fallback={
-          <div className={styles.loadingContainer}>
-            <IconLoader2 size={32} className={styles.spin} />
-            <span>Loading sales data...</span>
-          </div>
-        }
+        fallback={<SalesTableSkeleton />}
       >
         <Await resolve={deferredData}>
           {({ sales, summary, sortField, sortDirection, totalCount, pageSize }) => (
