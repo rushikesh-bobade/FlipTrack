@@ -23,19 +23,17 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
-  
-  // FIX: Only cache static files and build assets, NOT dynamic document/API routes
-  const url = new URL(event.request.url);
-  if (!url.pathname.startsWith('/build/') && !url.pathname.startsWith('/icons/') && url.pathname !== '/manifest.json') {
-    return;
-  }
 
   const url = new URL(event.request.url);
 
-  // Only apply cache-first strategy to static assets
-  const isStaticAsset = url.pathname.startsWith('/build/') || 
-                        url.pathname.startsWith('/assets/') || 
-                        url.pathname.match(/\.(png|jpg|jpeg|svg|css|js|json|ico)$/i);
+  // Only apply cache-first strategy to same-origin static assets and build files
+  const isStaticAsset =
+    url.origin === self.location.origin &&
+    (url.pathname.startsWith('/build/') ||
+     url.pathname.startsWith('/assets/') ||
+     url.pathname.startsWith('/icons/') ||
+     url.pathname === '/manifest.json' ||
+     url.pathname.match(/\.(png|jpg|jpeg|svg|css|js|json|ico|woff2?)$/i));
 
   if (isStaticAsset) {
     event.respondWith(
@@ -43,7 +41,7 @@ self.addEventListener('fetch', (event) => {
         if (cachedResponse) return cachedResponse;
 
         return fetch(event.request).then((networkResponse) => {
-          if (networkResponse.status === 200 && event.request.url.startsWith(self.location.origin)) {
+          if (networkResponse.status === 200) {
             const responseClone = networkResponse.clone();
             caches.open(CACHE_NAME).then((cache) => cache.put(event.request, responseClone));
           }
